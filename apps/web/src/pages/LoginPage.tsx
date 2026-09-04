@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 import { Button } from "../components/ui/Button";
+import { ThemeToggle } from "../components/ui/ThemeToggle";
 
 export function LoginPage() {
   const { login, error } = useAuth();
@@ -24,14 +25,19 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-bg px-4">
+      <div className="absolute right-5 top-5 rounded-full bg-sidebar p-1">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <p className="font-display text-2xl font-semibold text-ink">Regula RPPS</p>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <img src="/logo-npi.png" alt="NPI Brasil" className="mb-3 h-11 w-11 object-contain" />
+          <p className="font-display text-2xl font-bold text-ink">Regula RPPS</p>
           <p className="mt-1 text-sm text-ink-muted">Controle de compliance e transparência ativa</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
           <label className="block text-sm font-medium text-ink">
             E-mail
             <input

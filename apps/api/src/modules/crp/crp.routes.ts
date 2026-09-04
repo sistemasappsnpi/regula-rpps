@@ -1,16 +1,17 @@
 import { Router } from "express";
-import { requireAuth, type AuthenticatedRequest } from "../../middleware/auth";
+import { requireAuth, requireTenant, type AuthenticatedRequest } from "../../middleware/auth";
+import { requireFeature } from "../../middleware/features";
 import { crpRepository } from "./crp.repository";
 import { HttpError } from "../../middleware/errorHandler";
 import { z } from "zod";
 
 export const crpRouter = Router();
 
-crpRouter.use(requireAuth);
+crpRouter.use(requireAuth, requireTenant, requireFeature("crp_compliance"));
 
 crpRouter.get("/", async (req: AuthenticatedRequest, res, next) => {
   try {
-    const tenantId = req.auth!.tenantId;
+    const tenantId = req.auth!.tenantId!;
     const criteria = await crpRepository.listForTenant(tenantId);
     res.json({ criteria });
   } catch (err) {
@@ -20,7 +21,7 @@ crpRouter.get("/", async (req: AuthenticatedRequest, res, next) => {
 
 crpRouter.get("/summary", async (req: AuthenticatedRequest, res, next) => {
   try {
-    const summary = await crpRepository.summary(req.auth!.tenantId);
+    const summary = await crpRepository.summary(req.auth!.tenantId!);
     res.json(summary);
   } catch (err) {
     next(err);
@@ -45,7 +46,7 @@ crpRouter.patch("/:criterionId", async (req: AuthenticatedRequest, res, next) =>
     const { criterionId } = req.params;
     const { lastSentAt, nextDueAt, ...rest } = parsed.data;
 
-    const updated = await crpRepository.updateStatus(req.auth!.tenantId, criterionId, {
+    const updated = await crpRepository.updateStatus(req.auth!.tenantId!, criterionId, {
       ...rest,
       lastSentAt: lastSentAt === undefined ? undefined : lastSentAt === null ? null : new Date(lastSentAt),
       nextDueAt: nextDueAt === undefined ? undefined : nextDueAt === null ? null : new Date(nextDueAt),

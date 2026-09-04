@@ -3,12 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/logo-npi.png" />
+    <link rel="apple-touch-icon" href="/logo-npi.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Aplica o tema salvo antes da primeira pintura, para nunca "piscar" o tema errado.
+      // Padrão é sempre claro — o escuro só entra se o usuário escolher explicitamente no
+      // botão de alternância (nunca herda a preferência do sistema operacional).
+      try {
+        if (localStorage.getItem("regula-rpps.theme") === "dark") {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch (e) {}
+    </script>
     <title>Regula RPPS</title>
   </head>
   <body>

@@ -13,52 +13,136 @@ enum Plan {
   PERFORMANCE
 }
 
-enum Role {
-  SUPER_ADMIN
-  RPPS_ADMIN
-  SERVIDOR
-  AUDITOR
-}
-
 enum CriterionStatus {
   REGULAR
   IRREGULAR
   PENDENTE
 }
 
+enum NivelAderencia {
+  I
+  II
+  III
+  IV
+}
+
+enum FieldOrigin {
+  MANUAL
+  PDF_EXTRACTION
+  AI_COMPOSED
+}
+
+enum SugestaoStatus {
+  PENDENTE
+  APROVADA
+  REJEITADA
+  CORRIGIDA
+}
+
+enum DraftStatus {
+  RASCUNHO
+  APROVADO
+  DESATUALIZADO
+}
+
+enum UploadStatus {
+  PENDENTE
+  EXTRAIDO
+  ERRO
+}
+
+enum ReferenciaConstrutor {
+  PRO_GESTAO
+  CRP
+  LIVRE
+}
+
+// TENANT: feature usada por usuários de RPPS, em cascata Plano → Cliente → Usuário (ver Feature).
+// ADMIN: seção do painel Admin Global (RPPS clientes, Usuários, Parametrizações), só para
+// contas Super Admin — não tem plano nem cliente por trás, só o override por usuário (ver
+// UserFeature); sem override, o padrão é sempre "liberado" (Super Admin enxerga tudo por padrão).
+enum FeatureEscopo {
+  TENANT
+  ADMIN
+}
+
 model Tenant {
-  id              String   @id @default(cuid())
-  name            String
-  slug            String   @unique
-  federatedEntity String
-  plan            Plan     @default(ESSENCIAL)
-  seguradosCount  Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                 String          @id @default(cuid())
+  name               String
+  slug               String          @unique
+  federatedEntity    String
+  cnpj               String?         @unique
+  site               String?
+  // Contato institucional exibido no rodapé padrão do Portal de Transparência público (ver
+  // TransparenciaFooter) — distinto de qualquer e-mail/telefone de usuário logado.
+  enderecoPublico    String?
+  telefonePublico    String?
+  emailPublico       String?
+  observacao         String?         @db.Text
+  plan               Plan            @default(ESSENCIAL)
+  seguradosCount     Int             @default(0)
+  // Nível de aderência (I-IV) que o Admin Global define como alvo do Pró-Gestão para este RPPS
+  // — decide quais campos/documentos aparecem na aba "Documentos" do tenant. Deliberadamente
+  // separado de TenantProGestaoAcao.nivelAtual (progresso autodeclarado por ação, usado na
+  // página Pró-Gestão RPPS): aqui é uma meta única definida de cima para baixo pelo admin.
+  nivelProGestaoAlvo NivelAderencia?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  // Link único e rotativo (ver adminRepository.getOrCreateFirstAccessLink) que qualquer membro
+  // já pré-cadastrado deste tenant pode usar para completar o próprio cadastro (telefone + senha)
+  // sem depender do admin conhecer ou distribuir senhas individualmente.
+  firstAccessToken String? @unique
 
   memberships Membership[]
   crpStatuses TenantCrpCriterion[]
+
+  proGestaoAcoes      TenantProGestaoAcao[]
+  proGestaoCampoValor TenantProGestaoCampoValor[]
+  documentosCompostos TenantDocumentoComposto[]
+  documentoUploads    DocumentoUpload[]
+  construtorExecucoes TenantConstrutorExecucao[]
+  featureOverrides    TenantFeature[]
+  documentoPersonalizadoValores      TenantDocumentoPersonalizadoValor[]
+  documentoPersonalizadoPublicacoes  TenantDocumentoPersonalizadoPublicacao[]
 
   @@map("tenants")
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   name         String
-  createdAt    DateTime @default(now())
+  telefone     String?
+  cpf          String?   @unique
+  // Usado pra identificar o usuário no login via GOV.br/Login Único, se ativado (ver ROADMAP).
+  // Desliga o acesso sem apagar o cadastro nem os vínculos — diferente de excluir o usuário.
+  ativo        Boolean   @default(true)
+  // Null enquanto o usuário nunca completou login nem primeiro acesso — é o que a tela de
+  // usuários mostra como "Nunca acessou".
+  lastLoginAt  DateTime?
+  // Super Admin da plataforma: nunca vinculado a um tenantId específico (ver ROADMAP #7 e
+  // /docs — decisão de desacoplar isso de Membership.role, que é sempre escopado a um tenant).
+  isSuperAdmin Boolean   @default(false)
+  createdAt    DateTime  @default(now())
 
-  memberships Membership[]
+  memberships            Membership[]
+  campoValoresCriados    TenantProGestaoCampoValor[]
+  documentoUploadsFeitos DocumentoUpload[]
+  featureOverrides       UserFeature[]
+  campoValoresPersonalizadosCriados TenantDocumentoPersonalizadoValor[]
 
   @@map("users")
 }
 
+// Vínculo puro entre usuário e tenant — não carrega mais "papel" (não gateava nada no sistema,
+// só era um rótulo). O que um usuário pode ou não fazer é decidido por permissão de feature
+// (TenantFeature/UserFeature), nunca por um papel fixo.
 model Membership {
   id       String @id @default(cuid())
   userId   String
   tenantId String
-  role     Role
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -69,18 +153,239 @@ model Membership {
 }
 
 model CrpCriterion {
-  id          String @id @default(cuid())
-  code        String @unique
-  category    String
-  title       String
-  description String @db.Text
-  legalBasis  String @db.Text
-  periodicity String
-  sortOrder   Int    @default(0)
+  id               String @id @default(cuid())
+  code             String @unique
+  category         String
+  title            String
+  description      String @db.Text
+  legalBasis       String @db.Text
+  periodicity      String
+  formaVerificacao String @default("")
+  sistemaOrigem    String @default("")
+  sortOrder        Int    @default(0)
 
-  tenantStatuses TenantCrpCriterion[]
+  // Cascata de regularidade dentro do próprio CRP (ex.: dipr-consistencia depende de dipr-encaminhamento).
+  // Ver /docs/modelo-de-dados.md, seção 2, tipo 1. No dado extraído, nunca há mais de uma dependência
+  // por critério — por isso um único FK escalar basta (não é preciso tabela de junção aqui).
+  dependsOnCode String?
+  dependsOn     CrpCriterion?  @relation("CrpDependency", fields: [dependsOnCode], references: [code])
+  dependents    CrpCriterion[] @relation("CrpDependency")
+
+  tenantStatuses  TenantCrpCriterion[]
+  construtorTipos ConstrutorTipoDocumento[]
 
   @@map("crp_criteria")
+}
+
+// ---------------------------------------------------------------------------
+// Pró-Gestão RPPS — catálogo (seedado a partir de /knowledge-base/pro-gestao-acoes.json,
+// nunca editado manualmente) + dados por tenant.
+// ---------------------------------------------------------------------------
+
+model ProGestaoAcao {
+  id        String  @id @default(cuid())
+  codigo    String  @unique // ex.: "codigo-etica", "transparencia" (id do JSON)
+  numero    String // ex.: "2.4", "2.8" (numeração do Manual)
+  nome      String
+  dimensao  String // "Controles Internos" | "Governança Corporativa" | "Educação Previdenciária"
+  essencial Boolean @default(false)
+  objetivo  String  @db.Text
+  sortOrder Int     @default(0)
+
+  campos ProGestaoCampo[]
+
+  // Documento composto (tipo 3 em /docs/modelo-de-dados.md): esta ação cita dados de outras.
+  dependeDe ProGestaoAcaoDependencia[] @relation("AcaoComposta")
+  fonteDe   ProGestaoAcaoDependencia[] @relation("AcaoFonte")
+
+  tenantStatus       TenantProGestaoAcao[]
+  tenantDocCompostos TenantDocumentoComposto[]
+  construtorTipos    ConstrutorTipoDocumento[]
+
+  @@map("pro_gestao_acoes")
+}
+
+model ProGestaoAcaoDependencia {
+  id          String @id @default(cuid())
+  acaoCodigo  String // ação composta (o documento que cita a outra)
+  fonteCodigo String // ação fonte (de onde o dado vem)
+  tipoRelacao String @default("citacao_explicita_no_manual") // ou "inferida_por_sobreposicao_tematica"
+
+  acao  ProGestaoAcao @relation("AcaoComposta", fields: [acaoCodigo], references: [codigo], onDelete: Cascade)
+  fonte ProGestaoAcao @relation("AcaoFonte", fields: [fonteCodigo], references: [codigo], onDelete: Cascade)
+
+  @@unique([acaoCodigo, fonteCodigo])
+  @@map("pro_gestao_acao_dependencias")
+}
+
+model ProGestaoCampo {
+  id               String         @id @default(cuid())
+  acaoCodigo       String
+  campoId          String // id do campo dentro do JSON da ação, ex.: "divulgacao-codigo-etica"
+  descricao        String         @db.Text
+  nivelMinimo      NivelAderencia
+  quantidadeMinima String?
+  periodicidade    String?
+  substituiCampoId String?
+  sortOrder        Int            @default(0)
+
+  acao    ProGestaoAcao               @relation(fields: [acaoCodigo], references: [codigo], onDelete: Cascade)
+  valores TenantProGestaoCampoValor[]
+
+  @@unique([acaoCodigo, campoId])
+  @@map("pro_gestao_campos")
+}
+
+model TenantProGestaoAcao {
+  id         String          @id @default(cuid())
+  tenantId   String
+  acaoCodigo String
+  nivelAtual NivelAderencia?
+  updatedAt  DateTime        @updatedAt
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  acao   ProGestaoAcao @relation(fields: [acaoCodigo], references: [codigo], onDelete: Cascade)
+
+  @@unique([tenantId, acaoCodigo])
+  @@index([tenantId])
+  @@map("tenant_pro_gestao_acoes")
+}
+
+// Tabela append-only: cada alteração de campo cria uma NOVA linha em vez de sobrescrever a
+// anterior (ver /docs/modelo-de-dados.md, seção 4 — "superação de campo" / trilha de auditoria).
+// O valor vigente de um campo é a linha mais recente (maior createdAt) para aquele (tenantId, campoId).
+model TenantProGestaoCampoValor {
+  id              String      @id @default(cuid())
+  tenantId        String
+  campoId         String
+  valor           String      @db.Text
+  origem          FieldOrigin @default(MANUAL)
+  origemDetalhe   String?     @db.Text // ex.: "PDF pág. 3: '...trecho citado...'" ou "gerado a partir de codigo-etica"
+  criadoPorUserId String
+  createdAt       DateTime    @default(now())
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campo     ProGestaoCampo @relation(fields: [campoId], references: [id], onDelete: Cascade)
+  criadoPor User           @relation(fields: [criadoPorUserId], references: [id])
+
+  @@index([tenantId, campoId, createdAt])
+  @@map("tenant_pro_gestao_campo_valores")
+}
+
+// Upload de PDF existente para extração assistida por IA (item 1.b do escopo do MVP).
+model DocumentoUpload {
+  id               String       @id @default(cuid())
+  tenantId         String
+  acaoCodigo       String? // Pró-Gestão: para qual ação este PDF foi enviado
+  criterionCode    String? // CRP: para qual critério este PDF foi enviado
+  // Construtor de Documentos: quando o PDF é uma fonte livre escolhida pelo usuário para uma
+  // execução (não pertence a acaoCodigo/criterionCode nenhum até ser usado numa geração — ver
+  // TenantConstrutorExecucao). Null enquanto o arquivo só foi enviado e ainda não usado.
+  construtorExecucaoId String?
+  descricao        String?      @db.Text // nota livre sobre o documento (ex.: "DAIR de março/2026")
+  nomeArquivo      String
+  caminhoArquivo   String
+  paginasTexto     String       @db.Text // JSON: [{ "pagina": 1, "texto": "..." }, ...]
+  status           UploadStatus @default(PENDENTE)
+  erro             String?      @db.Text
+  createdAt        DateTime     @default(now())
+  uploadedByUserId String
+
+  tenant             Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploadedBy         User                      @relation(fields: [uploadedByUserId], references: [id])
+  sugestoes          CampoExtraidoSugestao[]
+  construtorExecucao TenantConstrutorExecucao? @relation(fields: [construtorExecucaoId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@map("documento_uploads")
+}
+
+// ---------------------------------------------------------------------------
+// Construtor de Documentos: o usuário escolhe um "tipo de documento" (configurado pelo Admin
+// Global com um prompt específico, opcionalmente ligado a uma ação do Pró-Gestão ou a um
+// critério do CRP — ver ConstrutorTipoDocumento) e quantos documentos-fonte já enviados quiser; a IA
+// entende o que aquele tipo de documento exige (a partir do objetivo/campos ou da descrição/
+// base legal ligados) e monta o documento final citando de qual fonte cada trecho veio. Nunca
+// publica sozinho — nasce RASCUNHO e exige aprovação humana explícita, mesmo padrão do resto
+// do sistema (ver TenantDocumentoComposto).
+// ---------------------------------------------------------------------------
+
+model ConstrutorTipoDocumento {
+  id               String               @id @default(cuid())
+  nome             String
+  referenciaTipo   ReferenciaConstrutor
+  acaoCodigo       String?
+  criterionCode    String?
+  promptInstrucoes String               @db.Text
+  ativo            Boolean              @default(true)
+  sortOrder        Int                  @default(0)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  acao      ProGestaoAcao?             @relation(fields: [acaoCodigo], references: [codigo])
+  criterion CrpCriterion?              @relation(fields: [criterionCode], references: [code])
+  execucoes TenantConstrutorExecucao[]
+
+  @@map("construtor_tipos_documento")
+}
+
+model TenantConstrutorExecucao {
+  id                String      @id @default(cuid())
+  tenantId          String
+  tipoDocumentoId   String
+  status            DraftStatus @default(RASCUNHO)
+  conteudo          String      @db.Text // texto final montado pela IA (markdown simples)
+  citacoes          String      @db.Text // JSON: [{ trecho, documentoNome, paginaOrigem }]
+  geradoEm          DateTime    @default(now())
+  geradoPorUserId   String
+  aprovadoEm        DateTime?
+  aprovadoPorUserId String?
+
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tipoDocumento ConstrutorTipoDocumento @relation(fields: [tipoDocumentoId], references: [id])
+  documentos    DocumentoUpload[]
+
+  @@index([tenantId])
+  @@map("tenant_construtor_execucoes")
+}
+
+// Cada campo que a IA acredita ter encontrado no PDF vira UMA sugestão, aprovada/corrigida/rejeitada
+// individualmente pelo usuário — nunca em lote (ver requisito "nunca um botão único de aprovar tudo").
+model CampoExtraidoSugestao {
+  id            String         @id @default(cuid())
+  uploadId      String
+  campoId       String // ProGestaoCampo.id
+  valorSugerido String         @db.Text
+  paginaOrigem  Int?
+  trechoOrigem  String?        @db.Text
+  status        SugestaoStatus @default(PENDENTE)
+  valorFinal    String?        @db.Text
+  createdAt     DateTime       @default(now())
+
+  upload DocumentoUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@map("campo_extraido_sugestoes")
+}
+
+// Rascunho gerado pela IA para um documento composto (ex.: Transparência), citando de qual
+// ação-fonte cada item veio. Nunca vira "oficial" sem aprovação humana explícita (status RASCUNHO
+// -> APROVADO). Se uma fonte for atualizada depois, o rascunho aprovado é marcado DESATUALIZADO.
+model TenantDocumentoComposto {
+  id                String      @id @default(cuid())
+  tenantId          String
+  acaoCodigo        String
+  status            DraftStatus @default(RASCUNHO)
+  conteudo          String      @db.Text // JSON: [{ campoId, valor, fonteAcaoCodigo, fonteCampoId, fonteValorId }]
+  baseadoEmValorIds String      @db.Text // JSON: ids de TenantProGestaoCampoValor usados na geração (para detectar desatualização)
+  geradoEm          DateTime    @default(now())
+  aprovadoEm        DateTime?
+  aprovadoPorUserId String?
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  acao   ProGestaoAcao @relation(fields: [acaoCodigo], references: [codigo], onDelete: Cascade)
+
+  @@unique([tenantId, acaoCodigo])
+  @@map("tenant_documentos_compostos")
 }
 
 model TenantCrpCriterion {
@@ -100,4 +405,182 @@ model TenantCrpCriterion {
   @@unique([tenantId, criterionId])
   @@index([tenantId])
   @@map("tenant_crp_criteria")
+}
+
+// ---------------------------------------------------------------------------
+// Documentos Personalizados: fora do catálogo oficial do Pró-Gestão/CRP (que vem do
+// knowledge-base e nunca é editado à mão), o Super Admin pode criar um "tipo de documento"
+// do zero — nome + campos livres — pra cobrir algo específico (ex.: DIPR) que não está nos
+// dois programas oficiais. Aparece pro RPPS na aba Documentos, seção "Personalizados", com o
+// mesmo motor de preenchimento do resto do sistema (campos opcionais, salvar tudo de uma vez —
+// ver DocumentoDetalhePage.tsx). Publicar gera um snapshot público, mesma ideia de aprovação
+// humana explícita do TenantDocumentoComposto, só que sem "fontes" — os dados já são do
+// próprio tenant, não compostos de outra ação.
+// ---------------------------------------------------------------------------
+
+model DocumentoPersonalizado {
+  id        String   @id @default(cuid())
+  codigo    String   @unique // slug, ex.: "dipr"
+  nome      String
+  descricao String?  @db.Text
+  ativo     Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campos       DocumentoPersonalizadoCampo[]
+  publicacoes  TenantDocumentoPersonalizadoPublicacao[]
+
+  @@map("documentos_personalizados")
+}
+
+model DocumentoPersonalizadoCampo {
+  id          String @id @default(cuid())
+  documentoId String
+  campoId     String // slug do campo dentro do documento, ex.: "competencia"
+  descricao   String @db.Text // label mostrado ao usuário no formulário
+  obrigatorio Boolean @default(false)
+  sortOrder   Int    @default(0)
+
+  documento DocumentoPersonalizado              @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  valores   TenantDocumentoPersonalizadoValor[]
+
+  @@unique([documentoId, campoId])
+  @@map("documento_personalizado_campos")
+}
+
+// Append-only, mesmo padrão de TenantProGestaoCampoValor — nunca sobrescreve, a linha mais
+// recente por (tenantId, campoId) é o valor vigente.
+model TenantDocumentoPersonalizadoValor {
+  id              String   @id @default(cuid())
+  tenantId        String
+  campoId         String
+  valor           String   @db.Text
+  criadoPorUserId String
+  createdAt       DateTime @default(now())
+
+  tenant    Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campo     DocumentoPersonalizadoCampo @relation(fields: [campoId], references: [id], onDelete: Cascade)
+  criadoPor User                        @relation(fields: [criadoPorUserId], references: [id])
+
+  @@index([tenantId, campoId, createdAt])
+  @@map("tenant_documento_personalizado_valores")
+}
+
+model TenantDocumentoPersonalizadoPublicacao {
+  id                String      @id @default(cuid())
+  tenantId          String
+  documentoId       String
+  status            DraftStatus @default(RASCUNHO)
+  conteudo          String      @db.Text // JSON: [{ campoId, descricao, valor }]
+  geradoEm          DateTime    @default(now())
+  aprovadoEm        DateTime?
+  aprovadoPorUserId String?
+
+  tenant    Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documento DocumentoPersonalizado @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, documentoId])
+  @@map("tenant_documento_personalizado_publicacoes")
+}
+
+// ---------------------------------------------------------------------------
+// Parametrizações globais (Admin da plataforma) — cadastros que não pertencem a um único
+// tenant. Primeiro exemplo: Entidades Certificadoras do Pró-Gestão RPPS (Anexo 5/6 do Manual),
+// credenciadas pela SRPC e que atendem vários RPPS ao mesmo tempo.
+// ---------------------------------------------------------------------------
+
+enum StatusEntidadeCertificadora {
+  ATIVA
+  SUSPENSA
+  CANCELADA
+}
+
+model EntidadeCertificadora {
+  id                 String                      @id @default(cuid())
+  nome               String
+  cnpj               String                      @unique
+  email              String?
+  telefone           String?
+  status             StatusEntidadeCertificadora @default(ATIVA)
+  dataCredenciamento DateTime
+  dataValidade       DateTime?
+  observacoes        String?                     @db.Text
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+
+  @@map("entidades_certificadoras")
+}
+
+// ---------------------------------------------------------------------------
+// Feature gating — três camadas, resolvidas em cascata (ver middleware/features.ts):
+//   1) PlanFeature: padrão por plano contratado (Essencial/Gestão/Performance) — o que vem
+//      "de fábrica" quando um RPPS assina um plano. Só existe pra features TENANT.
+//   2) TenantFeature: override específico de UM RPPS, por cima do padrão do plano.
+//   3) UserFeature: override específico de UM USUÁRIO, por cima do que valeria pra ele via
+//      tenant/plano — pro caso de uma pessoa daquele RPPS precisar de acesso diferente do
+//      resto da equipe. Pra features ADMIN (painel Admin Global), é a ÚNICA camada: sem
+//      override, Super Admin vê tudo por padrão.
+// Cada camada, se tiver uma linha, sempre vence a de baixo — em qualquer direção (libera algo
+// que a camada de baixo não incluía, ou bloqueia algo que incluía). Sem nenhum override, vale
+// o padrão do plano (TENANT) ou "liberado" (ADMIN).
+// `grupo` existe só pra organizar a tela de permissões por aba — não afeta a regra de acesso.
+// ---------------------------------------------------------------------------
+
+model Feature {
+  key       String        @id
+  nome      String
+  descricao String        @db.Text
+  grupo     String        @default("Geral")
+  escopo    FeatureEscopo @default(TENANT)
+  sortOrder Int           @default(0)
+
+  planFeatures   PlanFeature[]
+  tenantFeatures TenantFeature[]
+  userFeatures   UserFeature[]
+
+  @@map("features")
+}
+
+model PlanFeature {
+  id         String  @id @default(cuid())
+  plan       Plan
+  featureKey String
+  enabled    Boolean @default(false)
+
+  feature Feature @relation(fields: [featureKey], references: [key], onDelete: Cascade)
+
+  @@unique([plan, featureKey])
+  @@map("plan_features")
+}
+
+// Override por RPPS — ver comentário acima do model Feature. Uma linha aqui sempre vence o
+// padrão do plano, pra qualquer direção (libera algo que o plano não incluía, ou bloqueia algo
+// que o plano incluía).
+model TenantFeature {
+  id         String  @id @default(cuid())
+  tenantId   String
+  featureKey String
+  enabled    Boolean
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureKey], references: [key], onDelete: Cascade)
+
+  @@unique([tenantId, featureKey])
+  @@map("tenant_features")
+}
+
+// Override por usuário individual — ver comentário acima do model Feature. Vence tanto
+// TenantFeature quanto PlanFeature; para features ADMIN é a única camada que existe.
+model UserFeature {
+  id         String  @id @default(cuid())
+  userId     String
+  featureKey String
+  enabled    Boolean
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureKey], references: [key], onDelete: Cascade)
+
+  @@unique([userId, featureKey])
+  @@map("user_features")
 }

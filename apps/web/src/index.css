@@ -3,51 +3,59 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: 247 245 241;
-  --color-surface: 255 255 255;
-  --color-ink: 27 36 48;
-  --color-ink-muted: 91 101 115;
-  --color-border: 224 219 210;
-  --color-gold: 184 134 59;
-  --color-petrol: 30 78 95;
-  --color-ok: 46 125 89;
-  --color-warn: 178 116 25;
-  --color-crit: 178 47 47;
-}
+  /* Sidebar: sempre azul-marinho escuro, independente do tema do conteúdo — é a marca fixa
+     do produto (ver referência visual que definiu esta identidade). */
+  --color-sidebar: 22 33 62;
+  --color-sidebar-ink: 237 240 245;
+  --color-sidebar-ink-muted: 148 163 184;
+  --color-sidebar-border: 255 255 255;
+  --color-sidebar-section: 34 211 238;
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg: 18 21 28;
-    --color-surface: 25 29 38;
-    --color-ink: 237 234 227;
-    --color-ink-muted: 158 166 179;
-    --color-border: 45 51 63;
-    --color-gold: 212 168 87;
-    --color-petrol: 91 163 184;
-    --color-ok: 91 191 143;
-    --color-warn: 216 158 63;
-    --color-crit: 224 104 104;
-  }
+  /* Conteúdo — tema claro (padrão). Paleta slate do Tailwind, igual à referência
+     (atendimento.npibrasil.com): bg-slate-50, cards bg-white, texto slate-800/500,
+     borda slate-200. */
+  --color-bg: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-ink: 30 41 59;
+  --color-ink-muted: 100 116 139;
+  --color-border: 226 232 240;
+
+  --color-petrol: 8 145 178;
+  --color-gold: 124 58 237;
+  --color-ok: 22 163 74;
+  --color-warn: 217 119 6;
+  --color-crit: 220 38 38;
 }
 
 :root[data-theme="dark"] {
-  --color-bg: 18 21 28;
-  --color-surface: 25 29 38;
-  --color-ink: 237 234 227;
-  --color-ink-muted: 158 166 179;
-  --color-border: 45 51 63;
-  --color-gold: 212 168 87;
-  --color-petrol: 91 163 184;
-  --color-ok: 91 191 143;
-  --color-warn: 216 158 63;
-  --color-crit: 224 104 104;
+  /* Confirmado via static/css/dark-mode.css da referência: body bg-slate-900,
+     cards/superfícies bg-slate-800, borda slate-700, texto slate-100/300/400. */
+  --color-bg: 15 23 42;
+  --color-surface: 30 41 59;
+  --color-ink: 241 245 249;
+  --color-ink-muted: 148 163 184;
+  --color-border: 51 65 85;
+
+  --color-petrol: 34 211 238;
+  --color-gold: 167 139 250;
+  --color-ok: 74 222 128;
+  --color-warn: 251 191 36;
+  --color-crit: 248 113 113;
 }
 
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-ink));
+  font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+* {
+  scrollbar-color: rgb(var(--color-border)) transparent;
 }

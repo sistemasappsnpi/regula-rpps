@@ -1,8 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, clearToken, getToken, setToken, type Tenant } from "./api";
 
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface AuthContextValue {
+  user: AuthUser | null;
   tenant: Tenant | null;
+  isSuperAdmin: boolean;
+  features: string[];
+  hasFeature: (key: string) => boolean;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
@@ -12,7 +22,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [features, setFeatures] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +36,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const me = await api.me();
-      setTenant(me);
+      setUser(me.user);
+      setTenant(me.tenant);
+      setIsSuperAdmin(me.isSuperAdmin);
+      setFeatures(me.features);
     } catch {
       clearToken();
     } finally {
@@ -40,7 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await api.login(email, password);
       setToken(result.token);
+      setUser(result.user);
       setTenant(result.tenant);
+      setIsSuperAdmin(result.isSuperAdmin);
+      setFeatures(result.features);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível entrar.");
       throw err;
@@ -49,10 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     clearToken();
+    setUser(null);
     setTenant(null);
+    setIsSuperAdmin(false);
+    setFeatures([]);
   }, []);
 
-  const value = useMemo(() => ({ tenant, loading, error, login, logout }), [tenant, loading, error, login, logout]);
+  const hasFeature = useCallback((key: string) => features.includes(key), [features]);
+
+  const value = useMemo(
+    () => ({ user, tenant, isSuperAdmin, features, hasFeature, loading, error, login, logout }),
+    [user, tenant, isSuperAdmin, features, hasFeature, loading, error, login, logout],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

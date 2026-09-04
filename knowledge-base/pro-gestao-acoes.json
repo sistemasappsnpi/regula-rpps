@@ -1,0 +1,460 @@
+{
+  "_meta": {
+    "fonte": "Manual do Pró-Gestão RPPS - Versão 4.1 (2026), MPS/SRPC/DRPPS",
+    "arquivo_origem": "MANUAL - Pró Gestão.pdf (idêntico a PRO GESTÃO.pdf, mesmo hash SHA-256)",
+    "extraido_em": "2026-09-03",
+    "total_acoes": 24,
+    "total_acoes_essenciais": 13,
+    "regras_de_certificacao": {
+      "niveis_minimos_acoes_atingidas": { "I": 18, "II": 20, "III": 22, "IV": 24 },
+      "regra_de_nivel_final": "A certificação é determinada pelo nível MAIS SIMPLES dentre os níveis atingidos em cada ação individualmente (não é a média nem o nível mais frequente).",
+      "acoes_essenciais_obrigatorias_todos_niveis": [
+        "mapeamento-atividades-areas-atuacao",
+        "manualizacao-atividades-areas-atuacao",
+        "certificacao-dirigentes-conselhos-comite-investimentos",
+        "estrutura-controle-interno",
+        "gestao-controle-base-dados-cadastrais",
+        "relatorio-governanca-corporativa",
+        "planejamento",
+        "relatorio-gestao-atuarial",
+        "politica-investimentos",
+        "comite-investimentos",
+        "transparencia",
+        "diretoria-executiva",
+        "acoes-dialogo-segurados-sociedade"
+      ],
+      "regra_transitoria_isp": "Resolução CMN nº 5.272/2025 permite regra transitória (válida por 1 ano a partir da vigência desta versão do Manual, só para 1ª certificação ou 1 upgrade de nível) com quantitativos reduzidos de ações conforme nota do RPPS na dimensão 'Gestão e Transparência' do ISP (nota A: 15/17/19/23 ações para níveis I/II/III/IV; nota B: 16/18/20/23). As 13 ações essenciais continuam obrigatórias. Não modelado nos campos abaixo — está fora do escopo desta extração por ser regra de certificação agregada, não uma exigência de ação individual; ver ambiguidades em /docs/modelo-de-dados.md."
+    },
+    "modelo_de_campos": "Cada ação é decomposta em 'campos', cada um com nivel_minimo (I/II/III/IV) = o nível de aderência mais baixo em que aquele campo passa a ser exigido. Como os níveis são cumulativos por design do programa (um RPPS certificado no nível III deve continuar cumprindo tudo que já cumpria nos níveis I e II), a UI deve exibir, para um nível N selecionado, todos os campos com nivel_minimo <= N, sem nunca ocultar dado já preenchido em nível inferior. Exceção sinalizada explicitamente em 'observacoes' de cada ação: alguns campos SUBSTITUEM (não somam a) um campo de nível inferior (ex.: quantidade mínima de membros de um colegiado sobe de 3 para 5) — nesses casos o campo de nível inferior deve ser marcado como superado, não escondido (ver /docs/modelo-de-dados.md, seção sobre superação de campos)."
+  },
+  "acoes": [
+    {
+      "id": "mapeamento-atividades-areas-atuacao",
+      "codigo": "1.1",
+      "nome": "Mapeamento das Atividades das Áreas de Atuação do RPPS",
+      "dimensao": "Controles Internos",
+      "essencial": true,
+      "objetivo": "Mapear os processos e atividades das grandes áreas de atuação do RPPS (definidas no Anexo 7: Administrativa, Arrecadação, Atendimento, Atuarial, Benefícios, Compensação Previdenciária, Financeira, Investimentos, Jurídica, Tecnologia da Informação), como diagnóstico sistêmico da organização.",
+      "depende_de": [],
+      "campos": [
+        { "id": "area-beneficios", "descricao": "Área Benefícios mapeada (concessão e revisão de aposentadorias e pensões)", "nivel_minimo": "I" },
+        { "id": "area-arrecadacao", "descricao": "Área Arrecadação mapeada (arrecadação mensal de contribuições, cobrança de débitos em atraso do ente e de servidores licenciados/cedidos)", "nivel_minimo": "I" },
+        { "id": "area-beneficios-folha", "descricao": "Área Benefícios ampliada para incluir gestão da folha de pagamento de benefícios", "nivel_minimo": "II" },
+        { "id": "area-investimentos", "descricao": "Área Investimentos mapeada (elaboração/aprovação da política de investimentos, credenciamento de instituições financeiras, alocação/desinvestimento)", "nivel_minimo": "II" },
+        { "id": "area-compensacao-previdenciaria", "descricao": "Área Compensação Previdenciária mapeada (envio e análise de requerimentos via COMPREV)", "nivel_minimo": "II" },
+        { "id": "area-atendimento", "descricao": "Área Atendimento mapeada (atendimento presencial, telefônico, ouvidoria)", "nivel_minimo": "III" },
+        { "id": "area-financeira", "descricao": "Área Financeira mapeada (tesouraria, orçamento, contabilidade)", "nivel_minimo": "III" },
+        { "id": "processos-outras-areas", "descricao": "Processos de trabalho relevantes de áreas distintas entre Administrativa, Atuarial, Jurídica e Tecnologia da Informação", "nivel_minimo": "IV", "quantidade_minima": 2 }
+      ],
+      "observacoes": "RPPS com contratação de entidade certificadora já em curso na versão anterior do Manual têm prazo de 6 meses da publicação desta versão para comprovar apenas as alterações em relação à versão anterior."
+    },
+    {
+      "id": "manualizacao-atividades-areas-atuacao",
+      "codigo": "1.2",
+      "nome": "Manualização das Atividades das Áreas de Atuação do RPPS",
+      "dimensao": "Controles Internos",
+      "essencial": true,
+      "objetivo": "Definir procedimentos padronizados de execução, desempenho, qualidade e reprodutibilidade para os processos e atividades já mapeados na ação 1.1.",
+      "depende_de": ["mapeamento-atividades-areas-atuacao"],
+      "campos": [
+        { "id": "area-beneficios", "descricao": "Área Benefícios manualizada (concessão e revisão de aposentadorias e pensões)", "nivel_minimo": "I" },
+        { "id": "area-arrecadacao", "descricao": "Área Arrecadação manualizada", "nivel_minimo": "I" },
+        { "id": "area-beneficios-folha", "descricao": "Área Benefícios ampliada para incluir gestão da folha de pagamento", "nivel_minimo": "II" },
+        { "id": "area-investimentos", "descricao": "Área Investimentos manualizada", "nivel_minimo": "II" },
+        { "id": "area-compensacao-previdenciaria", "descricao": "Área Compensação Previdenciária manualizada", "nivel_minimo": "II" },
+        { "id": "area-atendimento", "descricao": "Área Atendimento manualizada", "nivel_minimo": "III" },
+        { "id": "area-financeira", "descricao": "Área Financeira manualizada", "nivel_minimo": "III" },
+        { "id": "processos-outras-areas", "descricao": "Processos de outras áreas manualizados (Administrativa, Atuarial, Jurídica, TI)", "nivel_minimo": "IV", "quantidade_minima": 2 }
+      ],
+      "observacoes": "Dependência explícita no texto: 'Dentre as áreas de atuação do RPPS que tenham sido mapeadas, deverão ser selecionados os processos e atividades que serão manualizados' — ou seja, a manualização de uma área pressupõe que ela já tenha sido mapeada na ação 1.1. Mesmo prazo de transição de 6 meses da ação 1.1 aplica-se aqui."
+    },
+    {
+      "id": "certificacao-dirigentes-conselhos-comite-investimentos",
+      "codigo": "1.3",
+      "nome": "Certificação dos Dirigentes, Membros dos Conselhos Deliberativo e Fiscal, do Responsável pela Gestão das Aplicações dos Recursos e Membros do Comitê de Investimentos",
+      "dimensao": "Controles Internos",
+      "essencial": true,
+      "objetivo": "Comprovar que dirigentes, conselheiros, gestor de recursos e membros do Comitê de Investimentos possuem certificação profissional válida (art. 8º-B, inciso II, Lei nº 9.717/98), nos níveis básico/intermediário/avançado conforme porte do RPPS e volume de recursos.",
+      "depende_de": [],
+      "campos": [
+        { "id": "certificacao-dirigentes-maioria", "descricao": "Representante legal do órgão/entidade gestora e maioria dos demais diretores certificados", "nivel_minimo": "I" },
+        { "id": "certificacao-conselho-deliberativo-maioria", "descricao": "Maioria dos membros titulares do Conselho Deliberativo certificados", "nivel_minimo": "I" },
+        { "id": "certificacao-conselho-fiscal-maioria", "descricao": "Maioria dos membros titulares do Conselho Fiscal certificados", "nivel_minimo": "I" },
+        { "id": "certificacao-gestor-recursos", "descricao": "Responsável pela gestão das aplicações dos recursos certificado", "nivel_minimo": "I" },
+        { "id": "certificacao-comite-investimentos-totalidade", "descricao": "Totalidade dos membros titulares do Comitê de Investimentos certificados", "nivel_minimo": "I" }
+      ],
+      "observacoes": "Regras uniformes para todos os níveis de certificação (não há incremento por nível). Dispensa: a exigência relativa ao Comitê de Investimentos é dispensada se o RPPS se enquadrar no art. 280 da Portaria MTP nº 1.467/2022 (RPPS de pequeno porte). Cross-referência direta com o critério do CRP 'fiscalizacao-requisitos-dirigentes-conselhos': desde 31/07/2024, a regularidade desse critério no Extrato Previdenciário já satisfaz automaticamente esta ação do Pró-Gestão em todos os níveis — ou seja, esta ação pode ser preenchida automaticamente a partir do status daquele critério do CRP, sem novo preenchimento manual."
+    },
+    {
+      "id": "estrutura-controle-interno",
+      "codigo": "1.4",
+      "nome": "Estrutura de Controle Interno",
+      "dimensao": "Controles Internos",
+      "essencial": true,
+      "objetivo": "Garantir função de controle interno com pelo menos um servidor responsável pelo monitoramento e avaliação da adequação dos processos às normas, e capacitação de servidores em controle interno.",
+      "depende_de": [],
+      "campos": [
+        { "id": "area-comum-controle-interno", "descricao": "Existência de área comum de controle interno na estrutura do ente federativo que atenda ao RPPS", "nivel_minimo": "I" },
+        { "id": "relatorio-conformidade-semestral", "descricao": "Emissão de relatório semestral que ateste a conformidade das áreas mapeadas/manualizadas e das ações atendidas na auditoria de certificação, com acompanhamento de providências para ações não atendidas", "nivel_minimo": "I", "periodicidade": "semestral" },
+        { "id": "servidores-capacitados-ci-1", "descricao": "Pelo menos 1 servidor da unidade gestora capacitado em controle interno", "nivel_minimo": "I", "quantidade_minima": 1 },
+        { "id": "servidores-capacitados-ci-2", "descricao": "Pelo menos 2 servidores da unidade gestora capacitados em controle interno (substitui a exigência de 1 servidor do Nível I)", "nivel_minimo": "II", "quantidade_minima": 2, "substitui": "servidores-capacitados-ci-1" },
+        { "id": "area-especifica-ou-servidor-dedicado-ci", "descricao": "Área específica de controle interno na unidade gestora, ou alternativamente pelo menos 1 servidor (efetivo/comissionado) do sistema de controle interno do ente atuando no RPPS (substitui a 'área comum' do Nível I)", "nivel_minimo": "III", "quantidade_minima": 1, "substitui": "area-comum-controle-interno" },
+        { "id": "relatorio-conformidade-trimestral", "descricao": "Emissão de relatório trimestral que ateste conformidade (substitui a periodicidade semestral do Nível I/II)", "nivel_minimo": "III", "periodicidade": "trimestral", "substitui": "relatorio-conformidade-semestral" },
+        { "id": "servidores-capacitados-ci-perfil-3", "descricao": "Pelo menos 3 servidores capacitados em controle interno, sendo 1 da área de controle interno, 1 membro do Comitê de Investimentos e 1 membro do Conselho Fiscal (substitui a exigência de 2 servidores do Nível II)", "nivel_minimo": "III", "quantidade_minima": 3, "substitui": "servidores-capacitados-ci-2" },
+        { "id": "reporte-conselho-deliberativo-atas", "descricao": "Encaminhamento dos relatórios trimestrais do Controle Interno ao Conselho Deliberativo, registrado em ata", "nivel_minimo": "III" },
+        { "id": "estrutura-2-servidores-dedicados-ci", "descricao": "Área específica de controle interno, ou alternativamente pelo menos 2 servidores (efetivo/comissionado) do sistema de controle interno do ente atuando no RPPS (substitui o mínimo de 1 servidor do Nível III)", "nivel_minimo": "IV", "quantidade_minima": 2, "substitui": "area-especifica-ou-servidor-dedicado-ci" },
+        { "id": "atuacao-agente-conformidade", "descricao": "Controle interno atua como agente de conformidade em pelo menos 1 área de risco", "nivel_minimo": "IV", "quantidade_minima": 1 }
+      ],
+      "observacoes": "ATENÇÃO - crescimento não estritamente aditivo: esta é a ação mais complexa em termos de modelagem, pois vários campos são SUBSTITUÍDOS (não apenas somados) ao subir de nível: a periodicidade do relatório muda de semestral para trimestral, e a quantidade mínima de servidores capacitados sobe de 1→2→3 com mudança de perfil exigido. Ver /docs/modelo-de-dados.md para a proposta de como representar 'superação' de campo sem esconder o dado histórico já preenchido."
+    },
+    {
+      "id": "politica-seguranca-informacao",
+      "codigo": "1.5",
+      "nome": "Política de Segurança da Informação",
+      "dimensao": "Controles Internos",
+      "essencial": false,
+      "objetivo": "Formalizar o compromisso do RPPS com a proteção das informações sob sua guarda (confidencialidade, integridade, disponibilidade), publicada na Internet.",
+      "depende_de": [],
+      "campos": [
+        { "id": "politica-publicada-responsabilidades", "descricao": "Política publicada na Internet, abrangendo todos os servidores e prestadores de serviço, com indicação de responsabilidades quanto à segurança da informação", "nivel_minimo": "I" },
+        { "id": "regras-uso-internet-email-recursos", "descricao": "Regras normativas quanto ao uso de Internet, correio eletrônico e outros recursos tecnológicos", "nivel_minimo": "II" },
+        { "id": "procedimentos-contingencia-backup-acesso", "descricao": "Procedimentos de contingência: cópias de segurança, controle de acesso físico e lógico, área responsável — mapeados e manualizados", "nivel_minimo": "II" },
+        { "id": "area-gestao-seguranca-informacao", "descricao": "Servidor ou área de Gestão da Segurança da Informação, responsável por prover informações de GSI, divulgar a Política, promover conscientização, propor melhorias e manter política de classificação da informação com temporalidade de guarda", "nivel_minimo": "III" },
+        { "id": "comite-seguranca-informacao", "descricao": "Comitê de Segurança da Informação para definir/apoiar estratégias de implantação, manutenção e aprimoramento da Política, revisada no mínimo a cada 4 anos", "nivel_minimo": "IV", "periodicidade": "revisão mínima a cada 4 anos" },
+        { "id": "procedimentos-auditoria-acesso-logico-recuperacao-desastres", "descricao": "Procedimentos para auditoria de acesso lógico e rotinas de recuperação de desastres", "nivel_minimo": "IV" }
+      ]
+    },
+    {
+      "id": "gestao-controle-base-dados-cadastrais",
+      "codigo": "1.6",
+      "nome": "Gestão e Controle da Base de Dados Cadastrais dos Servidores Públicos, Aposentados e Pensionistas",
+      "dimensao": "Controles Internos",
+      "essencial": true,
+      "objetivo": "Garantir base de dados cadastrais fidedigna, completa e consistente (segurados e beneficiários), construída com base no eSocial e atualizada permanentemente, por meio de 3 procedimentos: transmissão do eSocial, Censo Previdenciário e Prova de Vida.",
+      "depende_de": [],
+      "campos": [
+        { "id": "esocial-classificacao-requer-atencao-ou-bom", "descricao": "Transmissão do eSocial: classificação de risco na Matriz do MPS 'REQUER ATENÇÃO' ou 'COM BOM NÍVEL DE ENVIOS' (ou relatórios/recibos do gerenciador de folha comprovando transmissão dos eventos obrigatórios)", "nivel_minimo": "I" },
+        { "id": "esocial-classificacao-bom-nivel", "descricao": "Transmissão do eSocial: classificação de risco exigida sobe para exclusivamente 'COM BOM NÍVEL DE ENVIOS' (substitui a exigência mais branda do Nível I/II)", "nivel_minimo": "III", "substitui": "esocial-classificacao-requer-atencao-ou-bom" },
+        { "id": "censo-previdenciario", "descricao": "Censo Previdenciário realizado (presencial, digital ou híbrido) contemplando no mínimo 80% de cada grupo: segurados ativos, inativos e pensionistas", "nivel_minimo": "I", "periodicidade": "máximo 5 anos entre censos", "quantidade_minima": "80% por grupo" },
+        { "id": "prova-vida-anual", "descricao": "Prova de vida anual para aposentados e pensionistas (dispensada no ano de realização do censo)", "nivel_minimo": "I", "periodicidade": "anual" }
+      ],
+      "observacoes": "Regras uniformes para todos os níveis quanto a Censo e Prova de Vida; apenas a classificação de risco do eSocial exigida varia por nível (mais rigorosa a partir do Nível III)."
+    },
+    {
+      "id": "relatorio-governanca-corporativa",
+      "codigo": "2.1",
+      "nome": "Relatório de Governança Corporativa",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Instrumento de transparência e prestação de contas da gestão, disponibilizado no site do RPPS e dado conhecimento ao Conselho Deliberativo e ao Conselho Fiscal.",
+      "periodicidade_por_nivel": { "I": "anual", "II": "anual", "III": "semestral", "IV": "trimestral" },
+      "depende_de": ["relatorio-gestao-atuarial", "politica-investimentos", "estrutura-controle-interno", "ouvidoria"],
+      "depende_de_detalhe": [
+        { "fonte": "relatorio-gestao-atuarial", "tipo_relacao": "inferida_por_sobreposicao_tematica" },
+        { "fonte": "politica-investimentos", "tipo_relacao": "inferida_por_sobreposicao_tematica" },
+        { "fonte": "estrutura-controle-interno", "tipo_relacao": "inferida_por_sobreposicao_tematica" },
+        { "fonte": "ouvidoria", "tipo_relacao": "inferida_por_sobreposicao_tematica" }
+      ],
+      "campos": [
+        { "id": "dados-segurados-receitas-despesas", "descricao": "Quantitativo de ativos/aposentados/pensionistas, resumo de folhas de pagamento, arrecadação e demais receitas/despesas", "nivel_minimo": "I" },
+        { "id": "evolucao-situacao-atuarial", "descricao": "Custo previdenciário total, evolução de custos por benefício, evolução do equilíbrio financeiro/atuarial e do plano de custeio", "nivel_minimo": "I" },
+        { "id": "gestao-investimentos", "descricao": "Descrição detalhada de ativos, investimentos, aplicações financeiras e fluxo de recursos", "nivel_minimo": "I" },
+        { "id": "publicacao-atividades-orgaos-colegiados", "descricao": "Reuniões e principais decisões do Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos", "nivel_minimo": "I" },
+        { "id": "atividades-institucionais", "descricao": "Gestão de pessoal, gestão orçamentária/financeira, custeio e contratos, controles internos, imagem institucional, cumprimento de decisões judiciais, conformidade", "nivel_minimo": "II" },
+        { "id": "canais-atendimento", "descricao": "Estatísticas dos canais de atendimento disponibilizados aos segurados (ouvidoria, agências, atendimento agendado)", "nivel_minimo": "III" }
+      ],
+      "observacoes": "AMBIGUIDADE CENTRAL PARA O MOTOR DE DEPENDÊNCIAS: o Manual não afirma literalmente 'o Relatório de Governança Corporativa compila dados do Relatório de Gestão Atuarial e da Política de Investimentos' — essa relação foi INFERIDA por sobreposição temática (a alínea 'b' do RGC pede exatamente o tipo de conteúdo que a ação 2.3 já produz; a alínea 'c' sobrepõe com o conteúdo da ação 2.6; a alínea 'e' menciona 'controles internos' que é o objeto da ação 1.4; a alínea 'f', canais de atendimento, é o objeto da ação 2.11-Ouvidoria). Esta é exatamente a dependência citada como exemplo pelo usuário para o MVP, mas é uma dependência INTERPRETATIVA, não uma citação textual explícita como a que existe entre DIPR-Consistência e DIPR-Encaminhamento no CRP. Recomenda-se validar esta lista de depende_de antes de tratá-la como regra de negócio rígida."
+    },
+    {
+      "id": "planejamento",
+      "codigo": "2.2",
+      "nome": "Planejamento",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Incorporar o planejamento à rotina de gestão do RPPS por meio de Plano de Ação ou Planejamento Estratégico, com ampla divulgação de diretrizes e resultados.",
+      "depende_de": [],
+      "campos": [
+        { "id": "plano-acao-anual-enfase-beneficios", "descricao": "Plano de Ação Anual com metas quantitativas mínimas para gestão de ativos e passivos, com ênfase na área de Benefícios", "nivel_minimo": "I" },
+        { "id": "plano-acao-anual-todas-areas", "descricao": "Plano de Ação Anual com metas quantitativas mínimas para todas as grandes áreas de atuação do RPPS (substitui o escopo restrito do Nível I)", "nivel_minimo": "II", "substitui": "plano-acao-anual-enfase-beneficios" },
+        { "id": "planejamento-estrategico-5-anos", "descricao": "Planejamento Estratégico para 5 anos, publicado no site, com revisão anual (substitui o Plano de Ação Anual)", "nivel_minimo": "III", "periodicidade": "revisão anual", "substitui": "plano-acao-anual-todas-areas" },
+        { "id": "planejamento-estrategico-vinculado-ppa", "descricao": "Planejamento Estratégico de 5 anos vinculado ao plano orçamentário e ao PPA, com revisão anual", "nivel_minimo": "IV", "substitui": "planejamento-estrategico-5-anos" }
+      ]
+    },
+    {
+      "id": "relatorio-gestao-atuarial",
+      "codigo": "2.3",
+      "nome": "Relatório de Gestão Atuarial",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Monitorar os resultados atuariais dos planos de custeio e benefícios e o gerenciamento do RPPS.",
+      "depende_de": [],
+      "campos": [
+        { "id": "analise-resultados-avaliacoes-3-exercicios", "descricao": "Análise dos resultados das avaliações atuariais anuais dos 3 últimos exercícios, com comparativo receitas/despesas estimadas x executadas", "nivel_minimo": "I" },
+        { "id": "estudo-tecnico-aderencia-hipoteses", "descricao": "Estudo técnico de aderência das hipóteses biométricas, demográficas, econômicas e financeiras do plano de benefícios, aprovado pelo Conselho Deliberativo, embasando as hipóteses atuariais da avaliação atuarial (art. 33, Portaria MTP 1.467/2022)", "nivel_minimo": "III" },
+        { "id": "plano-trabalho-atuarial", "descricao": "Elaboração, aprovação (pelo Conselho Deliberativo, no início do exercício) e comprovação do cumprimento do Plano de Trabalho Atuarial (obrigações atuariais, processo, responsáveis, prazos)", "nivel_minimo": "IV" }
+      ],
+      "observacoes": "Este é o documento-fonte do exemplo de dependência sugerido para o MVP: seu conteúdo (alínea 'evolução da situação atuarial') é tematicamente reutilizado no Relatório de Governança Corporativa (2.1)."
+    },
+    {
+      "id": "codigo-etica",
+      "codigo": "2.4",
+      "nome": "Código de Ética",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Retratar missão, visão e princípios da organização, divulgados a servidores, segurados e partes relacionadas, reafirmando compromisso com atuação responsável, transparente e sustentável.",
+      "depende_de": [],
+      "campos": [
+        { "id": "divulgacao-codigo-etica", "descricao": "Divulgação do Código de Ética do ente ou da unidade gestora aos servidores, segurados, membros de órgãos colegiados e partes relacionadas", "nivel_minimo": "I" },
+        { "id": "elaboracao-codigo-etica-proprio-capacitacao", "descricao": "Elaboração de Código de Ética ou de Conduta próprio da unidade gestora, com ações de capacitação sobre seu conteúdo", "nivel_minimo": "III" },
+        { "id": "comissao-etica-relatorio", "descricao": "Comissão de Ética constituída, com relatório de ocorrências tratadas e propostas de revisão/atualização do Código", "nivel_minimo": "IV" }
+      ]
+    },
+    {
+      "id": "politicas-saude-seguranca-servidor-revisao-incapacidade",
+      "codigo": "2.5",
+      "nome": "Políticas Previdenciárias de Saúde e Segurança do Servidor e Revisão de Aposentadoria por Incapacidade",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Adotar medidas preventivas de redução de riscos do ambiente de trabalho e de incapacidade laborativa, com controles e documentos para eventual concessão de aposentadoria por incapacidade.",
+      "depende_de": [],
+      "campos": [
+        { "id": "exame-medico-admissional", "descricao": "Exames médicos admissionais dos aprovados em concurso público, como requisito para posse", "nivel_minimo": "I" },
+        { "id": "servico-pericia-medica", "descricao": "Serviço de perícia médica na unidade gestora ou no ente (quadro próprio ou terceirizado)", "nivel_minimo": "I" },
+        { "id": "acoes-educativas-acidentes-trabalho", "descricao": "Ações educativas para redução de acidentes de trabalho", "nivel_minimo": "I" },
+        { "id": "revisao-aposentadoria-incapacidade-4anos", "descricao": "Revisão periódica (máximo 4 anos) dos benefícios de aposentadoria por incapacidade permanente", "nivel_minimo": "I", "periodicidade": "máximo 4 anos" },
+        { "id": "ltcat", "descricao": "Laudo Técnico de Condições Ambientais do Trabalho (LTCAT)", "nivel_minimo": "III" },
+        { "id": "ppp-atualizado", "descricao": "Perfil Profissiográfico Previdenciário (PPP) atualizado dos servidores expostos a agentes nocivos", "nivel_minimo": "III" },
+        { "id": "revisao-aposentadoria-incapacidade-3anos", "descricao": "Revisão periódica (máximo 3 anos) dos benefícios de aposentadoria por incapacidade permanente (substitui o prazo de 4 anos do Nível I/II)", "nivel_minimo": "III", "periodicidade": "máximo 3 anos", "substitui": "revisao-aposentadoria-incapacidade-4anos" },
+        { "id": "servico-pericia-oficial-multiprofissional", "descricao": "Serviço de perícia oficial em saúde com equipe multiprofissional e interdisciplinar (substitui o serviço simples de perícia médica do Nível I)", "nivel_minimo": "IV", "substitui": "servico-pericia-medica" }
+      ]
+    },
+    {
+      "id": "politica-investimentos",
+      "codigo": "2.6",
+      "nome": "Política de Investimentos",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Instrumento estratégico de administração dos ativos, observando segurança, rentabilidade, solvência, liquidez, motivação, adequação à natureza das obrigações e transparência (art. 4º/5º, Resolução CMN nº 5.272/2025). Enviado anualmente à SRPC via DPIN.",
+      "depende_de": [],
+      "campos": [
+        { "id": "relatorio-mensal-investimentos", "descricao": "Relatório mensal com posição da carteira por segmentos/ativos, riscos, rentabilidades, instituição financeira e limites (Res. CMN nº 5.272/2025 e Política de Investimentos)", "nivel_minimo": "I", "periodicidade": "mensal" },
+        { "id": "parecer-comite-investimentos", "descricao": "Parecer mensal do Comitê de Investimentos sobre os relatórios mensais", "nivel_minimo": "I", "periodicidade": "mensal" },
+        { "id": "aprovacao-conselho-fiscal", "descricao": "Aprovação/parecer do Conselho Fiscal sobre os relatórios mensais, com periodicidade mínima trimestral", "nivel_minimo": "I", "periodicidade": "mínima trimestral" },
+        { "id": "relatorio-anual-investimentos", "descricao": "Relatório anual consolidado (conjuntura econômica, metas x resultados, fluxo de caixa, composição do ativo, orçamento, carteira de imóveis)", "nivel_minimo": "I", "periodicidade": "anual" },
+        { "id": "cronograma-mensal-gestao-recursos", "descricao": "Cronograma mensal das atividades de gestão dos recursos, divulgado no site", "nivel_minimo": "II" },
+        { "id": "relatorio-semestral-diligencias", "descricao": "Relatório semestral de diligências (verificação de ativos dos fundos, análise patrimonial/fiscal/comercial de FIPs, rating, avaliação de imóveis)", "nivel_minimo": "II", "periodicidade": "semestral" },
+        { "id": "alm-compatibilidade-ativo-passivo", "descricao": "Metodologia de compatibilidade ativo-passivo (ALM), obrigatória para RPPS com mais de R$ 50 milhões aplicados no mercado financeiro", "nivel_minimo": "II", "aplicavel_apenas_se": "RPPS com mais de R$ 50 milhões aplicados no mercado financeiro" },
+        { "id": "alm-diagnostico-otimizacao-carteira", "descricao": "ALM e teoria moderna de diversificação de carteira para diagnóstico da carteira atual e proposta de revisão de alocação, visando otimização", "nivel_minimo": "III" },
+        { "id": "relatorio-anual-acompanhamento-estrategias", "descricao": "Relatório anual de acompanhamento da implementação de estratégias de carteira específicas para os compromissos do plano", "nivel_minimo": "III", "periodicidade": "anual" },
+        { "id": "area-monitoramento-continuo-riscos", "descricao": "Área específica de acompanhamento e monitoramento contínuo dos riscos de todas as posições investidas, indicadores por segmento/produto, análise diária de mercado", "nivel_minimo": "IV" }
+      ],
+      "observacoes": "Fonte para a ação 'Transparência' (2.8), que exige a publicação desta Política e dos relatórios mensais/anuais de investimentos no site do RPPS."
+    },
+    {
+      "id": "comite-investimentos",
+      "codigo": "2.7",
+      "nome": "Comitê de Investimentos",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Órgão colegiado responsável pelo processo decisório de formulação e execução da Política de Investimentos (art. 91, Portaria MTP nº 1.467/2022), reunindo-se mensalmente.",
+      "depende_de": [],
+      "campos": [
+        { "id": "composicao-3-membros", "descricao": "Mínimo de 3 membros com vínculo funcional com o ente ou a unidade gestora", "nivel_minimo": "I", "quantidade_minima": 3 },
+        { "id": "composicao-5-membros", "descricao": "Mínimo de 5 membros com vínculo funcional (substitui a exigência de 3 membros do Nível I/II)", "nivel_minimo": "III", "quantidade_minima": 5, "substitui": "composicao-3-membros" },
+        { "id": "composicao-5-membros-maioria-efetivos", "descricao": "Mínimo de 5 membros, sendo a maioria servidores efetivos e segurados do RPPS (substitui a composição livre do Nível III)", "nivel_minimo": "IV", "quantidade_minima": 5, "substitui": "composicao-5-membros" }
+      ],
+      "observacoes": "Dispensada se o RPPS se enquadrar no art. 280 da Portaria MTP nº 1.467/2022 (mesma dispensa aplicável à ação 1.3)."
+    },
+    {
+      "id": "transparencia",
+      "codigo": "2.8",
+      "nome": "Transparência",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Divulgar no site do RPPS um conjunto mínimo de documentos e informações, fortalecendo o controle social (Lei nº 12.527/2011 - LAI).",
+      "depende_de": ["relatorio-governanca-corporativa", "codigo-etica", "planejamento", "politica-investimentos", "estrutura-controle-interno", "acoes-dialogo-segurados-sociedade"],
+      "depende_de_detalhe": [
+        { "fonte": "relatorio-governanca-corporativa", "tipo_relacao": "citacao_explicita_no_manual" },
+        { "fonte": "codigo-etica", "tipo_relacao": "citacao_explicita_no_manual" },
+        { "fonte": "planejamento", "tipo_relacao": "citacao_explicita_no_manual" },
+        { "fonte": "politica-investimentos", "tipo_relacao": "citacao_explicita_no_manual" },
+        { "fonte": "estrutura-controle-interno", "tipo_relacao": "citacao_explicita_no_manual" },
+        { "fonte": "acoes-dialogo-segurados-sociedade", "tipo_relacao": "inferida_por_sobreposicao_tematica" }
+      ],
+      "campos": [
+        { "id": "regimentos-atas-orgaos-colegiados", "descricao": "Regimentos internos e atas do Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos", "nivel_minimo": "I" },
+        { "id": "certidoes-tributos-fgts", "descricao": "Certidões de débitos tributários federais/dívida ativa da União e de regularidade do FGTS", "nivel_minimo": "I" },
+        { "id": "crp-extrato-previdenciario", "descricao": "CRP (se houver) e links para Extrato Previdenciário e demonstrativos obrigatórios (art. 241, III/IV/V, Portaria MTP nº 1.467/2022)", "nivel_minimo": "I" },
+        { "id": "relatorio-governanca-corporativa-publicado", "descricao": "Relatório de Governança Corporativa (documento-fonte: ação 2.1)", "nivel_minimo": "I" },
+        { "id": "cronograma-educacao-previdenciaria", "descricao": "Cronograma de ações de educação previdenciária", "nivel_minimo": "I" },
+        { "id": "cronograma-reunioes-orgaos-colegiados", "descricao": "Cronograma das reuniões dos órgãos colegiados", "nivel_minimo": "I" },
+        { "id": "codigo-etica-publicado", "descricao": "Código de Ética (documento-fonte: ação 2.4)", "nivel_minimo": "I" },
+        { "id": "demonstracoes-financeiras-contabeis", "descricao": "Demonstrações financeiras e contábeis", "nivel_minimo": "I", "periodicidade": "Níveis I-III: trimestral; Nível IV: mensal" },
+        { "id": "avaliacao-atuarial-anual", "descricao": "Avaliação atuarial anual", "nivel_minimo": "I", "periodicidade": "anual" },
+        { "id": "info-licitacoes-contratos", "descricao": "Informações sobre procedimentos licitatórios/contratos administrativos, ou declaração de inexistência", "nivel_minimo": "I" },
+        { "id": "plano-acao-ou-planejamento-estrategico-publicado", "descricao": "Plano de Ação Anual (Níveis I-II) ou Planejamento Estratégico (Níveis III-IV) (documento-fonte: ação 2.2)", "nivel_minimo": "I" },
+        { "id": "politica-investimentos-publicada", "descricao": "Política de Investimentos (documento-fonte: ação 2.6)", "nivel_minimo": "I" },
+        { "id": "relatorios-controle-interno-publicados", "descricao": "Relatórios de controle interno (documento-fonte: ação 1.4)", "nivel_minimo": "I", "periodicidade": "Níveis I-II: semestral; Níveis III-IV: trimestral" },
+        { "id": "relacao-entidades-credenciadas", "descricao": "Relação das entidades escolhidas para receber investimentos, por credenciamento", "nivel_minimo": "I" },
+        { "id": "relatorios-investimentos-publicados", "descricao": "Relatórios mensais e anuais de investimentos (documento-fonte: ação 2.6)", "nivel_minimo": "I" },
+        { "id": "acordaos-tribunal-contas", "descricao": "Acórdãos do Tribunal de Contas sobre as contas anuais do RPPS e Parecer Prévio das contas de governo (quando emitidos)", "nivel_minimo": "I" },
+        { "id": "relatorio-rpc-publicado", "descricao": "Relatório do Regime de Previdência Complementar (Anexo 10 do Manual)", "nivel_minimo": "I", "periodicidade": "Níveis I-II: anual; Níveis III-IV: semestral" },
+        { "id": "relatorio-passivo-judicial", "descricao": "Relatório de avaliação do passivo judicial, ou declaração de inexistência de passivo judicial", "nivel_minimo": "III" }
+      ],
+      "observacoes": "Esta é a ação com o MAIOR número de dependências EXPLÍCITAS e literais do Manual (não interpretativas): o próprio texto lista o Relatório de Governança Corporativa, o Código de Ética, o Plano de Ação/Planejamento Estratégico, a Política de Investimentos e os relatórios de controle interno como itens a publicar, ou seja, como documentos-fonte nomeados. Candidata mais forte para ser o exemplo canônico de 'documento composto que cita de onde cada dado veio' pedido no motor de dependências — mais forte, inclusive, que o par Relatório de Gestão Atuarial → Relatório de Governança Corporativa sugerido originalmente, que é uma dependência apenas inferida por sobreposição de conteúdo."
+    },
+    {
+      "id": "definicao-limites-alcadas",
+      "codigo": "2.9",
+      "nome": "Definição de Limites de Alçadas",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Estabelecer critérios e limites para tomada de decisão em atos administrativos que envolvam recursos orçamentários/financeiros do RPPS, compartilhando responsabilidades entre dirigentes.",
+      "depende_de": [],
+      "campos": [
+        { "id": "dupla-assinatura-investimentos", "descricao": "Mínimo de 2 responsáveis assinando em conjunto todos os atos relativos a investimentos, publicado no site", "nivel_minimo": "I", "quantidade_minima": 2 },
+        { "id": "dupla-assinatura-ativos-passivos-administrativo", "descricao": "Mínimo de 2 responsáveis assinando em conjunto atos de gestão de ativos/passivos e atividades administrativas com contratações/dispêndios, conforme limites de alçada em ato normativo (substitui/amplia o escopo do Nível I/II)", "nivel_minimo": "III", "quantidade_minima": 2, "substitui": "dupla-assinatura-investimentos" },
+        { "id": "relatorio-casos-ultrapassagem-alcada", "descricao": "Relatórios registrando casos em que atos de gestão ultrapassaram os limites de alçada da diretoria executiva, com referendo do Conselho Deliberativo e justificativa", "nivel_minimo": "IV" }
+      ]
+    },
+    {
+      "id": "segregacao-atividades",
+      "codigo": "2.10",
+      "nome": "Segregação das Atividades",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Evitar que um único agente tenha autoridade completa sobre parcela significativa de uma transação (aprovação, execução e controle), reduzindo risco operacional.",
+      "depende_de": [],
+      "campos": [
+        { "id": "segregacao-habilitacao-vs-pagamento-beneficios", "descricao": "Segregação entre habilitação/concessão de benefícios e implantação/manutenção/pagamento de benefícios", "nivel_minimo": "I" },
+        { "id": "segregacao-investimentos-vs-administrativo", "descricao": "Segregação adicional entre atividades de investimentos e atividades administrativo-financeiras", "nivel_minimo": "III" }
+      ]
+    },
+    {
+      "id": "ouvidoria",
+      "codigo": "2.11",
+      "nome": "Ouvidoria",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Serviço institucional para consultas, dúvidas, reclamações, denúncias, elogios e solicitações, com avaliação periódica pelo Conselho Deliberativo.",
+      "depende_de": [],
+      "campos": [
+        { "id": "canal-fale-conosco", "descricao": "Canal de comunicação no modelo 'fale conosco' no site do ente ou do RPPS", "nivel_minimo": "I" },
+        { "id": "ouvidor-designado", "descricao": "Pelo menos 1 servidor exercendo a função de Ouvidor (substitui o canal simples do Nível I)", "nivel_minimo": "II", "quantidade_minima": 1, "substitui": "canal-fale-conosco" },
+        { "id": "ouvidor-efetivo", "descricao": "Pelo menos 1 servidor EFETIVO exercendo a função de Ouvidor (substitui o Ouvidor não necessariamente efetivo do Nível II)", "nivel_minimo": "III", "quantidade_minima": 1, "substitui": "ouvidor-designado" },
+        { "id": "ouvidor-efetivo-certificado", "descricao": "Ouvidor efetivo com certificação de Ouvidor e procedimentos de atuação definidos em ato específico", "nivel_minimo": "IV", "quantidade_minima": 1, "substitui": "ouvidor-efetivo" }
+      ]
+    },
+    {
+      "id": "diretoria-executiva",
+      "codigo": "2.12",
+      "nome": "Diretoria Executiva",
+      "dimensao": "Governança Corporativa",
+      "essencial": true,
+      "objetivo": "Disciplinar, por legislação local, a Diretoria Executiva do RPPS (representante legal e demais dirigentes imediatamente subordinados), exigindo formação de nível superior.",
+      "depende_de": [],
+      "campos": [
+        { "id": "nivel-superior-antecedentes-experiencia", "descricao": "Nível superior para todos os membros; certidões negativas de antecedentes criminais (Justiça Estadual e Federal); declaração conforme LC nº 64/1990; experiência mínima de 2 anos em área compatível", "nivel_minimo": "I" },
+        { "id": "formacao-especializacao-compativel", "descricao": "Formação superior ou especialização em área compatível com a atribuição exercida", "nivel_minimo": "III" },
+        { "id": "membro-segurado-rpps", "descricao": "Pelo menos 1 membro deve ser segurado do RPPS", "nivel_minimo": "IV", "quantidade_minima": 1 }
+      ]
+    },
+    {
+      "id": "conselho-fiscal",
+      "codigo": "2.13",
+      "nome": "Conselho Fiscal",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Órgão de fiscalização obrigatório do RPPS, com atribuições de zelar pela gestão econômico-financeira, examinar balanços, verificar premissas atuariais, emitir parecer sobre a prestação de contas anual, atuando com independência da Diretoria Executiva e do Conselho Deliberativo.",
+      "depende_de": [],
+      "campos": [
+        { "id": "membros-antecedentes-representante-segurados", "descricao": "Todos os membros comprovam antecedentes (art. 8º-B, Lei nº 9.717/98); pelo menos 1 representante dos segurados", "nivel_minimo": "I" },
+        { "id": "composicao-paritaria-maioria-superior", "descricao": "Composição paritária entre representantes dos segurados e do ente; maioria com formação superior; presidência de um dos Conselhos exercida por representante dos segurados com voto de qualidade; plano de trabalho anual publicado; parecer sobre prestação de contas", "nivel_minimo": "III" },
+        { "id": "todos-membros-nivel-superior", "descricao": "Todos os membros com formação de nível superior (substitui a exigência de maioria do Nível III)", "nivel_minimo": "IV", "substitui": "composicao-paritaria-maioria-superior" }
+      ]
+    },
+    {
+      "id": "conselho-deliberativo",
+      "codigo": "2.14",
+      "nome": "Conselho Deliberativo",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Última instância de alçada das decisões relativas à gestão do RPPS: aprova Plano de Ação/Planejamento Estratégico, acompanha execução de políticas, emite parecer sobre atos normativos e acompanha auditorias.",
+      "depende_de": [],
+      "campos": [
+        { "id": "membros-antecedentes-representante-segurados", "descricao": "Todos os membros comprovam antecedentes (art. 8º-B, Lei nº 9.717/98); pelo menos 1 representante dos segurados", "nivel_minimo": "I" },
+        { "id": "composicao-paritaria-maioria-superior", "descricao": "Composição paritária entre representantes dos segurados e do ente; maioria com formação superior; presidência exercida por representante dos segurados com voto de qualidade; plano de trabalho anual publicado; relatório de prestação de contas", "nivel_minimo": "III" },
+        { "id": "todos-membros-nivel-superior", "descricao": "Todos os membros com formação de nível superior (substitui a exigência de maioria do Nível III)", "nivel_minimo": "IV", "substitui": "composicao-paritaria-maioria-superior" }
+      ]
+    },
+    {
+      "id": "mandato-representacao-reconducao",
+      "codigo": "2.15",
+      "nome": "Mandato, Representação e Recondução",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Disciplinar por legislação local o processo de escolha dos membros da Diretoria Executiva, Conselho Deliberativo e Conselho Fiscal, mandato e recondução.",
+      "depende_de": [],
+      "campos": [
+        { "id": "definicao-legal-processo-escolha", "descricao": "Legislação local define o processo de escolha para composição da Diretoria Executiva, Conselho Deliberativo e Conselho Fiscal", "nivel_minimo": "I" },
+        { "id": "prestacao-contas-anual-ou-certificacao", "descricao": "Prestação de contas anual (mesma enviada ao Tribunal de Contas) ao Conselho Deliberativo, cumprindo um entre: mandato fixo da Diretoria Executiva OU experiência de 2 anos em RPPS + certificação profissional válida (art. 8º-B, II, Lei nº 9.717/98)", "nivel_minimo": "III" }
+      ],
+      "observacoes": "Diretrizes comuns a todos os níveis (não tabeladas como campo por não serem verificáveis objetivamente): mandato conforme legislação local; recondução admitida; recomendação (não obrigatória) de mandatos não coincidentes entre Conselhos e Comitê de Investimentos; mandato preferencial de 4 anos."
+    },
+    {
+      "id": "gestao-pessoas",
+      "codigo": "2.16",
+      "nome": "Gestão de Pessoas",
+      "dimensao": "Governança Corporativa",
+      "essencial": false,
+      "objetivo": "Legislação local define o quadro de pessoal do RPPS conforme seu porte, com objetivos de gestão de pessoal, qualificação e treinamento.",
+      "depende_de": [],
+      "campos": [
+        { "id": "1-servidor-efetivo-dedicacao-exclusiva", "descricao": "Pelo menos 1 servidor efetivo com dedicação exclusiva (ainda que cedido pelo ente)", "nivel_minimo": "I", "quantidade_minima": 1 },
+        { "id": "quadro-proprio-1-efetivo", "descricao": "Quadro próprio de pessoal com pelo menos 1 servidor efetivo, e demais comissionados/cedidos (substitui a exigência do Nível I)", "nivel_minimo": "II", "quantidade_minima": 1, "substitui": "1-servidor-efetivo-dedicacao-exclusiva" },
+        { "id": "50-porcento-servidores-quadro", "descricao": "Pelo menos 50% do quadro composto por servidores (efetivos do quadro próprio, cedidos ou comissionados)", "nivel_minimo": "III", "quantidade_minima": "50%" },
+        { "id": "servidor-dedicacao-exclusiva-investimentos-e-atuario", "descricao": "1 servidor com dedicação exclusiva na área de investimentos e 1 servidor ocupante do cargo de atuário (pode ser substituído por contrato de assessoria atuarial continuada ou servidor com formação em ciências atuariais em exercício efetivo)", "nivel_minimo": "IV", "quantidade_minima": 2 }
+      ]
+    },
+    {
+      "id": "plano-acao-capacitacao",
+      "codigo": "3.1",
+      "nome": "Plano de Ação de Capacitação",
+      "dimensao": "Educação Previdenciária",
+      "essencial": false,
+      "objetivo": "Desenvolver plano de capacitação para servidores da unidade gestora, dirigentes e conselheiros.",
+      "depende_de": [],
+      "campos": [
+        { "id": "formacao-basica-normas-novos-servidores", "descricao": "Formação básica sobre normas regulatórias e conceitos previdenciários (RPPS e RPC) para novos servidores; atualização normativa para os já capacitados", "nivel_minimo": "I" },
+        { "id": "treinamento-concessao-beneficios", "descricao": "Treinamento dos servidores da área de concessão de benefícios sobre regras de aposentadoria e pensão por morte", "nivel_minimo": "I" },
+        { "id": "treinamento-investimentos", "descricao": "Treinamento dos servidores da área de investimentos sobre sistema financeiro, mercado financeiro/capitais e fundos de investimento", "nivel_minimo": "II" },
+        { "id": "treinamento-gestao-previdenciaria-completa", "descricao": "Treinamento em gestão previdenciária: legislação, gestão de ativos, atuária, controles internos e gestão de riscos", "nivel_minimo": "III" },
+        { "id": "programa-educacao-previdenciaria-sistematizado", "descricao": "Programa de Educação Previdenciária sistematizando ações realizadas/a realizar (planejamento, público-alvo, mecanismos de capacitação permanente)", "nivel_minimo": "III" },
+        { "id": "preparacao-certificacao-profissional", "descricao": "Preparação de servidores do RPPS para obtenção da certificação profissional (art. 8º-B, II, Lei nº 9.717/98)", "nivel_minimo": "IV" }
+      ]
+    },
+    {
+      "id": "acoes-dialogo-segurados-sociedade",
+      "codigo": "3.2",
+      "nome": "Ações de Diálogo com os Segurados e a Sociedade",
+      "dimensao": "Educação Previdenciária",
+      "essencial": true,
+      "objetivo": "Promover diálogo com segurados e sociedade sobre a gestão do RPPS, resultados da Política de Investimentos e da Avaliação Atuarial.",
+      "depende_de": ["relatorio-governanca-corporativa", "politica-investimentos"],
+      "depende_de_detalhe": [
+        { "fonte": "relatorio-governanca-corporativa", "tipo_relacao": "citacao_explicita_no_manual" },
+        { "fonte": "politica-investimentos", "tipo_relacao": "citacao_explicita_no_manual" }
+      ],
+      "campos": [
+        { "id": "cartilhas-informativos-segurados", "descricao": "Cartilhas, informativos ou programas com conhecimentos básicos sobre RPPS, RPC e benefícios previdenciários (impresso, digital ou no site)", "nivel_minimo": "I" },
+        { "id": "audiencia-publica-anual", "descricao": "Pelo menos 1 audiência pública anual com segurados, Poder Executivo/Legislativo e sociedade civil, para debate do Relatório de Governança Corporativa, resultados da Política de Investimentos e da Avaliação Atuarial", "nivel_minimo": "I", "periodicidade": "anual" },
+        { "id": "seminarios-regras-beneficios", "descricao": "Seminários com conhecimentos básicos sobre regras de acesso aos benefícios previdenciários", "nivel_minimo": "III" },
+        { "id": "acoes-preparatorias-aposentadoria", "descricao": "Ações preparatórias para a aposentadoria com os segurados", "nivel_minimo": "III" },
+        { "id": "acoes-conscientizacao-pos-aposentadoria", "descricao": "Ações de conscientização sobre vida após a aposentadoria e envelhecimento ativo", "nivel_minimo": "III" },
+        { "id": "acoes-integradas-poderes", "descricao": "Ações de educação previdenciária integradas com os Poderes", "nivel_minimo": "IV" },
+        { "id": "seminarios-financas-pessoais", "descricao": "Seminários sobre finanças pessoais", "nivel_minimo": "IV" }
+      ],
+      "observacoes": "A audiência pública anual exige a apresentação do Relatório de Governança Corporativa e dos resultados da Política de Investimentos — outra dependência explícita no texto (não apenas inferida)."
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
-import type { Role } from "@prisma/client";
 
 export interface AuthTokenPayload {
   userId: string;
-  tenantId: string;
-  role: Role;
+  // null para o Super Admin da plataforma, que nunca está vinculado a um tenant específico.
+  tenantId: string | null;
+  isSuperAdmin: boolean;
 }
 
 export function signAuthToken(payload: AuthTokenPayload): string {

@@ -4,6 +4,7 @@ import { signAuthToken } from "../../utils/jwt";
 import { HttpError } from "../../middleware/errorHandler";
 import { crpRepository } from "../crp/crp.repository";
 import { slugify } from "../../utils/slugify";
+import { listEnabledFeaturesForUser, listEnabledAdminFeaturesForUser } from "../../middleware/features";
 
 export interface RegisterTenantInput {
   tenantName: string;
@@ -38,7 +39,6 @@ export const authService = {
         seguradosCount: input.seguradosCount,
         memberships: {
           create: {
-            role: "RPPS_ADMIN",
             user: {
               create: {
                 name: input.adminName,
@@ -55,9 +55,14 @@ export const authService = {
     await crpRepository.ensureTenantRows(tenant.id);
 
     const membership = tenant.memberships[0];
-    const token = signAuthToken({ userId: membership.userId, tenantId: tenant.id, role: membership.role });
+    const token = signAuthToken({
+      userId: membership.userId,
+      tenantId: tenant.id,
+      isSuperAdmin: false,
+    });
+    const features = await listEnabledFeaturesForUser(membership.userId, tenant.id, tenant.plan);
 
-    return { token, tenant, user: membership.user };
+    return { token, tenant, user: membership.user, isSuperAdmin: false, features };
   },
 
   async login(email: string, password: string) {
@@ -66,7 +71,7 @@ export const authService = {
       include: { memberships: { include: { tenant: true } } },
     });
 
-    if (!user || user.memberships.length === 0) {
+    if (!user) {
       throw new HttpError(401, "E-mail ou senha inválidos.");
     }
 
@@ -75,11 +80,44 @@ export const authService = {
       throw new HttpError(401, "E-mail ou senha inválidos.");
     }
 
-    // MVP: usuário vinculado a um único tenant. Suporte a múltiplos tenants por
+    if (!user.ativo) {
+      throw new HttpError(401, "Usuário inativo. Fale com o administrador do seu RPPS.");
+    }
+
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+
+    // Super Admin da plataforma: nunca vinculado a um tenant específico (ver schema.prisma).
+    if (user.isSuperAdmin) {
+      const token = signAuthToken({ userId: user.id, tenantId: null, isSuperAdmin: true });
+      return {
+        token,
+        tenant: null,
+        user: { id: user.id, name: user.name, email: user.email },
+        isSuperAdmin: true,
+        features: await listEnabledAdminFeaturesForUser(user.id),
+      };
+    }
+
+    if (user.memberships.length === 0) {
+      throw new HttpError(401, "E-mail ou senha inválidos.");
+    }
+
+    // MVP: usuário de tenant vinculado a um único tenant. Suporte a múltiplos tenants por
     // usuário (troca de contexto) fica para uma iteração futura (ver ROADMAP #7).
     const membership = user.memberships[0];
-    const token = signAuthToken({ userId: user.id, tenantId: membership.tenantId, role: membership.role });
+    const token = signAuthToken({
+      userId: user.id,
+      tenantId: membership.tenantId,
+      isSuperAdmin: false,
+    });
+    const features = await listEnabledFeaturesForUser(user.id, membership.tenantId, membership.tenant.plan);
 
-    return { token, tenant: membership.tenant, user: { id: user.id, name: user.name, email: user.email } };
+    return {
+      token,
+      tenant: membership.tenant,
+      user: { id: user.id, name: user.name, email: user.email },
+      isSuperAdmin: false,
+      features,
+    };
   },
 };
