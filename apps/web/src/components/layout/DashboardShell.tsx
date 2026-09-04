@@ -25,7 +25,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-bg">
-      <aside className="flex w-64 shrink-0 flex-col bg-sidebar px-4 py-6">
+      <aside className="flex w-64 shrink-0 flex-col border-r border-cyan-700/50 bg-gradient-to-br from-blue-900 to-cyan-900 px-4 py-6">
         <div className="flex items-center gap-2.5 px-2">
           <img src="/logo-npi.png" alt="NPI Brasil" className="h-9 w-9 rounded-xl object-contain" />
           <div>
@@ -113,10 +113,8 @@ function NavItem({
       to={to}
       end={to === "/"}
       className={({ isActive }) =>
-        `flex items-center gap-2 rounded-r-lg border-l-2 py-1.5 pl-[10px] pr-3 text-[13px] font-medium transition-colors ${
-          isActive
-            ? "border-sidebar-section bg-sidebar-section/10 text-sidebar-section"
-            : "border-transparent text-sidebar-muted hover:bg-white/5 hover:text-sidebar-ink"
+        `flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors ${
+          isActive ? "bg-cyan-700/30 text-cyan-400" : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-ink"
         }`
       }
     >

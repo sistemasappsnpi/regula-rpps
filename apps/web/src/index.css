@@ -6,17 +6,17 @@
   /* Sidebar: sempre azul-marinho escuro, independente do tema do conteúdo — é a marca fixa
      do produto (ver referência visual que definiu esta identidade). */
   --color-sidebar: 22 33 62;
-  --color-sidebar-ink: 237 240 245;
-  --color-sidebar-ink-muted: 148 163 184;
+  --color-sidebar-ink: 255 255 255;
+  --color-sidebar-ink-muted: 203 213 225;
   --color-sidebar-border: 255 255 255;
   --color-sidebar-section: 34 211 238;
 
   /* Conteúdo — tema claro (padrão). Paleta slate do Tailwind, igual à referência
-     (atendimento.npibrasil.com): bg-slate-50, cards bg-white, texto slate-800/500,
+     (atendimento.npibrasil.com): bg-slate-50, cards bg-white, texto slate-700/500,
      borda slate-200. */
   --color-bg: 248 250 252;
   --color-surface: 255 255 255;
-  --color-ink: 30 41 59;
+  --color-ink: 51 65 85;
   --color-ink-muted: 100 116 139;
   --color-border: 226 232 240;
 
@@ -32,7 +32,7 @@
      cards/superfícies bg-slate-800, borda slate-700, texto slate-100/300/400. */
   --color-bg: 15 23 42;
   --color-surface: 30 41 59;
-  --color-ink: 241 245 249;
+  --color-ink: 226 232 240;
   --color-ink-muted: 148 163 184;
   --color-border: 51 65 85;
 
