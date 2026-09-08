@@ -1,0 +1,67 @@
+# Deploy de produção do Regula RPPS: MySQL + API (Express/Prisma) + Web (React, servido via
+# nginx). Diferente do docker-compose.yml da raiz (que só sobe o MySQL para desenvolvimento local
+# contra `npm run dev`), este arquivo builda e sobe os 3 serviços a partir do próprio código-fonte.
+#
+# Uso:
+#   1. cp .env.production.example .env.production
+#   2. Preencha MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, JWT_SECRET, SUPER_ADMIN_PASSWORD (ver
+#      comentários no .env.production.example) — o compose recusa subir sem eles.
+#   3. docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+#
+# Primeiro boot: a API aplica as migrations do Prisma, projeta o catálogo normativo (22 critérios
+# do CRP + 24 ações do Pró-Gestão) e cria o Super Admin, tudo automaticamente antes de subir (ver
+# apps/api/Dockerfile). Login em https://<seu-dominio>/ com o e-mail/senha definidos no .env.
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-regula_rpps}
+      MYSQL_USER: ${MYSQL_USER:-regula}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?defina MYSQL_PASSWORD no .env.production}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env.production}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      DATABASE_URL: mysql://${MYSQL_USER:-regula}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-regula_rpps}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env.production}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      UPLOADS_DIR: /app/apps/api/uploads
+      SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL:-}
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:?defina SUPER_ADMIN_PASSWORD no .env.production — sem isso o login do Super Admin fica com a senha padrão de dev}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+    volumes:
+      - api_uploads:/app/apps/api/uploads
+    expose:
+      - "3333"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-80}:80"
+
+volumes:
+  mysql_data:
+  api_uploads:

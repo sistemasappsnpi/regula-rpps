@@ -267,7 +267,7 @@ function ConstrutorDocumentosSection() {
 
 type CampoForm = { id?: string; descricao: string; obrigatorio: boolean };
 
-const DOCUMENTO_FORM_VAZIO = { nome: "", descricao: "", campos: [] as CampoForm[] };
+const DOCUMENTO_FORM_VAZIO = { nome: "", descricao: "", promptInstrucoes: "", campos: [] as CampoForm[] };
 
 // Documentos Personalizados: ao contrário do Construtor (que monta documentos por IA a partir
 // de fontes já existentes), aqui o Super Admin cria do zero um tipo documental livre (ex.: DIPR)
@@ -301,6 +301,7 @@ function DocumentosPersonalizadosSection() {
     setForm({
       nome: d.nome,
       descricao: d.descricao ?? "",
+      promptInstrucoes: d.promptInstrucoes ?? "",
       campos: d.campos.map((c) => ({ id: c.id, descricao: c.descricao, obrigatorio: c.obrigatorio })),
     });
     setMostrarModal(true);
@@ -330,6 +331,7 @@ function DocumentosPersonalizadosSection() {
         await api.adminUpdateDocumentoPersonalizado(editando.id, {
           nome: form.nome,
           descricao: form.descricao.trim() || null,
+          promptInstrucoes: form.promptInstrucoes.trim() || null,
         });
         for (const campo of form.campos) {
           if (campo.id) {
@@ -348,6 +350,7 @@ function DocumentosPersonalizadosSection() {
         await api.adminCreateDocumentoPersonalizado({
           nome: form.nome,
           descricao: form.descricao.trim() || null,
+          promptInstrucoes: form.promptInstrucoes.trim() || null,
           campos: form.campos.filter((c) => c.descricao.trim()).map((c) => ({ descricao: c.descricao, obrigatorio: c.obrigatorio })),
         });
       }
@@ -435,6 +438,7 @@ function DocumentosPersonalizadosSection() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {d.promptInstrucoes && <Badge tone="neutral">também no Construtor</Badge>}
                   <Badge tone={d.ativo ? "ok" : "neutral"}>{d.ativo ? "Ativo" : "Inativo"}</Badge>
                   <Button variant="ghost" onClick={() => alternarAtivo(d)}>
                     {d.ativo ? "Desativar" : "Ativar"}
@@ -480,6 +484,21 @@ function DocumentosPersonalizadosSection() {
               onChange={(e) => setForm({ ...form, descricao: e.target.value })}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
             />
+          </label>
+
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-ink">Instruções para a IA (opcional)</span>
+            <textarea
+              rows={4}
+              value={form.promptInstrucoes}
+              onChange={(e) => setForm({ ...form, promptInstrucoes: e.target.value })}
+              placeholder="Deixe em branco para este documento existir só no preenchimento manual. Preencha e ele também aparece pro RPPS montar por IA no Construtor de Documentos, a partir de relatórios enviados…"
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+            />
+            <span className="mt-1 block text-xs text-ink-muted">
+              Sem referência normativa própria — a IA segue só este texto (mesmo comportamento de um tipo "sem
+              referência" no Construtor).
+            </span>
           </label>
 
           <div className="mt-2 flex items-center justify-between">

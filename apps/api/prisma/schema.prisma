@@ -55,6 +55,7 @@ enum ReferenciaConstrutor {
   PRO_GESTAO
   CRP
   LIVRE
+  PERSONALIZADO
 }
 
 // TENANT: feature usada por usuários de RPPS, em cascata Plano → Cliente → Usuário (ver Feature).
@@ -73,6 +74,10 @@ model Tenant {
   federatedEntity    String
   cnpj               String?         @unique
   site               String?
+  // URL do logo deste RPPS (ex.: link de uma imagem já hospedada) — mostrado no topo da sidebar
+  // do lado do cliente (ver DashboardShell.tsx), pra quem loga reconhecer de cara em qual
+  // instituto está. Nulo cai no logo padrão da plataforma.
+  logoUrl            String?
   // Contato institucional exibido no rodapé padrão do Portal de Transparência público (ver
   // TransparenciaFooter) — distinto de qualquer e-mail/telefone de usuário logado.
   enderecoPublico    String?
@@ -316,6 +321,11 @@ model ConstrutorTipoDocumento {
   referenciaTipo   ReferenciaConstrutor
   acaoCodigo       String?
   criterionCode    String?
+  // Só para referenciaTipo=PERSONALIZADO: linha espelhada automaticamente a partir de
+  // DocumentoPersonalizado.promptInstrucoes (nunca criada/editada à mão — ver
+  // syncConstrutorTipoParaPersonalizado). onDelete SetNull: se o documento personalizado for
+  // excluído, este registro só perde a referência (fica inativo), nunca bloqueia a exclusão.
+  documentoPersonalizadoId String?      @unique
   promptInstrucoes String               @db.Text
   ativo            Boolean              @default(true)
   sortOrder        Int                  @default(0)
@@ -324,6 +334,7 @@ model ConstrutorTipoDocumento {
 
   acao      ProGestaoAcao?             @relation(fields: [acaoCodigo], references: [codigo])
   criterion CrpCriterion?              @relation(fields: [criterionCode], references: [code])
+  documentoPersonalizado DocumentoPersonalizado? @relation(fields: [documentoPersonalizadoId], references: [id], onDelete: SetNull)
   execucoes TenantConstrutorExecucao[]
 
   @@map("construtor_tipos_documento")
@@ -423,6 +434,11 @@ model DocumentoPersonalizado {
   codigo    String   @unique // slug, ex.: "dipr"
   nome      String
   descricao String?  @db.Text
+  // Opcional: quando preenchido, este documento também vira montável por IA no Construtor de
+  // Documentos (aba "Personalizados" do seletor) — ver admin.repository.ts,
+  // syncConstrutorTipoParaPersonalizado. Sem referência normativa (PRO_GESTAO/CRP), a IA segue
+  // só este texto, mesmo comportamento de um tipo LIVRE no Construtor.
+  promptInstrucoes String? @db.Text
   ativo     Boolean  @default(true)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -430,6 +446,7 @@ model DocumentoPersonalizado {
 
   campos       DocumentoPersonalizadoCampo[]
   publicacoes  TenantDocumentoPersonalizadoPublicacao[]
+  construtorTipos ConstrutorTipoDocumento[]
 
   @@map("documentos_personalizados")
 }

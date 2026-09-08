@@ -4,6 +4,10 @@ export interface ComboBoxOption {
   value: string;
   label: string;
   sublabel?: string;
+  // Opcional: quando presente em pelo menos uma opção, a lista é renderizada com um cabeçalho
+  // antes do primeiro item de cada grupo (ex.: "Padrão" / "Personalizados" no Construtor de
+  // Documentos) — respeita a ordem em que as opções chegam, nunca reordena por conta própria.
+  group?: string;
 }
 
 /**
@@ -62,22 +66,28 @@ export function ComboBox({
       {open && (
         <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-border bg-surface shadow-soft">
           {filtrados.length === 0 && <p className="px-3 py-2 text-sm text-ink-muted">Nenhum resultado.</p>}
-          {filtrados.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                onChange(o.value);
-                setOpen(false);
-                setQuery("");
-              }}
-              className={`block w-full truncate px-3 py-2 text-left text-sm hover:bg-ink/5 ${
-                o.value === value ? "bg-petrol/10 text-petrol" : "text-ink"
-              }`}
-            >
-              {o.label}
-              {o.sublabel && <span className="ml-1 text-xs text-ink-muted">{o.sublabel}</span>}
-            </button>
+          {filtrados.map((o, i) => (
+            <div key={o.value}>
+              {o.group && o.group !== filtrados[i - 1]?.group && (
+                <p className="px-3 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted first:pt-2">
+                  {o.group}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(o.value);
+                  setOpen(false);
+                  setQuery("");
+                }}
+                className={`block w-full truncate px-3 py-2 text-left text-sm hover:bg-ink/5 ${
+                  o.value === value ? "bg-petrol/10 text-petrol" : "text-ink"
+                }`}
+              >
+                {o.label}
+                {o.sublabel && <span className="ml-1 text-xs text-ink-muted">{o.sublabel}</span>}
+              </button>
+            </div>
           ))}
         </div>
       )}

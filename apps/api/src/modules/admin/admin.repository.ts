@@ -38,6 +38,7 @@ export const adminRepository = {
       federatedEntity: t.federatedEntity,
       cnpj: t.cnpj,
       site: t.site,
+      logoUrl: t.logoUrl,
       enderecoPublico: t.enderecoPublico,
       telefonePublico: t.telefonePublico,
       emailPublico: t.emailPublico,
@@ -111,6 +112,7 @@ export const adminRepository = {
       federatedEntity: string;
       cnpj: string | null;
       site: string | null;
+      logoUrl: string | null;
       enderecoPublico: string | null;
       telefonePublico: string | null;
       emailPublico: string | null;
@@ -515,8 +517,14 @@ export const adminRepository = {
     });
   },
 
+  // Nunca lista os tipos referenciaTipo=PERSONALIZADO aqui: esses são espelhados automaticamente
+  // a partir de DocumentoPersonalizado.promptInstrucoes (ver syncConstrutorTipoParaPersonalizado)
+  // e só têm um lugar de edição — o próprio Documento Personalizado, em "Documentos
+  // Personalizados" — pra não abrir uma segunda tela editando o mesmo prompt e os dois saírem
+  // de sincronia.
   async listConstrutorTipos() {
     return prisma.construtorTipoDocumento.findMany({
+      where: { referenciaTipo: { not: "PERSONALIZADO" } },
       orderBy: { sortOrder: "asc" },
       include: { acao: { select: { nome: true } }, criterion: { select: { title: true } } },
     });
@@ -723,9 +731,47 @@ export const adminRepository = {
     });
   },
 
+  /**
+   * Espelha DocumentoPersonalizado.promptInstrucoes num ConstrutorTipoDocumento
+   * (referenciaTipo=PERSONALIZADO), pra ele aparecer pro tenant no Construtor de Documentos sem
+   * o Super Admin ter que cadastrar um tipo separado à mão. Sem referência normativa própria —
+   * mesmo comportamento de um tipo LIVRE (a IA segue só o prompt, ver construtor.repository.ts).
+   * Idempotente: chamar de novo só atualiza nome/prompt/ativo do espelho existente.
+   */
+  async syncConstrutorTipoParaPersonalizado(doc: { id: string; nome: string; ativo: boolean; promptInstrucoes: string | null }) {
+    const existente = await prisma.construtorTipoDocumento.findUnique({ where: { documentoPersonalizadoId: doc.id } });
+    const temPrompt = !!doc.promptInstrucoes?.trim();
+
+    if (!temPrompt) {
+      // Sem prompt: se existir um espelho de uma configuração anterior, só desativa — nunca
+      // apaga (poderia ter execuções já geradas ligadas a ele, ver FK RESTRICT em
+      // TenantConstrutorExecucao.tipoDocumentoId).
+      if (existente) await prisma.construtorTipoDocumento.update({ where: { id: existente.id }, data: { ativo: false } });
+      return;
+    }
+
+    if (existente) {
+      await prisma.construtorTipoDocumento.update({
+        where: { id: existente.id },
+        data: { nome: doc.nome, promptInstrucoes: doc.promptInstrucoes!, ativo: doc.ativo },
+      });
+    } else {
+      await prisma.construtorTipoDocumento.create({
+        data: {
+          nome: doc.nome,
+          referenciaTipo: "PERSONALIZADO",
+          documentoPersonalizadoId: doc.id,
+          promptInstrucoes: doc.promptInstrucoes!,
+          ativo: doc.ativo,
+        },
+      });
+    }
+  },
+
   async createDocumentoPersonalizado(input: {
     nome: string;
     descricao: string | null;
+    promptInstrucoes: string | null;
     campos: { descricao: string; obrigatorio: boolean }[];
   }) {
     const baseSlug = slugify(input.nome);
@@ -747,31 +793,44 @@ export const adminRepository = {
       return { campoId, descricao: c.descricao, obrigatorio: c.obrigatorio, sortOrder: i };
     });
 
-    return prisma.documentoPersonalizado.create({
+    const documento = await prisma.documentoPersonalizado.create({
       data: {
         codigo,
         nome: input.nome,
         descricao: input.descricao,
+        promptInstrucoes: input.promptInstrucoes,
         sortOrder: totalExistente,
         campos: { create: camposData },
       },
       include: { campos: { orderBy: { sortOrder: "asc" } } },
     });
+
+    await adminRepository.syncConstrutorTipoParaPersonalizado(documento);
+    return documento;
   },
 
-  async updateDocumentoPersonalizado(id: string, input: Partial<{ nome: string; descricao: string | null; ativo: boolean }>) {
+  async updateDocumentoPersonalizado(
+    id: string,
+    input: Partial<{ nome: string; descricao: string | null; promptInstrucoes: string | null; ativo: boolean }>,
+  ) {
     const doc = await prisma.documentoPersonalizado.findUnique({ where: { id } });
     if (!doc) throw new HttpError(404, "Documento personalizado não encontrado.");
-    return prisma.documentoPersonalizado.update({
+    const atualizado = await prisma.documentoPersonalizado.update({
       where: { id },
       data: input,
       include: { campos: { orderBy: { sortOrder: "asc" } } },
     });
+
+    await adminRepository.syncConstrutorTipoParaPersonalizado(atualizado);
+    return atualizado;
   },
 
   async deleteDocumentoPersonalizado(id: string) {
     const doc = await prisma.documentoPersonalizado.findUnique({ where: { id } });
     if (!doc) throw new HttpError(404, "Documento personalizado não encontrado.");
+    // Desativa o espelho no Construtor antes de excluir — a FK (onDelete: SetNull) evita que a
+    // exclusão do documento seja bloqueada mesmo se esse tipo já tiver execuções geradas.
+    await prisma.construtorTipoDocumento.updateMany({ where: { documentoPersonalizadoId: id }, data: { ativo: false } });
     await prisma.documentoPersonalizado.delete({ where: { id } });
   },
 

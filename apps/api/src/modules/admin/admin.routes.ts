@@ -66,6 +66,7 @@ const updateTenantSchema = z.object({
   federatedEntity: z.string().min(2).optional(),
   cnpj: z.string().min(11).nullable().optional(),
   site: z.string().max(200).nullable().optional(),
+  logoUrl: z.string().max(500).nullable().optional(),
   enderecoPublico: z.string().max(300).nullable().optional(),
   telefonePublico: z.string().max(50).nullable().optional(),
   emailPublico: z.string().email().nullable().optional(),
@@ -496,6 +497,9 @@ const campoPersonalizadoSchema = z.object({
 const criarDocumentoPersonalizadoSchema = z.object({
   nome: z.string().min(3),
   descricao: z.string().nullable().optional(),
+  // Opcional: quando preenchido, este documento também vira montável por IA no Construtor de
+  // Documentos do tenant (ver adminRepository.syncConstrutorTipoParaPersonalizado).
+  promptInstrucoes: z.string().nullable().optional(),
   campos: z.array(campoPersonalizadoSchema).default([]),
 });
 
@@ -506,6 +510,7 @@ adminRouter.post("/documentos-personalizados", async (req, res, next) => {
     const documento = await adminRepository.createDocumentoPersonalizado({
       nome: parsed.data.nome,
       descricao: parsed.data.descricao ?? null,
+      promptInstrucoes: parsed.data.promptInstrucoes ?? null,
       campos: parsed.data.campos,
     });
     res.status(201).json(documento);
@@ -517,6 +522,7 @@ adminRouter.post("/documentos-personalizados", async (req, res, next) => {
 const atualizarDocumentoPersonalizadoSchema = z.object({
   nome: z.string().min(3).optional(),
   descricao: z.string().nullable().optional(),
+  promptInstrucoes: z.string().nullable().optional(),
   ativo: z.boolean().optional(),
 });
 

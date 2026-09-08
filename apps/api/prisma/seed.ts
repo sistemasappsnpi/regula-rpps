@@ -7,7 +7,11 @@ const prisma = new PrismaClient();
 
 // Nunca editar os critérios/ações diretamente aqui — a fonte da verdade é sempre
 // /knowledge-base/*.json. Este script só projeta esse conhecimento no banco.
-const KNOWLEDGE_BASE_DIR = path.join(__dirname, "../../../knowledge-base");
+// Baseado em process.cwd() (sempre apps/api — via `npm run seed` local ou o WORKDIR do
+// Dockerfile em produção), não em __dirname: __dirname aponta pra pastas de profundidade
+// diferente dependendo se este arquivo roda direto como .ts (tsx, dev) ou compilado em
+// dist/prisma/seed.js (produção, um nível mais fundo) — cwd é o único ponto estável entre os dois.
+const KNOWLEDGE_BASE_DIR = path.join(process.cwd(), "..", "..", "knowledge-base");
 
 interface CrpCriterioJson {
   id: string;
@@ -293,11 +297,30 @@ async function seedFeatureGating(): Promise<void> {
   }
 }
 
-async function main() {
-  await seedFeatureGating();
-  await seedCrpCatalog();
-  await seedProGestaoCatalog();
+/**
+ * Sempre roda, inclusive em produção — sem um Super Admin não dá pra logar em lugar nenhum do
+ * sistema. Credenciais configuráveis via env (SUPER_ADMIN_EMAIL/SUPER_ADMIN_PASSWORD); sem elas,
+ * cai nas credenciais de demonstração (uso local/dev). Só define a senha na CRIAÇÃO — reseed
+ * nunca sobrescreve a senha de um Super Admin que já existe (mesmo se a env mudou depois).
+ */
+async function seedSuperAdmin(): Promise<void> {
+  console.log("Seeding Super Admin da plataforma...");
+  const email = process.env.SUPER_ADMIN_EMAIL?.trim() || "superadmin@regularpps.com.br";
+  const password = process.env.SUPER_ADMIN_PASSWORD?.trim() || "superadmin123";
+  const passwordHash = await hashPassword(password);
 
+  await prisma.user.upsert({
+    where: { email },
+    update: { isSuperAdmin: true },
+    create: { name: "Admin da Plataforma", email, passwordHash, isSuperAdmin: true },
+  });
+}
+
+/**
+ * Tenant fictício + dados de exemplo — nunca deve rodar em produção com dado real de cliente.
+ * Só roda quando SEED_DEMO_DATA=true (ver docker-compose e README).
+ */
+async function seedDemoData(): Promise<void> {
   console.log("Seeding tenant de demonstração...");
   const passwordHash = await hashPassword("demo1234");
 
@@ -390,19 +413,7 @@ async function main() {
     }
   }
 
-  console.log("Seeding Super Admin da plataforma e parametrizações globais...");
-
-  const superAdminPasswordHash = await hashPassword("superadmin123");
-  await prisma.user.upsert({
-    where: { email: "superadmin@regularpps.com.br" },
-    update: { isSuperAdmin: true },
-    create: {
-      name: "Admin da Plataforma",
-      email: "superadmin@regularpps.com.br",
-      passwordHash: superAdminPasswordHash,
-      isSuperAdmin: true,
-    },
-  });
+  console.log("Seeding parametrizações globais de exemplo...");
 
   await prisma.entidadeCertificadora.upsert({
     where: { cnpj: "12.345.678/0001-90" },
@@ -443,9 +454,27 @@ async function main() {
     });
   }
 
-  console.log("Seed concluído.");
   console.log("Login de demonstração (tenant): admin@valeverde.rpps.gov.br / demo1234");
-  console.log("Login de demonstração (Super Admin): superadmin@regularpps.com.br / superadmin123");
+}
+
+async function main() {
+  await seedFeatureGating();
+  await seedCrpCatalog();
+  await seedProGestaoCatalog();
+  await seedSuperAdmin();
+
+  if (process.env.SEED_DEMO_DATA === "true") {
+    await seedDemoData();
+  } else {
+    console.log('SEED_DEMO_DATA != "true" — pulando tenant de demonstração e dados de exemplo (uso em produção).');
+  }
+
+  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.trim() || "superadmin@regularpps.com.br";
+  const senhaDefinidaPorEnv = !!process.env.SUPER_ADMIN_PASSWORD?.trim();
+  console.log("Seed concluído.");
+  console.log(
+    `Login do Super Admin: ${superAdminEmail} / ${senhaDefinidaPorEnv ? "(senha definida via SUPER_ADMIN_PASSWORD)" : "superadmin123 (padrão de dev — defina SUPER_ADMIN_PASSWORD em produção)"}`,
+  );
 }
 
 main()

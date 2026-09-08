@@ -34,6 +34,7 @@ export function AdminTenantsPage() {
     federatedEntity: "",
     cnpj: "",
     site: "",
+    logoUrl: "",
     enderecoPublico: "",
     telefonePublico: "",
     emailPublico: "",
@@ -75,6 +76,7 @@ export function AdminTenantsPage() {
       federatedEntity: t.federatedEntity,
       cnpj: t.cnpj ?? "",
       site: t.site ?? "",
+      logoUrl: t.logoUrl ?? "",
       enderecoPublico: t.enderecoPublico ?? "",
       telefonePublico: t.telefonePublico ?? "",
       emailPublico: t.emailPublico ?? "",
@@ -95,6 +97,7 @@ export function AdminTenantsPage() {
         federatedEntity: formEdicao.federatedEntity,
         cnpj: formEdicao.cnpj.trim() || null,
         site: formEdicao.site.trim() || null,
+        logoUrl: formEdicao.logoUrl.trim() || null,
         enderecoPublico: formEdicao.enderecoPublico.trim() || null,
         telefonePublico: formEdicao.telefonePublico.trim() || null,
         emailPublico: formEdicao.emailPublico.trim() || null,
@@ -261,6 +264,29 @@ export function AdminTenantsPage() {
             />
             <Campo label="CNPJ" value={formEdicao.cnpj} onChange={(v) => setFormEdicao({ ...formEdicao, cnpj: v })} />
             <Campo label="Site" value={formEdicao.site} onChange={(v) => setFormEdicao({ ...formEdicao, site: v })} />
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">URL do logo</span>
+              <div className="flex items-center gap-3">
+                {formEdicao.logoUrl && (
+                  <img
+                    src={formEdicao.logoUrl}
+                    alt="Prévia do logo"
+                    className="h-10 w-10 shrink-0 rounded-lg border border-border object-contain"
+                    onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+                  />
+                )}
+                <input
+                  value={formEdicao.logoUrl}
+                  onChange={(e) => setFormEdicao({ ...formEdicao, logoUrl: e.target.value })}
+                  placeholder="https://…/logo.png"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+                />
+              </div>
+              <span className="mt-1 block text-xs text-ink-muted">
+                Mostrado no topo da sidebar deste cliente, no lugar do logo padrão da plataforma — ajuda quem loga a
+                reconhecer de cara em qual instituto está.
+              </span>
+            </label>
             <Campo
               label="Nº de segurados"
               type="number"

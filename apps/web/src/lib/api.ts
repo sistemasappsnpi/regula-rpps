@@ -179,11 +179,14 @@ export const api = {
   adminCreateDocumentoPersonalizado: (input: {
     nome: string;
     descricao: string | null;
+    promptInstrucoes: string | null;
     campos: { descricao: string; obrigatorio: boolean }[];
   }) => request<AdminDocumentoPersonalizado>("/admin/documentos-personalizados", { method: "POST", body: JSON.stringify(input) }),
 
-  adminUpdateDocumentoPersonalizado: (id: string, patch: Partial<{ nome: string; descricao: string | null; ativo: boolean }>) =>
-    request<AdminDocumentoPersonalizado>(`/admin/documentos-personalizados/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  adminUpdateDocumentoPersonalizado: (
+    id: string,
+    patch: Partial<{ nome: string; descricao: string | null; promptInstrucoes: string | null; ativo: boolean }>,
+  ) => request<AdminDocumentoPersonalizado>(`/admin/documentos-personalizados/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
 
   adminDeleteDocumentoPersonalizado: (id: string) => request<unknown>(`/admin/documentos-personalizados/${id}`, { method: "DELETE" }),
 
@@ -227,6 +230,7 @@ export const api = {
       federatedEntity: string;
       cnpj: string | null;
       site: string | null;
+      logoUrl: string | null;
       enderecoPublico: string | null;
       telefonePublico: string | null;
       emailPublico: string | null;
@@ -477,6 +481,7 @@ export interface AdminTenant {
   federatedEntity: string;
   cnpj: string | null;
   site: string | null;
+  logoUrl: string | null;
   enderecoPublico: string | null;
   telefonePublico: string | null;
   emailPublico: string | null;
@@ -632,7 +637,7 @@ export interface Auditoria {
 export interface ConstrutorTipoResumo {
   id: string;
   nome: string;
-  referenciaTipo: "PRO_GESTAO" | "CRP" | "LIVRE";
+  referenciaTipo: "PRO_GESTAO" | "CRP" | "LIVRE" | "PERSONALIZADO";
   referenciaNome: string | null;
 }
 
@@ -726,6 +731,7 @@ export interface AdminDocumentoPersonalizado {
   codigo: string;
   nome: string;
   descricao: string | null;
+  promptInstrucoes: string | null;
   ativo: boolean;
   campos: DocumentoPersonalizadoCampoAdmin[];
 }
@@ -735,6 +741,7 @@ export interface Tenant {
   name: string;
   slug: string;
   federatedEntity: string;
+  logoUrl: string | null;
   plan: "ESSENCIAL" | "GESTAO" | "PERFORMANCE";
   seguradosCount: number;
   nivelProGestaoAlvo: Nivel | null;

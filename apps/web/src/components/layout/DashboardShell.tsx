@@ -26,11 +26,23 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-bg">
       <aside className="flex w-64 shrink-0 flex-col border-r border-cyan-700/50 bg-gradient-to-br from-blue-900 to-cyan-900 px-4 py-6">
+        {/* Identidade do cliente logado, não da plataforma — quem loga precisa reconhecer de
+            cara em qual RPPS está (ex.: "IPRES"), não só ver a marca genérica "Regula RPPS".
+            Logo parametrizado pelo Admin Global em RPPS clientes → Dados Básicos; sem logo
+            próprio, cai no logo padrão da plataforma. */}
         <div className="flex items-center gap-2.5 px-2">
-          <img src="/logo-npi.png" alt="NPI Brasil" className="h-9 w-9 rounded-xl object-contain" />
-          <div>
-            <p className="font-display text-lg font-bold leading-tight text-sidebar-ink">Regula RPPS</p>
-            <p className="text-[11px] leading-tight text-sidebar-muted">Compliance &amp; transparência ativa</p>
+          <img
+            src={tenant?.logoUrl || "/logo-npi.png"}
+            alt={tenant?.name ?? "Regula RPPS"}
+            className="h-9 w-9 shrink-0 rounded-xl bg-white/10 object-contain"
+          />
+          <div className="min-w-0">
+            <p className="truncate font-display text-lg font-bold leading-tight text-sidebar-ink">
+              {tenant?.name ?? "Regula RPPS"}
+            </p>
+            <p className="truncate text-[11px] leading-tight text-sidebar-muted">
+              {tenant?.federatedEntity ?? "Compliance & transparência ativa"}
+            </p>
           </div>
         </div>
 

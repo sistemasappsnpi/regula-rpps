@@ -10,11 +10,16 @@ import { ComboBox } from "../components/ui/ComboBox";
 // Global, com um prompt específico e — quando aplicável — ligado a uma ação do Pró-Gestão ou a
 // um critério do CRP) e envia quantos documentos-fonte quiser; a IA monta o documento final
 // citando de qual fonte cada trecho veio. Nasce sempre RASCUNHO — precisa de aprovação humana.
+type Categoria = "PADRAO" | "PERSONALIZADO";
+
 export function ConstrutorPage() {
   const [tipos, setTipos] = useState<ConstrutorTipoResumo[]>([]);
   const [execucoes, setExecucoes] = useState<ConstrutorExecucao[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Categoria é escolhida ANTES de abrir a busca — duas listas separadas, nunca uma lista só
+  // misturando os dois tipos com um cabeçalho de grupo no meio.
+  const [categoria, setCategoria] = useState<Categoria>("PADRAO");
   const [tipoSelecionadoId, setTipoSelecionadoId] = useState("");
   const [documentos, setDocumentos] = useState<Upload[]>([]);
   const [enviando, setEnviando] = useState(false);
@@ -22,12 +27,29 @@ export function ConstrutorPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ConstrutorExecucao | null>(null);
 
+  const tiposPadrao = tipos.filter((t) => t.referenciaTipo !== "PERSONALIZADO");
+  const tiposPersonalizados = tipos.filter((t) => t.referenciaTipo === "PERSONALIZADO");
+  const tiposDaCategoria = categoria === "PADRAO" ? tiposPadrao : tiposPersonalizados;
+
   const carregar = () =>
     Promise.all([api.listConstrutorTipos(), api.listConstrutorExecucoes()]).then(([t, e]) => {
       setTipos(t.tipos);
       setExecucoes(e.execucoes);
-      if (!tipoSelecionadoId && t.tipos[0]) setTipoSelecionadoId(t.tipos[0].id);
+      if (!tipoSelecionadoId) {
+        const primeiroPadrao = t.tipos.find((tipo) => tipo.referenciaTipo !== "PERSONALIZADO");
+        const primeiro = primeiroPadrao ?? t.tipos[0];
+        if (primeiro) {
+          setCategoria(primeiro.referenciaTipo === "PERSONALIZADO" ? "PERSONALIZADO" : "PADRAO");
+          setTipoSelecionadoId(primeiro.id);
+        }
+      }
     });
+
+  function trocarCategoria(nova: Categoria) {
+    setCategoria(nova);
+    const lista = nova === "PADRAO" ? tiposPadrao : tiposPersonalizados;
+    setTipoSelecionadoId(lista[0]?.id ?? "");
+  }
 
   useEffect(() => {
     carregar().finally(() => setLoading(false));
@@ -104,25 +126,54 @@ export function ConstrutorPage() {
       {tipos.length === 0 ? (
         <Card className="p-5">
           <p className="text-sm text-ink-muted">
-            Nenhum tipo de documento configurado ainda. Peça ao Super Admin para cadastrar um em Parametrizações →
-            Construtor de Documentos.
+            Nenhum tipo de documento configurado ainda. Peça ao Super Admin para cadastrar um em Parametrizações
+            (Construtor de Documentos ou Documentos Personalizados, com um prompt de IA preenchido).
           </p>
         </Card>
       ) : (
         <Card className="mb-6 p-5">
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink">O que você quer montar?</span>
+          <span className="mb-1 block text-sm font-medium text-ink">O que você quer montar?</span>
+
+          <div className="mb-3 inline-flex rounded-full border border-border bg-bg p-0.5">
+            <button
+              type="button"
+              onClick={() => trocarCategoria("PADRAO")}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                categoria === "PADRAO" ? "bg-petrol text-white shadow-soft" : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              Padrão ({tiposPadrao.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => trocarCategoria("PERSONALIZADO")}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                categoria === "PERSONALIZADO" ? "bg-petrol text-white shadow-soft" : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              Personalizados ({tiposPersonalizados.length})
+            </button>
+          </div>
+
+          {tiposDaCategoria.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-border p-3 text-sm text-ink-muted">
+              {categoria === "PADRAO"
+                ? "Nenhum tipo padrão configurado ainda."
+                : "Nenhum documento personalizado com IA configurado ainda — peça ao Super Admin para preencher as " +
+                  "instruções de IA dele em Parametrizações → Documentos Personalizados."}
+            </p>
+          ) : (
             <ComboBox
               value={tipoSelecionadoId}
               onChange={setTipoSelecionadoId}
               placeholder="Busque pelo nome do documento…"
-              options={tipos.map((t) => ({
+              options={tiposDaCategoria.map((t) => ({
                 value: t.id,
                 label: t.nome,
                 sublabel: t.referenciaNome && t.referenciaNome !== t.nome ? `(${t.referenciaNome})` : undefined,
               }))}
             />
-          </label>
+          )}
 
           <div className="mt-4">
             <p className="mb-1 text-sm font-medium text-ink">Documentos-fonte ({documentos.length})</p>

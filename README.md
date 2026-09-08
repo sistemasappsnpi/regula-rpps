@@ -44,7 +44,7 @@ cp .env.example .env   # ajuste DATABASE_URL e JWT_SECRET
 npm install
 npx prisma generate
 npx prisma migrate deploy   # aplica a migration em prisma/migrations/
-npm run seed                # cria o tenant de demonstração "Prefeitura de Vale Verde"
+npm run seed                # cria o tenant de demonstração "Prefeitura de Vale Verde" (SEED_DEMO_DATA=true no .env.example)
 npm run dev                 # http://localhost:3333
 ```
 
@@ -57,6 +57,31 @@ npm run dev                 # http://localhost:5173
 ```
 
 Login de demonstração (após rodar o seed): `admin@valeverde.rpps.gov.br` / `demo1234`.
+Login do Super Admin (após rodar o seed): `superadmin@regularpps.com.br` / `superadmin123`.
+
+## Deploy em produção (Docker)
+
+`docker-compose.prod.yml` sobe os 3 serviços (MySQL + API + Web) buildados a partir do próprio
+código-fonte, com nginx servindo o frontend e fazendo proxy de `/api/*` pra API — não precisa de
+Node instalado no servidor, só Docker.
+
+```bash
+cp .env.production.example .env.production
+# preencha MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, JWT_SECRET e SUPER_ADMIN_PASSWORD —
+# o compose recusa subir sem eles (ver comentários no próprio arquivo)
+
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+```
+
+No primeiro boot, o container da API aplica as migrations do Prisma, projeta o catálogo
+normativo (22 critérios do CRP + 24 ações do Pró-Gestão) e cria o Super Admin automaticamente —
+tudo idempotente, seguro rodar de novo em todo redeploy/restart. **`SEED_DEMO_DATA` fica `false`
+por padrão no `.env.production.example`** — nunca ligue em produção com dado real de cliente, ele
+cria um tenant fictício ("Prefeitura de Vale Verde") com CRP/Pró-Gestão preenchidos de exemplo.
+
+Acesse `http://<host>` (ou a porta definida em `WEB_PORT`) e entre com o e-mail/senha do Super
+Admin definidos no `.env.production` — primeiro passo depois de logar é cadastrar o primeiro RPPS
+real em Admin → RPPS clientes.
 
 ## Base de conhecimento normativo
 
