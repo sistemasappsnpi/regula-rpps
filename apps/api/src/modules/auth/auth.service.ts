@@ -1,3 +1,4 @@
+import type { Membership, Tenant, User } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { hashPassword, comparePassword } from "../../utils/password";
 import { signAuthToken } from "../../utils/jwt";
@@ -5,6 +6,21 @@ import { HttpError } from "../../middleware/errorHandler";
 import { crpRepository } from "../crp/crp.repository";
 import { slugify } from "../../utils/slugify";
 import { listEnabledFeaturesForUser, listEnabledAdminFeaturesForUser } from "../../middleware/features";
+
+/**
+ * Emite o JWT pra um usuário já resolvido (achado por senha local ou por SSO — ver
+ * microsoft-sso.routes.ts/govbr-sso.routes.ts) — mesma regra em todo lugar: Super Admin nunca
+ * carrega tenantId, usuário de tenant precisa de ao menos um Membership (MVP: usa o primeiro).
+ */
+export function issueTokenForUser(user: Pick<User, "id" | "isSuperAdmin">, memberships: (Membership & { tenant: Tenant })[]): string {
+  if (user.isSuperAdmin) {
+    return signAuthToken({ userId: user.id, tenantId: null, isSuperAdmin: true });
+  }
+  if (memberships.length === 0) {
+    throw new HttpError(401, "Este usuário não está vinculado a nenhum RPPS.");
+  }
+  return signAuthToken({ userId: user.id, tenantId: memberships[0].tenantId, isSuperAdmin: false });
+}
 
 export interface RegisterTenantInput {
   tenantName: string;

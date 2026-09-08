@@ -45,6 +45,8 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
 
+  ssoProviders: () => request<{ microsoft: boolean; govbr: boolean }>("/auth/providers"),
+
   me: () =>
     request<{
       user: { id: string; name: string; email: string };

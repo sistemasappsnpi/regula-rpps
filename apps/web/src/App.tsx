@@ -3,6 +3,7 @@ import { useAuth } from "./lib/auth-context";
 import { DashboardShell } from "./components/layout/DashboardShell";
 import { GlobalAdminShell } from "./components/layout/GlobalAdminShell";
 import { LoginPage } from "./pages/LoginPage";
+import { SsoCallbackPage } from "./pages/SsoCallbackPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { CrpCompliancePage } from "./pages/CrpCompliancePage";
 import { ProGestaoPage } from "./pages/ProGestaoPage";
@@ -73,6 +74,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/sso-callback" element={<SsoCallbackPage />} />
       <Route path="/transparencia/:slug" element={<TransparenciaPublicaPage />} />
       <Route path="/documentos-publicos/:slug/:codigo" element={<DocumentoPersonalizadoPublicoPage />} />
       <Route path="/primeiro-acesso/:token" element={<PrimeiroAcessoPage />} />

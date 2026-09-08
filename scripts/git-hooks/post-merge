@@ -1,0 +1,16 @@
+#!/bin/sh
+# Instala-se UMA VEZ como .git/hooks/post-merge (ver README, seção "Deploy em produção") — depois
+# disso, todo `git pull` que trouxer commit novo já builda de novo e reinicia os containers
+# sozinho, sem precisar rodar o docker compose na mão. Não faz nada se .env.production ainda não
+# existir (primeiro deploy continua manual, ver README).
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+if [ ! -f .env.production ]; then
+  echo "[post-merge] .env.production não encontrado — pulando redeploy automático."
+  exit 0
+fi
+
+echo "[post-merge] git pull trouxe atualização — refazendo build e reiniciando os containers..."
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+echo "[post-merge] Redeploy concluído."

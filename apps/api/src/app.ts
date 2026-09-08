@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { authRouter } from "./modules/auth/auth.routes";
+import { microsoftSsoRouter } from "./modules/auth/microsoft-sso.routes";
+import { govbrSsoRouter } from "./modules/auth/govbr-sso.routes";
 import { tenantsRouter } from "./modules/tenants/tenants.routes";
 import { crpRouter } from "./modules/crp/crp.routes";
 import { proGestaoRouter } from "./modules/pro-gestao/pro-gestao.routes";
@@ -22,6 +24,8 @@ export function createApp() {
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
   app.use("/auth", authRouter);
+  app.use("/auth/microsoft", microsoftSsoRouter);
+  app.use("/auth/govbr", govbrSsoRouter);
   app.use("/tenants", tenantsRouter);
   app.use("/crp", crpRouter);
   app.use("/pro-gestao", proGestaoRouter);

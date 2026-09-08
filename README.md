@@ -83,6 +83,58 @@ Acesse `http://<host>` (ou a porta definida em `WEB_PORT`) e entre com o e-mail/
 Admin definidos no `.env.production` — primeiro passo depois de logar é cadastrar o primeiro RPPS
 real em Admin → RPPS clientes.
 
+### Banco de dados: embutido vs. dedicado
+
+Por padrão o `docker-compose.prod.yml` **não sobe nenhum MySQL** — você define `DATABASE_URL` no
+`.env.production` apontando pro banco dedicado de produção (recomendado):
+
+```
+DATABASE_URL=mysql://usuario:senha@host-do-banco:3306/nome_do_banco
+```
+
+Se preferir usar o MySQL embutido no compose em vez de um banco externo, ative o profile
+`local-db` e preencha `MYSQL_PASSWORD`/`MYSQL_ROOT_PASSWORD` no `.env.production`:
+
+```bash
+docker compose --profile local-db --env-file .env.production -f docker-compose.prod.yml up -d --build
+```
+
+**Trocar do banco embutido pra um banco externo depois de já ter dado real cadastrado**: use
+`scripts/migrate-to-external-db.sh` — exporta o banco atual, importa no banco novo, atualiza
+`DATABASE_URL` no `.env.production` e reinicia a API, tudo em um comando só, direto no servidor:
+
+```bash
+chmod +x scripts/migrate-to-external-db.sh   # só na primeira vez
+./scripts/migrate-to-external-db.sh <host> <porta> <usuario> <senha> <nome_do_banco>
+```
+
+Guarda um backup do `.env.production` de antes (`.env.production.bak-antes-da-migracao`) e do
+próprio dump (`backup.sql`) — apague os dois manualmente só depois de confirmar que o site
+logou e os dados estão lá (ambos têm credencial/dado sensível).
+
+### Atualizar depois do primeiro deploy
+
+Depois do primeiro `up -d --build` bem-sucedido, instale o hook do Git **uma vez** pra todo
+`git pull` seguinte já refazer o build e reiniciar os containers sozinho, sem comando manual:
+
+```bash
+cp scripts/git-hooks/post-merge .git/hooks/post-merge
+chmod +x .git/hooks/post-merge
+```
+
+A partir daí, atualizar o servidor é só:
+
+```bash
+git pull
+```
+
+Se quiser forçar um redeploy manual a qualquer momento (sem esperar um `git pull` trazer commit
+novo), o mesmo comando de sempre funciona:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+```
+
 ## Base de conhecimento normativo
 
 `knowledge-base/crp-criterios.json` (22 critérios do CRP) e `knowledge-base/pro-gestao-acoes.json`

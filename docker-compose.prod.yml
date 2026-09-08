@@ -13,14 +13,20 @@
 # apps/api/Dockerfile). Login em https://<seu-dominio>/ com o e-mail/senha definidos no .env.
 
 services:
+  # MySQL embutido — OPCIONAL. Só sobe se você ativar o profile "local-db" explicitamente:
+  #   docker compose --profile local-db --env-file .env.production -f docker-compose.prod.yml up -d --build
+  # Pra usar um banco dedicado/externo (recomendado em produção real — ver DATABASE_URL abaixo),
+  # não ative esse profile: este serviço simplesmente não sobe, e a API se conecta direto no
+  # banco externo. Um dos dois é obrigatório (o embutido OU um externo) — nunca os dois.
   mysql:
+    profiles: ["local-db"]
     image: mysql:8.4
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-regula_rpps}
       MYSQL_USER: ${MYSQL_USER:-regula}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?defina MYSQL_PASSWORD no .env.production}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env.production}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-}
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -34,19 +40,35 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3333
-      DATABASE_URL: mysql://${MYSQL_USER:-regula}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-regula_rpps}
+      # String de conexão completa — aponte pro banco dedicado externo (ex.:
+      # mysql://usuario:senha@host-do-banco:3306/previdencianpi_db) ou, se estiver usando o
+      # MySQL embutido acima (profile local-db), mysql://regula:SENHA@mysql:3306/regula_rpps.
+      DATABASE_URL: ${DATABASE_URL:?defina DATABASE_URL no .env.production — string de conexão completa do MySQL}
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env.production}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       UPLOADS_DIR: /app/apps/api/uploads
       SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL:-}
       SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:?defina SUPER_ADMIN_PASSWORD no .env.production — sem isso o login do Super Admin fica com a senha padrão de dev}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      # Login com Microsoft/gov.br — opcionais, os botões só aparecem se as credenciais reais
+      # forem preenchidas no .env.production (ver .env.production.example). WEB_URL é pra onde
+      # o backend redireciona o navegador depois do login — tem que ser a URL pública real do
+      # site (com domínio/HTTPS), nunca localhost, uma vez fora do ambiente de dev.
+      WEB_URL: ${WEB_URL:-http://localhost}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-}
+      MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI:-}
+      GOVBR_ENABLED: ${GOVBR_ENABLED:-false}
+      GOVBR_ISSUER: ${GOVBR_ISSUER:-}
+      GOVBR_CLIENT_ID: ${GOVBR_CLIENT_ID:-}
+      GOVBR_CLIENT_SECRET: ${GOVBR_CLIENT_SECRET:-}
+      GOVBR_REDIRECT_URI: ${GOVBR_REDIRECT_URI:-}
+      GOVBR_AUTO_PROVISION: ${GOVBR_AUTO_PROVISION:-true}
+      GOVBR_PROVISION_ACTIVE: ${GOVBR_PROVISION_ACTIVE:-false}
     volumes:
       - api_uploads:/app/apps/api/uploads
     expose:

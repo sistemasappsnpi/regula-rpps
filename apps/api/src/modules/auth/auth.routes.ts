@@ -5,8 +5,15 @@ import { HttpError } from "../../middleware/errorHandler";
 import { requireAuth, type AuthenticatedRequest } from "../../middleware/auth";
 import { listEnabledFeaturesForUser, listEnabledAdminFeaturesForUser } from "../../middleware/features";
 import { prisma } from "../../db/prisma";
+import { isMicrosoftSsoConfigured, isGovbrSsoConfigured } from "../../config/env";
 
 export const authRouter = Router();
+
+// Pública — o frontend consulta antes de decidir quais botões de SSO desenhar (nunca um botão
+// morto pra um provedor sem credencial configurada, ver LoginPage.tsx).
+authRouter.get("/providers", (_req, res) => {
+  res.json({ microsoft: isMicrosoftSsoConfigured(), govbr: isGovbrSsoConfigured() });
+});
 
 // Funciona tanto para usuário de tenant quanto para o Super Admin da plataforma (tenant null
 // nesse caso) — é o que o frontend usa para saber, após o refresh da página, para qual área
