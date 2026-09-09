@@ -40,6 +40,7 @@ export function AdminTenantsPage() {
     emailPublico: "",
     portalMenuApiUrl: "",
     portalRodapeApiUrl: "",
+    portalCorPrimaria: "",
     seguradosCount: 0,
     plan: "ESSENCIAL" as Tenant["plan"],
     nivelProGestaoAlvo: "" as Nivel | "",
@@ -84,6 +85,7 @@ export function AdminTenantsPage() {
       emailPublico: t.emailPublico ?? "",
       portalMenuApiUrl: t.portalMenuApiUrl ?? "",
       portalRodapeApiUrl: t.portalRodapeApiUrl ?? "",
+      portalCorPrimaria: t.portalCorPrimaria ?? "",
       seguradosCount: t.seguradosCount,
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo ?? "",
@@ -107,6 +109,7 @@ export function AdminTenantsPage() {
         emailPublico: formEdicao.emailPublico.trim() || null,
         portalMenuApiUrl: formEdicao.portalMenuApiUrl.trim() || null,
         portalRodapeApiUrl: formEdicao.portalRodapeApiUrl.trim() || null,
+        portalCorPrimaria: formEdicao.portalCorPrimaria.trim() || null,
         observacao: formEdicao.observacao.trim() || null,
         seguradosCount: formEdicao.seguradosCount,
         plan: formEdicao.plan,
@@ -392,6 +395,24 @@ export function AdminTenantsPage() {
                 placeholder="https://…/api/rodape"
                 className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
               />
+            </label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">Cor institucional (menu e rodapé)</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={/^#[0-9a-fA-F]{6}$/.test(formEdicao.portalCorPrimaria) ? formEdicao.portalCorPrimaria : "#0a4d53"}
+                  onChange={(e) => setFormEdicao({ ...formEdicao, portalCorPrimaria: e.target.value })}
+                  className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-bg"
+                />
+                <input
+                  value={formEdicao.portalCorPrimaria}
+                  onChange={(e) => setFormEdicao({ ...formEdicao, portalCorPrimaria: e.target.value })}
+                  placeholder="#0a4d53"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+                />
+              </div>
+              <span className="mt-1 block text-xs text-ink-muted">Em branco usa a cor padrão do modelo.</span>
             </label>
           </div>
         )}

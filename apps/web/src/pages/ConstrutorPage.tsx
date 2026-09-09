@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FileText, Sparkles, X } from "lucide-react";
-import { api, type ConstrutorExecucao, type ConstrutorTipoResumo, type Upload } from "../lib/api";
+import { api, type ConstrutorExecucao, type ConstrutorTipoResumo, type IndicadorSugestao, type Upload } from "../lib/api";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -106,6 +106,23 @@ export function ConstrutorPage() {
       await carregar();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao aprovar documento.");
+    }
+  }
+
+  async function revisarIndicadorSugestao(
+    id: string,
+    status: "APROVADA" | "REJEITADA" | "CORRIGIDA",
+    valorFinal?: string,
+    competenciaFinal?: string,
+  ) {
+    setErro(null);
+    try {
+      const atualizada = await api.revisarIndicadorSugestao(id, status, valorFinal, competenciaFinal);
+      setResultado((atual) =>
+        atual ? { ...atual, indicadorSugestoes: atual.indicadorSugestoes.map((s) => (s.id === id ? atualizada : s)) } : atual,
+      );
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao revisar sugestão.");
     }
   }
 
@@ -227,23 +244,37 @@ export function ConstrutorPage() {
             </div>
           </div>
 
-          <div className="whitespace-pre-wrap rounded-lg bg-ink/5 p-4 text-sm text-ink">{resultado.conteudo}</div>
-
-          {resultado.citacoes.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Fontes citadas</p>
+          {resultado.tipoDocumento.referenciaTipo === "PORTAL_PREVIDENCIARIO" ? (
+            resultado.indicadorSugestoes.length === 0 ? (
+              <p className="text-sm text-ink-muted">Nenhum indicador foi encontrado nos documentos enviados.</p>
+            ) : (
               <div className="flex flex-col gap-2">
-                {resultado.citacoes.map((c, i) => (
-                  <div key={i} className="rounded-lg border border-border p-2.5 text-xs">
-                    <p className="text-ink-muted">
-                      <span className="font-medium text-ink">{c.documentoNome}</span>
-                      {c.paginaOrigem ? ` · pág. ${c.paginaOrigem}` : ""}
-                    </p>
-                    <p className="mt-1 italic text-ink-muted">"{c.trecho}"</p>
-                  </div>
+                {resultado.indicadorSugestoes.map((s) => (
+                  <IndicadorSugestaoCard key={s.id} sugestao={s} onRevisar={revisarIndicadorSugestao} />
                 ))}
               </div>
-            </div>
+            )
+          ) : (
+            <>
+              <div className="whitespace-pre-wrap rounded-lg bg-ink/5 p-4 text-sm text-ink">{resultado.conteudo}</div>
+
+              {resultado.citacoes.length > 0 && (
+                <div className="mt-4">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Fontes citadas</p>
+                  <div className="flex flex-col gap-2">
+                    {resultado.citacoes.map((c, i) => (
+                      <div key={i} className="rounded-lg border border-border p-2.5 text-xs">
+                        <p className="text-ink-muted">
+                          <span className="font-medium text-ink">{c.documentoNome}</span>
+                          {c.paginaOrigem ? ` · pág. ${c.paginaOrigem}` : ""}
+                        </p>
+                        <p className="mt-1 italic text-ink-muted">"{c.trecho}"</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </Card>
       )}
@@ -270,6 +301,77 @@ export function ConstrutorPage() {
             ))}
           </div>
         </section>
+      )}
+    </div>
+  );
+}
+
+function IndicadorSugestaoCard({
+  sugestao,
+  onRevisar,
+}: {
+  sugestao: IndicadorSugestao;
+  onRevisar: (id: string, status: "APROVADA" | "REJEITADA" | "CORRIGIDA", valorFinal?: string, competenciaFinal?: string) => void;
+}) {
+  const [valor, setValor] = useState(sugestao.valorFinal ?? sugestao.valorSugerido);
+  const [competencia, setCompetencia] = useState(sugestao.competencia.slice(0, 7));
+  const decidido = sugestao.status !== "PENDENTE";
+  const tipo = sugestao.indicador?.tipo ?? "TEXTO";
+  // MOEDA fica como texto livre — <input type="number"> rejeita vírgula decimal (padrão BR) e
+  // deixaria o campo parecendo vazio mesmo com um valor sugerido preenchido.
+  const inputType = tipo === "NUMERICO" ? "number" : tipo === "DATA" ? "date" : "text";
+
+  function salvar(status: "APROVADA" | "CORRIGIDA") {
+    onRevisar(sugestao.id, status, valor, `${competencia}-01`);
+  }
+
+  return (
+    <div className="rounded-lg bg-ink/5 p-3">
+      <p className="mb-2 text-sm font-medium text-ink">
+        {sugestao.indicador?.nome ?? sugestao.indicadorId}
+        {sugestao.indicador?.unidade ? <span className="ml-1 text-xs text-ink-muted">({sugestao.indicador.unidade})</span> : null}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <label className="text-xs text-ink-muted">
+          Competência
+          <input
+            type="month"
+            className="mt-0.5 block rounded-lg border border-border bg-surface p-2 text-sm"
+            value={competencia}
+            disabled={decidido}
+            onChange={(e) => setCompetencia(e.target.value)}
+          />
+        </label>
+        <label className="flex-1 text-xs text-ink-muted">
+          Valor
+          <input
+            type={inputType}
+            inputMode={tipo === "MOEDA" ? "decimal" : undefined}
+            className="mt-0.5 block w-full rounded-lg border border-border bg-surface p-2 text-sm"
+            value={valor}
+            disabled={decidido}
+            onChange={(e) => setValor(e.target.value)}
+          />
+        </label>
+      </div>
+      <p className="mt-2 text-xs text-ink-muted">
+        {sugestao.documentoNomeOrigem}
+        {sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""}
+        {sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}
+      </p>
+      {decidido ? (
+        <p className="mt-2 text-xs font-medium text-ink-muted">Status: {sugestao.status.toLowerCase()}</p>
+      ) : (
+        <div className="mt-2 flex gap-2">
+          <Button
+            onClick={() => salvar(valor === sugestao.valorSugerido && `${competencia}-01` === sugestao.competencia.slice(0, 10) ? "APROVADA" : "CORRIGIDA")}
+          >
+            Aprovar este indicador
+          </Button>
+          <Button variant="ghost" onClick={() => onRevisar(sugestao.id, "REJEITADA")}>
+            Rejeitar
+          </Button>
+        </div>
       )}
     </div>
   );

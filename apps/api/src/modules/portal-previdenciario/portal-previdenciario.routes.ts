@@ -130,13 +130,76 @@ portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
     const rodape = mapearRodape(rodapeBruto);
 
     res.json({
-      tenant: { name: tenant.name, federatedEntity: tenant.federatedEntity, slug: tenant.slug },
+      tenant: {
+        name: tenant.name,
+        federatedEntity: tenant.federatedEntity,
+        slug: tenant.slug,
+        logoUrl: tenant.logoUrl,
+        corPrimaria: tenant.portalCorPrimaria,
+      },
       menu,
       menuConfigurado: Boolean(tenant.portalMenuApiUrl),
       rodape,
       rodapeConfigurado: Boolean(tenant.portalRodapeApiUrl),
       sincronizadoEm: new Date().toISOString(),
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Conteúdo central (relatório/filtro/gráfico): valores já lançados (manual ou aprovados via
+// Construtor de Documentos) dos indicadores do catálogo — ver PortalDocumento/PortalIndicador/
+// TenantPortalIndicadorValor. Público, sem feature flag, mesmo padrão do endpoint de menu/rodapé
+// acima (decisão deliberada de manter simples).
+portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
+    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+
+    const documentos = await prisma.portalDocumento.findMany({
+      where: { ativo: true },
+      orderBy: { sortOrder: "asc" },
+      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+    });
+
+    const todosIndicadorIds = documentos.flatMap((d) => d.indicadores.map((i) => i.id));
+    const valores = todosIndicadorIds.length
+      ? await prisma.tenantPortalIndicadorValor.findMany({
+          where: { tenantId: tenant.id, indicadorId: { in: todosIndicadorIds } },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+
+    // Vigente por (indicadorId, competência) = linha mais recente — mesmo dedup do módulo de
+    // lançamento manual (ver portal-indicadores.repository.ts).
+    const seen = new Set<string>();
+    const vigentes: typeof valores = [];
+    for (const v of valores) {
+      const key = `${v.indicadorId}|${v.competencia.toISOString()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      vigentes.push(v);
+    }
+
+    const documentosComValores = documentos
+      .map((doc) => ({
+        id: doc.id,
+        nome: doc.nome,
+        indicadores: doc.indicadores.map((indicador) => ({
+          id: indicador.id,
+          nome: indicador.nome,
+          tipo: indicador.tipo,
+          unidade: indicador.unidade,
+          valores: vigentes
+            .filter((v) => v.indicadorId === indicador.id)
+            .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
+            .map((v) => ({ competencia: v.competencia, valor: v.valor, origem: v.origem })),
+        })),
+      }))
+      .filter((doc) => doc.indicadores.some((i) => i.valores.length > 0));
+
+    res.json({ documentos: documentosComValores });
   } catch (err) {
     next(err);
   }

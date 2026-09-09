@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShieldCheck, ClipboardList, FileStack, Sparkles, Settings, LogOut, Lock } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, ClipboardList, FileStack, Sparkles, Settings, LogOut, Lock, BarChart3 } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
 import { ThemeToggle } from "../ui/ThemeToggle";
 
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/pro-gestao", label: "Pró-Gestão RPPS", icon: ClipboardList, feature: "pro_gestao" },
   { to: "/documentos", label: "Documentos", icon: FileStack, feature: "pro_gestao" },
   { to: "/construtor", label: "Construtor", icon: Sparkles, feature: "construtor_documentos" },
+  { to: "/portal-indicadores", label: "Portal Previdenciário", icon: BarChart3, feature: "portal_previdenciario_indicadores" },
 ] as const;
 
 const SISTEMA_ITEMS = [{ to: "/configuracoes", label: "Configurações", icon: Settings }];

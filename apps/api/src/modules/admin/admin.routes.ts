@@ -17,6 +17,7 @@ adminRouter.use("/entidades-certificadoras", requireAdminFeature("admin_parametr
 adminRouter.use("/construtor-tipos", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/construtor-catalogo", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/documentos-personalizados", requireAdminFeature("admin_parametrizacoes"));
+adminRouter.use("/portal-documentos", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/auditoria", requireAdminFeature("admin_auditoria"));
 adminRouter.use("/relatorios", requireAdminFeature("admin_relatorios"));
 
@@ -72,6 +73,11 @@ const updateTenantSchema = z.object({
   emailPublico: z.string().email().nullable().optional(),
   portalMenuApiUrl: z.string().url().max(500).nullable().optional(),
   portalRodapeApiUrl: z.string().url().max(500).nullable().optional(),
+  portalCorPrimaria: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida — use o formato #rrggbb.")
+    .nullable()
+    .optional(),
   observacao: z.string().nullable().optional(),
   seguradosCount: z.number().int().nonnegative().optional(),
   plan: z.enum(["ESSENCIAL", "GESTAO", "PERFORMANCE"]).optional(),
@@ -578,6 +584,110 @@ adminRouter.patch("/documentos-personalizados/:id/campos/:campoId", async (req, 
 adminRouter.delete("/documentos-personalizados/:id/campos/:campoId", async (req, res, next) => {
   try {
     await adminRepository.deleteCampoDocumentoPersonalizado(req.params.campoId);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Portal Previdenciário: catálogo de indicadores --------------------------------------
+
+adminRouter.get("/portal-documentos", async (_req, res, next) => {
+  try {
+    res.json({ documentos: await adminRepository.listPortalDocumentos() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+const indicadorPortalSchema = z.object({
+  nome: z.string().min(2),
+  tipo: z.enum(["NUMERICO", "MOEDA", "TEXTO", "DATA"]),
+  unidade: z.string().nullable().optional(),
+});
+
+const criarPortalDocumentoSchema = z.object({
+  nome: z.string().min(3),
+  descricao: z.string().nullable().optional(),
+  indicadores: z.array(indicadorPortalSchema).default([]),
+});
+
+adminRouter.post("/portal-documentos", async (req, res, next) => {
+  try {
+    const parsed = criarPortalDocumentoSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    const documento = await adminRepository.createPortalDocumento({
+      nome: parsed.data.nome,
+      descricao: parsed.data.descricao ?? null,
+      indicadores: parsed.data.indicadores.map((i) => ({ nome: i.nome, tipo: i.tipo, unidade: i.unidade ?? null })),
+    });
+    res.status(201).json(documento);
+  } catch (err) {
+    next(err);
+  }
+});
+
+const atualizarPortalDocumentoSchema = z.object({
+  nome: z.string().min(3).optional(),
+  descricao: z.string().nullable().optional(),
+  ativo: z.boolean().optional(),
+});
+
+adminRouter.patch("/portal-documentos/:id", async (req, res, next) => {
+  try {
+    const parsed = atualizarPortalDocumentoSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    const documento = await adminRepository.updatePortalDocumento(req.params.id, parsed.data);
+    res.json(documento);
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.delete("/portal-documentos/:id", async (req, res, next) => {
+  try {
+    await adminRepository.deletePortalDocumento(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.post("/portal-documentos/:id/indicadores", async (req, res, next) => {
+  try {
+    const parsed = indicadorPortalSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    const indicador = await adminRepository.addIndicadorPortalDocumento(req.params.id, {
+      nome: parsed.data.nome,
+      tipo: parsed.data.tipo,
+      unidade: parsed.data.unidade ?? null,
+    });
+    res.status(201).json(indicador);
+  } catch (err) {
+    next(err);
+  }
+});
+
+const atualizarIndicadorPortalSchema = z.object({
+  nome: z.string().min(2).optional(),
+  tipo: z.enum(["NUMERICO", "MOEDA", "TEXTO", "DATA"]).optional(),
+  unidade: z.string().nullable().optional(),
+});
+
+adminRouter.patch("/portal-documentos/:id/indicadores/:indicadorId", async (req, res, next) => {
+  try {
+    const parsed = atualizarIndicadorPortalSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    const indicador = await adminRepository.updateIndicadorPortalDocumento(req.params.indicadorId, parsed.data);
+    res.json(indicador);
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.delete("/portal-documentos/:id/indicadores/:indicadorId", async (req, res, next) => {
+  try {
+    await adminRepository.deleteIndicadorPortalDocumento(req.params.indicadorId);
     res.status(204).send();
   } catch (err) {
     next(err);

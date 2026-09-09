@@ -8,6 +8,7 @@ import { crpRouter } from "./modules/crp/crp.routes";
 import { proGestaoRouter } from "./modules/pro-gestao/pro-gestao.routes";
 import { uploadsRouter } from "./modules/uploads/uploads.routes";
 import { construtorRouter } from "./modules/construtor/construtor.routes";
+import { portalIndicadoresRouter } from "./modules/portal-indicadores/portal-indicadores.routes";
 import { documentosPersonalizadosRouter } from "./modules/documentos-personalizados/documentos-personalizados.routes";
 import { documentosPersonalizadosPublicoRouter } from "./modules/documentos-personalizados/documentos-personalizados-publico.routes";
 import { transparenciaPublicRouter } from "./modules/transparencia/transparencia.routes";
@@ -32,6 +33,7 @@ export function createApp() {
   app.use("/pro-gestao", proGestaoRouter);
   app.use("/uploads", uploadsRouter);
   app.use("/construtor", construtorRouter);
+  app.use("/portal-indicadores", portalIndicadoresRouter);
   app.use("/documentos-personalizados", documentosPersonalizadosRouter);
   app.use("/public/transparencia", transparenciaPublicRouter);
   app.use("/public/portal-previdenciario", portalPrevidenciarioPublicRouter);

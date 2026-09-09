@@ -3,6 +3,7 @@ import {
   Prisma,
   type NivelAderencia,
   type Plan,
+  type PortalIndicadorTipo,
   type ReferenciaConstrutor,
   type StatusEntidadeCertificadora,
 } from "@prisma/client";
@@ -44,6 +45,7 @@ export const adminRepository = {
       emailPublico: t.emailPublico,
       portalMenuApiUrl: t.portalMenuApiUrl,
       portalRodapeApiUrl: t.portalRodapeApiUrl,
+      portalCorPrimaria: t.portalCorPrimaria,
       observacao: t.observacao,
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo,
@@ -120,6 +122,7 @@ export const adminRepository = {
       emailPublico: string | null;
       portalMenuApiUrl: string | null;
       portalRodapeApiUrl: string | null;
+      portalCorPrimaria: string | null;
       observacao: string | null;
       seguradosCount: number;
       plan: Plan;
@@ -863,5 +866,143 @@ export const adminRepository = {
     const campo = await prisma.documentoPersonalizadoCampo.findUnique({ where: { id: campoDbId } });
     if (!campo) throw new HttpError(404, "Campo não encontrado.");
     await prisma.documentoPersonalizadoCampo.delete({ where: { id: campoDbId } });
+  },
+
+  // ---------------------------------------------------------------------------------------
+  // Portal Previdenciário — catálogo de indicadores (ver schema.prisma, PortalDocumento):
+  // cada "documento" (ex.: DIPR) agrupa indicadores tipados; o RPPS lança valores por
+  // competência depois (fora do Admin Global — ver módulo do Portal Previdenciário).
+  // ---------------------------------------------------------------------------------------
+  async listPortalDocumentos() {
+    return prisma.portalDocumento.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+    });
+  },
+
+  /**
+   * Espelha um PortalDocumento num ConstrutorTipoDocumento (referenciaTipo=PORTAL_PREVIDENCIARIO),
+   * pra ele aparecer pro tenant no Construtor de Documentos sem o Super Admin ter que cadastrar
+   * um tipo separado à mão — mesmo padrão de syncConstrutorTipoParaPersonalizado. Sem prompt do
+   * admin: a extração aqui é guiada pelo catálogo de PortalIndicador do próprio documento, não
+   * por texto livre (ver extrairIndicadoresDoPdf). Idempotente.
+   */
+  async syncConstrutorTipoParaPortalDocumento(doc: { id: string; nome: string; ativo: boolean }) {
+    const existente = await prisma.construtorTipoDocumento.findUnique({ where: { portalDocumentoId: doc.id } });
+    const promptInstrucoes =
+      "Extrair, do(s) PDF(s) enviado(s), os indicadores cadastrados para este documento no catálogo do Portal " +
+      "Previdenciário, identificando também a competência (mês/ano) de cada valor encontrado, sempre citando " +
+      "página e trecho de origem.";
+
+    if (existente) {
+      await prisma.construtorTipoDocumento.update({
+        where: { id: existente.id },
+        data: { nome: doc.nome, ativo: doc.ativo },
+      });
+    } else {
+      await prisma.construtorTipoDocumento.create({
+        data: {
+          nome: doc.nome,
+          referenciaTipo: "PORTAL_PREVIDENCIARIO",
+          portalDocumentoId: doc.id,
+          promptInstrucoes,
+          ativo: doc.ativo,
+        },
+      });
+    }
+  },
+
+  async createPortalDocumento(input: {
+    nome: string;
+    descricao: string | null;
+    indicadores: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null }[];
+  }) {
+    const baseCodigo = slugify(input.nome);
+    let codigo = baseCodigo;
+    let tentativa = 1;
+    while (await prisma.portalDocumento.findUnique({ where: { codigo } })) {
+      codigo = `${baseCodigo}-${++tentativa}`;
+    }
+
+    const totalExistente = await prisma.portalDocumento.count();
+
+    const usados = new Set<string>();
+    const indicadoresData = input.indicadores.map((ind, i) => {
+      const base = slugify(ind.nome) || `indicador-${i + 1}`;
+      let indicadorId = base;
+      let n = 1;
+      while (usados.has(indicadorId)) indicadorId = `${base}-${++n}`;
+      usados.add(indicadorId);
+      return { indicadorId, nome: ind.nome, tipo: ind.tipo, unidade: ind.unidade, sortOrder: i };
+    });
+
+    const documento = await prisma.portalDocumento.create({
+      data: {
+        codigo,
+        nome: input.nome,
+        descricao: input.descricao,
+        sortOrder: totalExistente,
+        indicadores: { create: indicadoresData },
+      },
+      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+    });
+
+    await adminRepository.syncConstrutorTipoParaPortalDocumento(documento);
+    return documento;
+  },
+
+  async updatePortalDocumento(id: string, input: Partial<{ nome: string; descricao: string | null; ativo: boolean }>) {
+    const doc = await prisma.portalDocumento.findUnique({ where: { id } });
+    if (!doc) throw new HttpError(404, "Documento não encontrado.");
+    const atualizado = await prisma.portalDocumento.update({
+      where: { id },
+      data: input,
+      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+    });
+
+    await adminRepository.syncConstrutorTipoParaPortalDocumento(atualizado);
+    return atualizado;
+  },
+
+  async deletePortalDocumento(id: string) {
+    const doc = await prisma.portalDocumento.findUnique({ where: { id } });
+    if (!doc) throw new HttpError(404, "Documento não encontrado.");
+    // Desativa o espelho no Construtor antes de excluir — a FK (onDelete: SetNull) evita que a
+    // exclusão do documento seja bloqueada mesmo se esse tipo já tiver execuções geradas.
+    await prisma.construtorTipoDocumento.updateMany({ where: { portalDocumentoId: id }, data: { ativo: false } });
+    await prisma.portalDocumento.delete({ where: { id } });
+  },
+
+  async addIndicadorPortalDocumento(
+    documentoId: string,
+    input: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null },
+  ) {
+    const doc = await prisma.portalDocumento.findUnique({ where: { id: documentoId }, include: { indicadores: true } });
+    if (!doc) throw new HttpError(404, "Documento não encontrado.");
+
+    const usados = new Set(doc.indicadores.map((i) => i.indicadorId));
+    const base = slugify(input.nome) || `indicador-${doc.indicadores.length + 1}`;
+    let indicadorId = base;
+    let n = 1;
+    while (usados.has(indicadorId)) indicadorId = `${base}-${++n}`;
+
+    return prisma.portalIndicador.create({
+      data: { documentoId, indicadorId, nome: input.nome, tipo: input.tipo, unidade: input.unidade, sortOrder: doc.indicadores.length },
+    });
+  },
+
+  async updateIndicadorPortalDocumento(
+    indicadorDbId: string,
+    input: Partial<{ nome: string; tipo: PortalIndicadorTipo; unidade: string | null }>,
+  ) {
+    const indicador = await prisma.portalIndicador.findUnique({ where: { id: indicadorDbId } });
+    if (!indicador) throw new HttpError(404, "Indicador não encontrado.");
+    return prisma.portalIndicador.update({ where: { id: indicadorDbId }, data: input });
+  },
+
+  async deleteIndicadorPortalDocumento(indicadorDbId: string) {
+    const indicador = await prisma.portalIndicador.findUnique({ where: { id: indicadorDbId } });
+    if (!indicador) throw new HttpError(404, "Indicador não encontrado.");
+    await prisma.portalIndicador.delete({ where: { id: indicadorDbId } });
   },
 };

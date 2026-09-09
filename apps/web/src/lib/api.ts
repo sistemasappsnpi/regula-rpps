@@ -218,6 +218,74 @@ export const api = {
   adminRemoveCampoDocumentoPersonalizado: (documentoId: string, campoId: string) =>
     request<unknown>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}`, { method: "DELETE" }),
 
+  // --- Admin Global: Portal Previdenciário (catálogo de indicadores) ----------------------
+
+  adminListPortalDocumentos: () => request<{ documentos: AdminPortalDocumento[] }>("/admin/portal-documentos"),
+
+  adminCreatePortalDocumento: (input: {
+    nome: string;
+    descricao: string | null;
+    indicadores: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null }[];
+  }) => request<AdminPortalDocumento>("/admin/portal-documentos", { method: "POST", body: JSON.stringify(input) }),
+
+  adminUpdatePortalDocumento: (id: string, patch: Partial<{ nome: string; descricao: string | null; ativo: boolean }>) =>
+    request<AdminPortalDocumento>(`/admin/portal-documentos/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+
+  adminDeletePortalDocumento: (id: string) => request<unknown>(`/admin/portal-documentos/${id}`, { method: "DELETE" }),
+
+  adminAddIndicadorPortalDocumento: (
+    documentoId: string,
+    input: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null },
+  ) =>
+    request<AdminPortalIndicador>(`/admin/portal-documentos/${documentoId}/indicadores`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  adminUpdateIndicadorPortalDocumento: (
+    documentoId: string,
+    indicadorId: string,
+    patch: Partial<{ nome: string; tipo: PortalIndicadorTipo; unidade: string | null }>,
+  ) =>
+    request<AdminPortalIndicador>(`/admin/portal-documentos/${documentoId}/indicadores/${indicadorId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+
+  adminRemoveIndicadorPortalDocumento: (documentoId: string, indicadorId: string) =>
+    request<unknown>(`/admin/portal-documentos/${documentoId}/indicadores/${indicadorId}`, { method: "DELETE" }),
+
+  // --- Portal Previdenciário (tenant: lançamento manual de indicadores) -------------------
+
+  listPortalIndicadoresCatalogo: () => request<{ documentos: PortalDocumentoCatalogo[] }>("/portal-indicadores"),
+
+  indicadorHistorico: (indicadorId: string) =>
+    request<{ historico: PortalIndicadorValor[] }>(`/portal-indicadores/${indicadorId}/historico`),
+
+  setIndicadorValor: (indicadorId: string, competencia: string, valor: string) =>
+    request<PortalIndicadorValor>(`/portal-indicadores/${indicadorId}/valor`, {
+      method: "PUT",
+      body: JSON.stringify({ competencia, valor }),
+    }),
+
+  revisarIndicadorSugestao: (
+    sugestaoId: string,
+    status: "APROVADA" | "REJEITADA" | "CORRIGIDA",
+    valorFinal?: string,
+    competenciaFinal?: string,
+  ) =>
+    request<IndicadorSugestao>(`/construtor/indicador-sugestoes/${sugestaoId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, valorFinal, competenciaFinal }),
+    }),
+
+  portalPrevidenciarioIndicadores: async (slug: string): Promise<PortalIndicadoresPublico> => {
+    const res = await fetch(`/api/public/portal-previdenciario/${slug}/indicadores`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Indicadores do Portal Previdenciário indisponíveis.");
+    return data as PortalIndicadoresPublico;
+  },
+
   // --- Admin Global (Super Admin da plataforma) -----------------------------------------
 
   adminListTenants: () => request<{ tenants: AdminTenant[] }>("/admin/tenants"),
@@ -245,6 +313,7 @@ export const api = {
       emailPublico: string | null;
       portalMenuApiUrl: string | null;
       portalRodapeApiUrl: string | null;
+      portalCorPrimaria: string | null;
       observacao: string | null;
       seguradosCount: number;
       plan: Tenant["plan"];
@@ -498,6 +567,7 @@ export interface AdminTenant {
   emailPublico: string | null;
   portalMenuApiUrl: string | null;
   portalRodapeApiUrl: string | null;
+  portalCorPrimaria: string | null;
   observacao: string | null;
   plan: Tenant["plan"];
   nivelProGestaoAlvo: Nivel | null;
@@ -650,7 +720,7 @@ export interface Auditoria {
 export interface ConstrutorTipoResumo {
   id: string;
   nome: string;
-  referenciaTipo: "PRO_GESTAO" | "CRP" | "LIVRE" | "PERSONALIZADO";
+  referenciaTipo: "PRO_GESTAO" | "CRP" | "LIVRE" | "PERSONALIZADO" | "PORTAL_PREVIDENCIARIO";
   referenciaNome: string | null;
 }
 
@@ -679,8 +749,9 @@ export interface ConstrutorExecucao {
   citacoes: ConstrutorCitacao[];
   geradoEm: string;
   aprovadoEm: string | null;
-  tipoDocumento: { nome: string };
+  tipoDocumento: { nome: string; referenciaTipo: ConstrutorTipoResumo["referenciaTipo"] };
   documentos: { id: string; nomeArquivo: string }[];
+  indicadorSugestoes: IndicadorSugestao[];
 }
 
 export interface PortalTenantInfo {
@@ -731,7 +802,7 @@ export interface PortalPrevidenciarioRodape {
 }
 
 export interface PortalPrevidenciario {
-  tenant: { name: string; federatedEntity: string; slug: string };
+  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null };
   menu: PortalPrevidenciarioMenuItem[] | null;
   menuConfigurado: boolean;
   rodape: PortalPrevidenciarioRodape | null;
@@ -781,6 +852,90 @@ export interface AdminDocumentoPersonalizado {
   promptInstrucoes: string | null;
   ativo: boolean;
   campos: DocumentoPersonalizadoCampoAdmin[];
+}
+
+export type PortalIndicadorTipo = "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
+
+export interface AdminPortalIndicador {
+  id: string;
+  indicadorId: string;
+  nome: string;
+  tipo: PortalIndicadorTipo;
+  unidade: string | null;
+}
+
+export interface AdminPortalDocumento {
+  id: string;
+  codigo: string;
+  nome: string;
+  descricao: string | null;
+  ativo: boolean;
+  indicadores: AdminPortalIndicador[];
+}
+
+export interface PortalIndicadorValor {
+  id: string;
+  indicadorId: string;
+  competencia: string;
+  valor: string;
+  origem: "MANUAL" | "PDF_EXTRACTION" | "AI_COMPOSED";
+  origemDetalhe: string | null;
+  createdAt: string;
+  criadoPor: { id: string; name: string };
+}
+
+export interface PortalIndicadorCatalogo {
+  id: string;
+  indicadorId: string;
+  nome: string;
+  tipo: PortalIndicadorTipo;
+  unidade: string | null;
+  valoresAtuais: PortalIndicadorValor[];
+}
+
+export interface PortalDocumentoCatalogo {
+  id: string;
+  codigo: string;
+  nome: string;
+  descricao: string | null;
+  indicadores: PortalIndicadorCatalogo[];
+}
+
+export interface IndicadorSugestao {
+  id: string;
+  indicadorId: string;
+  competencia: string;
+  valorSugerido: string;
+  valorFinal: string | null;
+  documentoNomeOrigem: string;
+  paginaOrigem: number | null;
+  trechoOrigem: string | null;
+  status: "PENDENTE" | "APROVADA" | "REJEITADA" | "CORRIGIDA";
+  indicador?: { id: string; nome: string; tipo: PortalIndicadorTipo; unidade: string | null };
+}
+
+export interface PortalIndicadorPublicoValor {
+  competencia: string;
+  valor: string;
+  origem: "MANUAL" | "PDF_EXTRACTION" | "AI_COMPOSED";
+}
+
+export interface PortalIndicadorPublico {
+  id: string;
+  nome: string;
+  tipo: PortalIndicadorTipo;
+  unidade: string | null;
+  valores: PortalIndicadorPublicoValor[];
+}
+
+export interface PortalDocumentoPublico {
+  id: string;
+  nome: string;
+  indicadores: PortalIndicadorPublico[];
+}
+
+export interface PortalIndicadoresPublico {
+  documentos: PortalDocumentoPublico[];
 }
 
 export interface Tenant {

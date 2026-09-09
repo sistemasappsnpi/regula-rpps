@@ -56,6 +56,19 @@ enum ReferenciaConstrutor {
   CRP
   LIVRE
   PERSONALIZADO
+  PORTAL_PREVIDENCIARIO
+}
+
+// Determina como um PortalIndicador é exibido no conteúdo central do Portal Previdenciário
+// (ver /docs — módulo novo): NUMERICO/MOEDA com mais de uma competência lançada vira gráfico de
+// série temporal automaticamente; com uma competência só, vira card de número; TEXTO/DATA nunca
+// viram gráfico, só aparecem na tabela de dados estruturados. Essa regra por tipo (não por
+// documento) é o que permite documento novo funcionar sem código novo.
+enum PortalIndicadorTipo {
+  NUMERICO
+  MOEDA
+  TEXTO
+  DATA
 }
 
 // TENANT: feature usada por usuários de RPPS, em cascata Plano → Cliente → Usuário (ver Feature).
@@ -93,6 +106,10 @@ model Tenant {
   // a partir disso segue um padrão fixo (3 colunas + linha de redes sociais + barra de copyright
   // com status de sincronização) ainda não implementado no frontend.
   portalRodapeApiUrl String?
+  // Cor institucional (hex, ex.: "#0a4d53") usada na barra de menu e no rodapé do Portal
+  // Previdenciário deste RPPS — mesmo papel de --nav-active/--footer-bg no modelo de referência
+  // (uma cor só, reaproveitada nos dois lugares). Nulo cai na cor padrão do modelo (petróleo).
+  portalCorPrimaria  String?
   observacao         String?         @db.Text
   plan               Plan            @default(ESSENCIAL)
   seguradosCount     Int             @default(0)
@@ -120,6 +137,7 @@ model Tenant {
   featureOverrides    TenantFeature[]
   documentoPersonalizadoValores      TenantDocumentoPersonalizadoValor[]
   documentoPersonalizadoPublicacoes  TenantDocumentoPersonalizadoPublicacao[]
+  portalIndicadorValores             TenantPortalIndicadorValor[]
 
   @@map("tenants")
 }
@@ -147,6 +165,7 @@ model User {
   documentoUploadsFeitos DocumentoUpload[]
   featureOverrides       UserFeature[]
   campoValoresPersonalizadosCriados TenantDocumentoPersonalizadoValor[]
+  portalIndicadorValoresCriados     TenantPortalIndicadorValor[]
 
   @@map("users")
 }
@@ -336,6 +355,11 @@ model ConstrutorTipoDocumento {
   // syncConstrutorTipoParaPersonalizado). onDelete SetNull: se o documento personalizado for
   // excluído, este registro só perde a referência (fica inativo), nunca bloqueia a exclusão.
   documentoPersonalizadoId String?      @unique
+  // Só para referenciaTipo=PORTAL_PREVIDENCIARIO: espelhado automaticamente a partir de
+  // PortalDocumento (nunca criado/editado à mão — ver syncConstrutorTipoParaPortalDocumento).
+  // Sem prompt do admin: a extração é guiada pelo catálogo de PortalIndicador, não por texto
+  // livre — ver extrairIndicadoresDoPdf.
+  portalDocumentoId String?             @unique
   promptInstrucoes String               @db.Text
   ativo            Boolean              @default(true)
   sortOrder        Int                  @default(0)
@@ -345,6 +369,7 @@ model ConstrutorTipoDocumento {
   acao      ProGestaoAcao?             @relation(fields: [acaoCodigo], references: [codigo])
   criterion CrpCriterion?              @relation(fields: [criterionCode], references: [code])
   documentoPersonalizado DocumentoPersonalizado? @relation(fields: [documentoPersonalizadoId], references: [id], onDelete: SetNull)
+  portalDocumento PortalDocumento?      @relation(fields: [portalDocumentoId], references: [id], onDelete: SetNull)
   execucoes TenantConstrutorExecucao[]
 
   @@map("construtor_tipos_documento")
@@ -365,6 +390,7 @@ model TenantConstrutorExecucao {
   tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tipoDocumento ConstrutorTipoDocumento @relation(fields: [tipoDocumentoId], references: [id])
   documentos    DocumentoUpload[]
+  indicadorSugestoes ConstrutorIndicadorSugestao[]
 
   @@index([tenantId])
   @@map("tenant_construtor_execucoes")
@@ -386,6 +412,29 @@ model CampoExtraidoSugestao {
   upload DocumentoUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
 
   @@map("campo_extraido_sugestoes")
+}
+
+// Equivalente a CampoExtraidoSugestao, mas para o Portal Previdenciário: a IA extrai
+// {indicador, competência, valor} em vez de {campo, valor} — o mesmo indicador pode gerar
+// várias sugestões numa mesma execução (uma por competência, ex. tabela mensal), por isso
+// guarda também de qual PDF-fonte (dentre os vários da execução) cada sugestão veio.
+model ConstrutorIndicadorSugestao {
+  id                  String         @id @default(cuid())
+  execucaoId          String
+  indicadorId         String // PortalIndicador.id
+  competencia         DateTime // normalizado pro 1º dia do mês de referência
+  valorSugerido       String         @db.Text
+  documentoNomeOrigem String
+  paginaOrigem        Int?
+  trechoOrigem        String?        @db.Text
+  status              SugestaoStatus @default(PENDENTE)
+  valorFinal          String?        @db.Text
+  createdAt           DateTime       @default(now())
+
+  execucao  TenantConstrutorExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
+  indicador PortalIndicador          @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+
+  @@map("construtor_indicador_sugestoes")
 }
 
 // Rascunho gerado pela IA para um documento composto (ex.: Transparência), citando de qual
@@ -509,6 +558,69 @@ model TenantDocumentoPersonalizadoPublicacao {
 
   @@unique([tenantId, documentoId])
   @@map("tenant_documento_personalizado_publicacoes")
+}
+
+// ---------------------------------------------------------------------------
+// Portal Previdenciário — conteúdo central (menu/rodapé ficam em Tenant.portalMenuApiUrl/
+// portalRodapeApiUrl): catálogo de indicadores cadastrado pelo Admin Global (ex.: documento
+// "DIPR" com indicadores "Valor total de repasses", "Número de segurados"...) + os valores que
+// cada RPPS lança por competência (mês/ano), extraídos de PDF ou digitados à mão. Filtro,
+// gráfico e geração de relatório no frontend são genéricos em cima desse catálogo — nenhum
+// código conhece "DIPR" ou "DRAA" por nome, só o tipo de cada indicador (ver PortalIndicadorTipo).
+// ---------------------------------------------------------------------------
+
+model PortalDocumento {
+  id        String   @id @default(cuid())
+  codigo    String   @unique // slug, ex.: "dipr"
+  nome      String
+  descricao String?  @db.Text
+  ativo     Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  indicadores PortalIndicador[]
+  construtorTipos ConstrutorTipoDocumento[]
+
+  @@map("portal_documentos")
+}
+
+model PortalIndicador {
+  id          String              @id @default(cuid())
+  documentoId String
+  indicadorId String // slug dentro do documento, ex.: "valor-total-repasses"
+  nome        String
+  tipo        PortalIndicadorTipo @default(NUMERICO)
+  unidade     String? // ex.: "R$", "%", "pessoas" — só exibição, não afeta o tipo
+  sortOrder   Int                 @default(0)
+
+  documento PortalDocumento             @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  valores   TenantPortalIndicadorValor[]
+  construtorSugestoes ConstrutorIndicadorSugestao[]
+
+  @@unique([documentoId, indicadorId])
+  @@map("portal_indicadores")
+}
+
+// Append-only, mesmo padrão de TenantProGestaoCampoValor — nunca sobrescreve; o valor vigente de
+// um (tenantId, indicadorId, competencia) é a linha mais recente (maior createdAt).
+model TenantPortalIndicadorValor {
+  id              String      @id @default(cuid())
+  tenantId        String
+  indicadorId     String
+  competencia     DateTime // normalizado pro primeiro dia do mês/trimestre de referência
+  valor           String      @db.Text
+  origem          FieldOrigin @default(MANUAL)
+  origemDetalhe   String?     @db.Text
+  criadoPorUserId String
+  createdAt       DateTime    @default(now())
+
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  indicador PortalIndicador @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  criadoPor User            @relation(fields: [criadoPorUserId], references: [id])
+
+  @@index([tenantId, indicadorId, competencia, createdAt])
+  @@map("tenant_portal_indicador_valores")
 }
 
 // ---------------------------------------------------------------------------

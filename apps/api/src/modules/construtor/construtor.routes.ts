@@ -3,7 +3,9 @@ import { z } from "zod";
 import { requireAuth, requireTenant, type AuthenticatedRequest } from "../../middleware/auth";
 import { requireFeature } from "../../middleware/features";
 import { HttpError } from "../../middleware/errorHandler";
+import { prisma } from "../../db/prisma";
 import { construtorRepository } from "./construtor.repository";
+import { normalizarCompetencia, registrarValorDeIndicador } from "../portal-indicadores/portal-indicadores.service";
 
 // Construtor de Documentos: o usuário escolhe um tipo de documento (configurado pelo Admin
 // Global) e quantos documentos-fonte já enviados quiser (ver /uploads/construtor) e pede pra IA
@@ -20,7 +22,7 @@ construtorRouter.use(requireAuth, requireTenant, requireFeature("construtor_docu
 
 construtorRouter.get("/tipos", async (req: AuthenticatedRequest, res, next) => {
   try {
-    res.json({ tipos: await construtorRepository.listTiposAtivos(req.auth!.tenantId!) });
+    res.json({ tipos: await construtorRepository.listTiposAtivos(req.auth!.tenantId!, req.auth!.userId) });
   } catch (err) {
     next(err);
   }
@@ -70,6 +72,57 @@ construtorRouter.post("/execucoes/:id/aprovar", async (req: AuthenticatedRequest
   try {
     const execucao = await construtorRepository.aprovarExecucao(req.auth!.tenantId!, req.params.id, req.auth!.userId);
     res.json(serializarExecucao(execucao));
+  } catch (err) {
+    next(err);
+  }
+});
+
+const indicadorSugestaoSchema = z.object({
+  status: z.enum(["APROVADA", "REJEITADA", "CORRIGIDA"]),
+  valorFinal: z.string().optional(),
+  competenciaFinal: z.string().optional(),
+});
+
+// Cada sugestão de indicador é aprovada/corrigida/rejeitada individualmente — mesmo requisito de
+// "nunca um botão único de aprovar tudo" já aplicado em /uploads/sugestoes/:sugestaoId.
+construtorRouter.patch("/indicador-sugestoes/:id", async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const parsed = indicadorSugestaoSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, "Payload inválido.");
+
+    const sugestao = await prisma.construtorIndicadorSugestao.findUnique({
+      where: { id: req.params.id },
+      include: { execucao: true },
+    });
+    if (!sugestao || sugestao.execucao.tenantId !== req.auth!.tenantId!) {
+      throw new HttpError(404, "Sugestão não encontrada.");
+    }
+
+    const valorFinal = parsed.data.valorFinal ?? sugestao.valorSugerido;
+    const competenciaFinal = parsed.data.competenciaFinal
+      ? normalizarCompetencia(parsed.data.competenciaFinal)
+      : sugestao.competencia;
+
+    const atualizada = await prisma.construtorIndicadorSugestao.update({
+      where: { id: sugestao.id },
+      data: { status: parsed.data.status, valorFinal, competencia: competenciaFinal },
+    });
+
+    if (parsed.data.status === "APROVADA" || parsed.data.status === "CORRIGIDA") {
+      await registrarValorDeIndicador({
+        tenantId: req.auth!.tenantId!,
+        indicadorDbId: sugestao.indicadorId,
+        competencia: competenciaFinal,
+        valor: valorFinal,
+        origem: "PDF_EXTRACTION",
+        origemDetalhe: `PDF "${sugestao.documentoNomeOrigem}"${
+          sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""
+        }${sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}`,
+        userId: req.auth!.userId,
+      });
+    }
+
+    res.json(atualizada);
   } catch (err) {
     next(err);
   }

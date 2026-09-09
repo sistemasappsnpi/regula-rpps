@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
-import { Sparkles, FileStack, Plus, Trash2 } from "lucide-react";
-import { api, type AdminConstrutorTipo, type AdminDocumentoPersonalizado } from "../../lib/api";
+import { Sparkles, FileStack, ChartLine, Plus, Trash2 } from "lucide-react";
+import {
+  api,
+  type AdminConstrutorTipo,
+  type AdminDocumentoPersonalizado,
+  type AdminPortalDocumento,
+  type PortalIndicadorTipo,
+} from "../../lib/api";
 import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -537,6 +543,286 @@ function DocumentosPersonalizadosSection() {
   );
 }
 
+type IndicadorForm = { id?: string; nome: string; tipo: PortalIndicadorTipo; unidade: string };
+
+const PORTAL_DOCUMENTO_FORM_VAZIO = { nome: "", descricao: "", indicadores: [] as IndicadorForm[] };
+
+const TIPO_INDICADOR_LABEL: Record<PortalIndicadorTipo, string> = {
+  NUMERICO: "Número",
+  MOEDA: "Moeda (R$)",
+  TEXTO: "Texto",
+  DATA: "Data",
+};
+
+// Catálogo do conteúdo central do Portal Previdenciário (ver PortalPrevidenciarioPage): cada
+// documento (ex.: DIPR) agrupa indicadores tipados. Filtro, gráfico e relatório no frontend do
+// tenant são genéricos em cima do `tipo` de cada indicador — cadastrar um documento novo aqui
+// já basta pra ele funcionar lá, sem precisar de código novo.
+function PortalIndicadoresSection() {
+  const [documentos, setDocumentos] = useState<AdminPortalDocumento[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [editando, setEditando] = useState<AdminPortalDocumento | null>(null);
+  const [form, setForm] = useState(PORTAL_DOCUMENTO_FORM_VAZIO);
+  const [erro, setErro] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
+
+  const carregar = () => api.adminListPortalDocumentos().then((res) => setDocumentos(res.documentos));
+
+  useEffect(() => {
+    carregar().finally(() => setLoading(false));
+  }, []);
+
+  function novo() {
+    setErro(null);
+    setEditando(null);
+    setForm(PORTAL_DOCUMENTO_FORM_VAZIO);
+    setMostrarModal(true);
+  }
+
+  function editar(d: AdminPortalDocumento) {
+    setErro(null);
+    setEditando(d);
+    setForm({
+      nome: d.nome,
+      descricao: d.descricao ?? "",
+      indicadores: d.indicadores.map((i) => ({ id: i.id, nome: i.nome, tipo: i.tipo, unidade: i.unidade ?? "" })),
+    });
+    setMostrarModal(true);
+  }
+
+  function adicionarIndicador() {
+    setForm((f) => ({ ...f, indicadores: [...f.indicadores, { nome: "", tipo: "NUMERICO", unidade: "" }] }));
+  }
+
+  function atualizarIndicador(index: number, patch: Partial<IndicadorForm>) {
+    setForm((f) => ({ ...f, indicadores: f.indicadores.map((ind, i) => (i === index ? { ...ind, ...patch } : ind)) }));
+  }
+
+  function removerIndicadorDoForm(index: number) {
+    setForm((f) => ({ ...f, indicadores: f.indicadores.filter((_, i) => i !== index) }));
+  }
+
+  async function salvar() {
+    setErro(null);
+    if (!form.nome.trim()) {
+      setErro("Dê um nome ao documento.");
+      return;
+    }
+    setSalvando(true);
+    try {
+      if (editando) {
+        await api.adminUpdatePortalDocumento(editando.id, {
+          nome: form.nome,
+          descricao: form.descricao.trim() || null,
+        });
+        for (const indicador of form.indicadores) {
+          if (indicador.id) {
+            await api.adminUpdateIndicadorPortalDocumento(editando.id, indicador.id, {
+              nome: indicador.nome,
+              tipo: indicador.tipo,
+              unidade: indicador.unidade.trim() || null,
+            });
+          } else if (indicador.nome.trim()) {
+            await api.adminAddIndicadorPortalDocumento(editando.id, {
+              nome: indicador.nome,
+              tipo: indicador.tipo,
+              unidade: indicador.unidade.trim() || null,
+            });
+          }
+        }
+      } else {
+        await api.adminCreatePortalDocumento({
+          nome: form.nome,
+          descricao: form.descricao.trim() || null,
+          indicadores: form.indicadores
+            .filter((i) => i.nome.trim())
+            .map((i) => ({ nome: i.nome, tipo: i.tipo, unidade: i.unidade.trim() || null })),
+        });
+      }
+      setMostrarModal(false);
+      setEditando(null);
+      setForm(PORTAL_DOCUMENTO_FORM_VAZIO);
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao salvar documento.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function removerIndicadorSalvo(index: number) {
+    if (!editando) {
+      removerIndicadorDoForm(index);
+      return;
+    }
+    const indicador = form.indicadores[index];
+    if (!indicador.id) {
+      removerIndicadorDoForm(index);
+      return;
+    }
+    setErro(null);
+    try {
+      await api.adminRemoveIndicadorPortalDocumento(editando.id, indicador.id);
+      removerIndicadorDoForm(index);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao remover indicador.");
+    }
+  }
+
+  async function alternarAtivo(d: AdminPortalDocumento) {
+    setErro(null);
+    try {
+      await api.adminUpdatePortalDocumento(d.id, { ativo: !d.ativo });
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao alterar status.");
+    }
+  }
+
+  async function excluir(d: AdminPortalDocumento) {
+    const confirmado = window.confirm(
+      `Excluir "${d.nome}"? Valores já lançados pelos RPPS pra esses indicadores somem do Portal Previdenciário. Esta ação não pode ser desfeita.`,
+    );
+    if (!confirmado) return;
+    setErro(null);
+    try {
+      await api.adminDeletePortalDocumento(d.id);
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao excluir.");
+    }
+  }
+
+  return (
+    <section className="mb-10">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-lg font-bold text-ink">Portal Previdenciário — Indicadores</h2>
+          <p className="text-sm text-ink-muted">
+            Catálogo de documentos (ex.: DIPR) e seus indicadores. Cada RPPS lança os valores por competência
+            (manualmente ou por PDF) na própria página do Portal Previdenciário — filtro, gráfico e relatório lá se
+            adaptam sozinhos ao que for cadastrado aqui.
+          </p>
+        </div>
+        <Button onClick={novo}>Novo documento</Button>
+      </div>
+
+      {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
+
+      {loading ? (
+        <p className="text-sm text-ink-muted">Carregando…</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {documentos.map((d) => (
+            <Card key={d.id} className="p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-ink">{d.nome}</p>
+                  <p className="mt-0.5 text-xs text-ink-muted">
+                    {d.indicadores.length} indicador{d.indicadores.length === 1 ? "" : "es"}
+                    {d.descricao ? ` — ${d.descricao}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone={d.ativo ? "ok" : "neutral"}>{d.ativo ? "Ativo" : "Inativo"}</Badge>
+                  <Button variant="ghost" onClick={() => alternarAtivo(d)}>
+                    {d.ativo ? "Desativar" : "Ativar"}
+                  </Button>
+                  <Button variant="ghost" onClick={() => editar(d)}>
+                    Editar
+                  </Button>
+                  <button onClick={() => excluir(d)} className="text-xs font-medium text-crit hover:underline">
+                    excluir
+                  </button>
+                </div>
+              </div>
+            </Card>
+          ))}
+          {documentos.length === 0 && <p className="text-sm text-ink-muted">Nenhum documento cadastrado ainda.</p>}
+        </div>
+      )}
+
+      <Modal
+        open={mostrarModal}
+        onClose={() => setMostrarModal(false)}
+        title={editando ? "Editar documento" : "Novo documento"}
+        icon={<ChartLine size={16} />}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setMostrarModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={salvar} disabled={salvando}>
+              {salvando ? "Salvando…" : "Salvar"}
+            </Button>
+          </>
+        }
+      >
+        {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
+        <div className="flex flex-col gap-3">
+          <Campo label="Nome do documento (ex.: DIPR)" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-ink">Descrição (opcional)</span>
+            <textarea
+              rows={2}
+              value={form.descricao}
+              onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+            />
+          </label>
+
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-ink">Indicadores</span>
+            <Button variant="ghost" onClick={adicionarIndicador}>
+              <Plus size={14} /> Adicionar indicador
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {form.indicadores.map((indicador, i) => (
+              <div key={indicador.id ?? `novo-${i}`} className="flex items-center gap-2 rounded-lg border border-border p-2">
+                <input
+                  value={indicador.nome}
+                  onChange={(e) => atualizarIndicador(i, { nome: e.target.value })}
+                  placeholder="Nome do indicador (ex.: Valor total de repasses)"
+                  className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+                />
+                <select
+                  value={indicador.tipo}
+                  onChange={(e) => atualizarIndicador(i, { tipo: e.target.value as PortalIndicadorTipo })}
+                  className="shrink-0 rounded-lg border border-border bg-bg px-2 py-2 text-sm outline-none focus:border-petrol"
+                >
+                  {Object.entries(TIPO_INDICADOR_LABEL).map(([valor, label]) => (
+                    <option key={valor} value={valor}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={indicador.unidade}
+                  onChange={(e) => atualizarIndicador(i, { unidade: e.target.value })}
+                  placeholder="Unidade (ex.: R$)"
+                  className="w-28 shrink-0 rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+                />
+                <button
+                  onClick={() => removerIndicadorSalvo(i)}
+                  className="shrink-0 text-crit hover:text-crit/80"
+                  title="Remover indicador"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            {form.indicadores.length === 0 && (
+              <p className="text-xs text-ink-muted">Nenhum indicador ainda — adicione ao menos um.</p>
+            )}
+          </div>
+        </div>
+      </Modal>
+    </section>
+  );
+}
+
 export function AdminParametrizacoesPage() {
   return (
     <div className="mx-auto max-w-5xl">
@@ -549,6 +835,7 @@ export function AdminParametrizacoesPage() {
 
       <ConstrutorDocumentosSection />
       <DocumentosPersonalizadosSection />
+      <PortalIndicadoresSection />
     </div>
   );
 }

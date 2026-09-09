@@ -104,6 +104,107 @@ export async function extrairCamposDoPdf(
   return parsed.resultados;
 }
 
+export interface IndicadorParaExtrair {
+  indicadorId: string;
+  nome: string;
+  tipo: string; // NUMERICO | MOEDA | TEXTO | DATA (PortalIndicadorTipo)
+  unidade: string | null;
+}
+
+export interface IndicadorExtraidoResultado {
+  indicadorId: string;
+  competencia: string | null; // "YYYY-MM", inferida do próprio documento
+  encontrado: boolean;
+  valor: string | null;
+  pagina: number | null;
+  trecho: string | null;
+}
+
+/**
+ * Extração estruturada pro Portal Previdenciário: igual em espírito a extrairCamposDoPdf, mas
+ * cada indicador pode aparecer VÁRIAS vezes no resultado — uma por competência (mês/ano) — já
+ * que um único PDF costuma trazer uma série temporal (ex.: tabela mensal). A IA precisa inferir
+ * a competência do próprio documento (cabeçalho de tabela, período do relatório); nunca inventar
+ * uma competência que não esteja implícita no texto.
+ */
+export async function extrairIndicadoresDoPdf(
+  documentoNome: string,
+  paginas: { pagina: number; texto: string }[],
+  indicadores: IndicadorParaExtrair[],
+): Promise<IndicadorExtraidoResultado[]> {
+  const anthropic = getClient();
+
+  const documentoComPaginas = paginas.map((p) => `--- PÁGINA ${p.pagina} ---\n${p.texto}`).join("\n\n");
+
+  const tool: Anthropic.Tool = {
+    name: "registrar_extracao_indicadores",
+    description: "Registra cada valor de indicador encontrado no documento, um por competência.",
+    input_schema: {
+      type: "object",
+      properties: {
+        resultados: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              indicadorId: { type: "string" },
+              competencia: {
+                type: ["string", "null"],
+                description: "Mês/ano de referência do valor, no formato \"YYYY-MM\", ou null se não encontrado.",
+              },
+              encontrado: { type: "boolean" },
+              valor: { type: ["string", "null"], description: "Valor extraído, ou null se não encontrado." },
+              pagina: { type: ["integer", "null"], description: "Número da página onde o valor foi encontrado." },
+              trecho: { type: ["string", "null"], description: "Trecho literal do documento de onde o valor veio." },
+            },
+            required: ["indicadorId", "competencia", "encontrado", "valor", "pagina", "trecho"],
+          },
+        },
+      },
+      required: ["resultados"],
+    },
+  };
+
+  const listaIndicadores = indicadores
+    .map((i) => `- ${i.indicadorId}: ${i.nome} (tipo: ${i.tipo}${i.unidade ? `, unidade: ${i.unidade}` : ""})`)
+    .join("\n");
+
+  const message = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 4096,
+    tools: [tool],
+    tool_choice: { type: "tool", name: "registrar_extracao_indicadores" },
+    messages: [
+      {
+        role: "user",
+        content:
+          "Você está extraindo dados estruturados de um documento de um Regime Próprio de Previdência Social " +
+          "(RPPS) brasileiro para popular um catálogo de indicadores por competência (mês/ano). Extraia SOMENTE " +
+          "o que está literalmente escrito no documento abaixo — nunca infira ou invente um valor ou uma " +
+          "competência que não esteja implícita no texto (ex.: cabeçalho de tabela mensal, período do relatório " +
+          "declarado no próprio documento). Um mesmo indicador pode aparecer várias vezes, uma para cada " +
+          "competência encontrada (ex.: uma série de 12 meses vira 12 resultados para o mesmo indicadorId). Se um " +
+          "indicador não for encontrado em nenhuma competência, retorne um único resultado com encontrado=false, " +
+          "valor=null e competencia=null. Para todo valor encontrado, cite a página exata e um trecho literal " +
+          "(até ~300 caracteres) de onde ele veio.\n\n" +
+          `Documento: "${documentoNome}"\n\n` +
+          `Indicadores a extrair:\n${listaIndicadores}\n\n` +
+          `Documento (marcado por página):\n\n${documentoComPaginas}`,
+      },
+    ],
+  });
+
+  const toolUse = message.content.find(
+    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+  );
+  if (!toolUse) {
+    throw new Error("A IA não retornou um resultado estruturado de extração de indicadores.");
+  }
+
+  const parsed = toolUse.input as { resultados: IndicadorExtraidoResultado[] };
+  return parsed.resultados;
+}
+
 export interface FonteParaComposicao {
   acaoNome: string;
   acaoCodigo: string;

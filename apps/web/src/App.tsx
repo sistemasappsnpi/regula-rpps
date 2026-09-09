@@ -13,6 +13,7 @@ import { DocumentoPersonalizadoDetalhePage } from "./pages/DocumentoPersonalizad
 import { DocumentoPersonalizadoPublicoPage } from "./pages/DocumentoPersonalizadoPublicoPage";
 import { CrpDocumentosPage } from "./pages/CrpDocumentosPage";
 import { ConstrutorPage } from "./pages/ConstrutorPage";
+import { PortalIndicadoresLancamentoPage } from "./pages/PortalIndicadoresLancamentoPage";
 import { TransparenciaPublicaPage } from "./pages/TransparenciaPublicaPage";
 import { PortalPrevidenciarioPage } from "./pages/PortalPrevidenciarioPage";
 import { PrimeiroAcessoPage } from "./pages/PrimeiroAcessoPage";
@@ -159,6 +160,16 @@ export default function App() {
           <RequireTenantFeature feature="construtor_documentos">
             <DashboardShell>
               <ConstrutorPage />
+            </DashboardShell>
+          </RequireTenantFeature>
+        }
+      />
+      <Route
+        path="/portal-indicadores"
+        element={
+          <RequireTenantFeature feature="portal_previdenciario_indicadores">
+            <DashboardShell>
+              <PortalIndicadoresLancamentoPage />
             </DashboardShell>
           </RequireTenantFeature>
         }

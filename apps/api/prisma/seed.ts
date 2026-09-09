@@ -206,6 +206,15 @@ const FEATURES: FeatureSeed[] = [
     planos: { ESSENCIAL: false, GESTAO: false, PERFORMANCE: true },
   },
   {
+    key: "portal_previdenciario_indicadores",
+    nome: "Portal Previdenciário — Indicadores",
+    descricao:
+      "Lançamento manual de valores por competência e extração por PDF (via Construtor de Documentos) dos " +
+      "indicadores do catálogo do Portal Previdenciário.",
+    grupo: "Portal Previdenciário",
+    planos: { ESSENCIAL: false, GESTAO: true, PERFORMANCE: true },
+  },
+  {
     key: "transparencia_publica",
     nome: "Portal de Transparência público",
     descricao: "Página pública sem login, gerada a partir de dado estruturado já aprovado.",
