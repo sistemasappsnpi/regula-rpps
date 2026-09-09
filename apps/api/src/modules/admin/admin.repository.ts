@@ -42,6 +42,8 @@ export const adminRepository = {
       enderecoPublico: t.enderecoPublico,
       telefonePublico: t.telefonePublico,
       emailPublico: t.emailPublico,
+      portalMenuApiUrl: t.portalMenuApiUrl,
+      portalRodapeApiUrl: t.portalRodapeApiUrl,
       observacao: t.observacao,
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo,
@@ -116,6 +118,8 @@ export const adminRepository = {
       enderecoPublico: string | null;
       telefonePublico: string | null;
       emailPublico: string | null;
+      portalMenuApiUrl: string | null;
+      portalRodapeApiUrl: string | null;
       observacao: string | null;
       seguradosCount: number;
       plan: Plan;

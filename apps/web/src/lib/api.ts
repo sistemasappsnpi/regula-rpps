@@ -236,6 +236,8 @@ export const api = {
       enderecoPublico: string | null;
       telefonePublico: string | null;
       emailPublico: string | null;
+      portalMenuApiUrl: string | null;
+      portalRodapeApiUrl: string | null;
       observacao: string | null;
       seguradosCount: number;
       plan: Tenant["plan"];
@@ -487,6 +489,8 @@ export interface AdminTenant {
   enderecoPublico: string | null;
   telefonePublico: string | null;
   emailPublico: string | null;
+  portalMenuApiUrl: string | null;
+  portalRodapeApiUrl: string | null;
   observacao: string | null;
   plan: Tenant["plan"];
   nivelProGestaoAlvo: Nivel | null;

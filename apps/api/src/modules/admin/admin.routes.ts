@@ -70,6 +70,8 @@ const updateTenantSchema = z.object({
   enderecoPublico: z.string().max(300).nullable().optional(),
   telefonePublico: z.string().max(50).nullable().optional(),
   emailPublico: z.string().email().nullable().optional(),
+  portalMenuApiUrl: z.string().url().max(500).nullable().optional(),
+  portalRodapeApiUrl: z.string().url().max(500).nullable().optional(),
   observacao: z.string().nullable().optional(),
   seguradosCount: z.number().int().nonnegative().optional(),
   plan: z.enum(["ESSENCIAL", "GESTAO", "PERFORMANCE"]).optional(),

@@ -83,6 +83,16 @@ model Tenant {
   enderecoPublico    String?
   telefonePublico    String?
   emailPublico       String?
+  // URL da API externa que alimenta o menu do Portal Previdenciário deste RPPS (módulo novo,
+  // distinto do Portal de Transparência acima — ver PortalPrevidenciarioLayout no frontend).
+  portalMenuApiUrl   String?
+  // URL da API externa que alimenta o rodapé do Portal Previdenciário deste RPPS. Espera um
+  // array com um objeto no formato {CNPJ, Telefone, Email, Rua, Numero, Bairro, Cep, Horario,
+  // Facebook, Twitter, Instagram, Youtube, Whatsapp, Prefeito} — mesmo padrão do endpoint
+  // dadosabertosexportar?d=rodape usado pelo modelo de referência (IPRES). O rodapé renderizado
+  // a partir disso segue um padrão fixo (3 colunas + linha de redes sociais + barra de copyright
+  // com status de sincronização) ainda não implementado no frontend.
+  portalRodapeApiUrl String?
   observacao         String?         @db.Text
   plan               Plan            @default(ESSENCIAL)
   seguradosCount     Int             @default(0)

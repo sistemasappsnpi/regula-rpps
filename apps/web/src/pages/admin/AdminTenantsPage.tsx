@@ -38,6 +38,8 @@ export function AdminTenantsPage() {
     enderecoPublico: "",
     telefonePublico: "",
     emailPublico: "",
+    portalMenuApiUrl: "",
+    portalRodapeApiUrl: "",
     seguradosCount: 0,
     plan: "ESSENCIAL" as Tenant["plan"],
     nivelProGestaoAlvo: "" as Nivel | "",
@@ -80,6 +82,8 @@ export function AdminTenantsPage() {
       enderecoPublico: t.enderecoPublico ?? "",
       telefonePublico: t.telefonePublico ?? "",
       emailPublico: t.emailPublico ?? "",
+      portalMenuApiUrl: t.portalMenuApiUrl ?? "",
+      portalRodapeApiUrl: t.portalRodapeApiUrl ?? "",
       seguradosCount: t.seguradosCount,
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo ?? "",
@@ -101,6 +105,8 @@ export function AdminTenantsPage() {
         enderecoPublico: formEdicao.enderecoPublico.trim() || null,
         telefonePublico: formEdicao.telefonePublico.trim() || null,
         emailPublico: formEdicao.emailPublico.trim() || null,
+        portalMenuApiUrl: formEdicao.portalMenuApiUrl.trim() || null,
+        portalRodapeApiUrl: formEdicao.portalRodapeApiUrl.trim() || null,
         observacao: formEdicao.observacao.trim() || null,
         seguradosCount: formEdicao.seguradosCount,
         plan: formEdicao.plan,
@@ -361,6 +367,32 @@ export function AdminTenantsPage() {
               value={formEdicao.emailPublico}
               onChange={(v) => setFormEdicao({ ...formEdicao, emailPublico: v })}
             />
+
+            <div className="sm:col-span-2">
+              <p className="mb-1 mt-2 text-sm font-medium text-ink">Portal Previdenciário</p>
+              <p className="mb-3 text-xs text-ink-muted">
+                URLs das APIs externas que alimentam o menu e o rodapé do Portal Previdenciário deste RPPS. Deixe em
+                branco enquanto este RPPS ainda não tiver o portal configurado.
+              </p>
+            </div>
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">API do menu</span>
+              <input
+                value={formEdicao.portalMenuApiUrl}
+                onChange={(e) => setFormEdicao({ ...formEdicao, portalMenuApiUrl: e.target.value })}
+                placeholder="https://…/api/menu"
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+              />
+            </label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">API do rodapé</span>
+              <input
+                value={formEdicao.portalRodapeApiUrl}
+                onChange={(e) => setFormEdicao({ ...formEdicao, portalRodapeApiUrl: e.target.value })}
+                placeholder="https://…/api/rodape"
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+              />
+            </label>
           </div>
         )}
 
