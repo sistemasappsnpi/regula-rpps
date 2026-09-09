@@ -154,6 +154,13 @@ export const api = {
     return data as TransparenciaPublica;
   },
 
+  portalPrevidenciario: async (slug: string): Promise<PortalPrevidenciario> => {
+    const res = await fetch(`/api/public/portal-previdenciario/${slug}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Portal Previdenciário indisponível.");
+    return data as PortalPrevidenciario;
+  },
+
   documentoPersonalizadoPublico: async (slug: string, codigo: string): Promise<DocumentoPersonalizadoPublico> => {
     const res = await fetch(`/api/public/documentos-personalizados/${slug}/${codigo}`);
     const data = await res.json().catch(() => ({}));
@@ -696,6 +703,40 @@ export interface TransparenciaPublica {
   publicadoEm: string;
   itens: ItemComposto[];
   menu: PortalMenuSecao[];
+}
+
+export interface PortalPrevidenciarioMenuItem {
+  id: string;
+  nome: string;
+  pagina: string;
+  novaPag: string;
+  itens: PortalPrevidenciarioMenuItem[];
+}
+
+export interface PortalPrevidenciarioRodape {
+  cnpj: string | null;
+  telefone: string | null;
+  email: string | null;
+  rua: string | null;
+  numero: string | null;
+  bairro: string | null;
+  cep: string | null;
+  horario: string | null;
+  facebook: string | null;
+  twitter: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  whatsapp: string | null;
+  prefeito: string | null;
+}
+
+export interface PortalPrevidenciario {
+  tenant: { name: string; federatedEntity: string; slug: string };
+  menu: PortalPrevidenciarioMenuItem[] | null;
+  menuConfigurado: boolean;
+  rodape: PortalPrevidenciarioRodape | null;
+  rodapeConfigurado: boolean;
+  sincronizadoEm: string;
 }
 
 export interface DocumentoPersonalizadoPublico {

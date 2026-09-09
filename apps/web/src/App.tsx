@@ -14,6 +14,7 @@ import { DocumentoPersonalizadoPublicoPage } from "./pages/DocumentoPersonalizad
 import { CrpDocumentosPage } from "./pages/CrpDocumentosPage";
 import { ConstrutorPage } from "./pages/ConstrutorPage";
 import { TransparenciaPublicaPage } from "./pages/TransparenciaPublicaPage";
+import { PortalPrevidenciarioPage } from "./pages/PortalPrevidenciarioPage";
 import { PrimeiroAcessoPage } from "./pages/PrimeiroAcessoPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminTenantsPage } from "./pages/admin/AdminTenantsPage";
@@ -76,6 +77,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/sso-callback" element={<SsoCallbackPage />} />
       <Route path="/transparencia/:slug" element={<TransparenciaPublicaPage />} />
+      <Route path="/portal-previdenciario/:slug" element={<PortalPrevidenciarioPage />} />
       <Route path="/documentos-publicos/:slug/:codigo" element={<DocumentoPersonalizadoPublicoPage />} />
       <Route path="/primeiro-acesso/:token" element={<PrimeiroAcessoPage />} />
 
