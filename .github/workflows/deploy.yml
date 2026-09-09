@@ -1,0 +1,28 @@
+name: Deploy to production
+
+# Roda a cada push na main: conecta no servidor via SSH, dá git pull e reconstrói/reinicia os
+# containers do docker-compose.prod.yml. Precisa dos secrets DEPLOY_HOST, DEPLOY_USER e
+# DEPLOY_SSH_KEY configurados em Settings > Secrets and variables > Actions (ver README).
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Add servidor aos known_hosts
+        run: ssh-keyscan -p 22 "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh -p 22 "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+            set -e
+            cd /app/data/previdencia.npibrasil.com/regula-rpps
+            git pull origin main
+            docker compose --env-file .env.production --profile local-db -f docker-compose.prod.yml up -d --build
+          '
