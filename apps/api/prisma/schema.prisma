@@ -503,9 +503,17 @@ model DocumentoPersonalizado {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Espelha automaticamente um PortalDocumento com o mesmo nome/codigo (nunca criado/editado à
+  // mão — ver syncPortalDocumentoParaDocumentoPersonalizado, admin.repository.ts). É onde a
+  // extração autônoma por IA do Construtor guarda os indicadores encontrados em cada PDF, pra
+  // alimentar a página pública dedicada deste documento. onDelete SetNull: se o documento
+  // personalizado for excluído, o espelho só perde a referência (fica inativo).
+  portalDocumentoId String? @unique
+
   campos       DocumentoPersonalizadoCampo[]
   publicacoes  TenantDocumentoPersonalizadoPublicacao[]
   construtorTipos ConstrutorTipoDocumento[]
+  portalDocumento PortalDocumento? @relation(fields: [portalDocumentoId], references: [id], onDelete: SetNull)
 
   @@map("documentos_personalizados")
 }
@@ -581,6 +589,7 @@ model PortalDocumento {
 
   indicadores PortalIndicador[]
   construtorTipos ConstrutorTipoDocumento[]
+  documentoPersonalizado DocumentoPersonalizado?
 
   @@map("portal_documentos")
 }

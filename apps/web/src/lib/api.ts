@@ -47,6 +47,12 @@ export const api = {
 
   ssoProviders: () => request<{ microsoft: boolean; govbr: boolean }>("/auth/providers"),
 
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<void>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+
   me: () =>
     request<{
       user: { id: string; name: string; email: string };
@@ -284,6 +290,13 @@ export const api = {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error ?? "Indicadores do Portal Previdenciário indisponíveis.");
     return data as PortalIndicadoresPublico;
+  },
+
+  portalPrevidenciarioDocumento: async (slug: string, codigo: string): Promise<{ documento: PortalDocumentoPublicoDetalhe }> => {
+    const res = await fetch(`/api/public/portal-previdenciario/${slug}/documentos/${codigo}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Documento não encontrado.");
+    return data as { documento: PortalDocumentoPublicoDetalhe };
   },
 
   // --- Admin Global (Super Admin da plataforma) -----------------------------------------
@@ -936,6 +949,10 @@ export interface PortalDocumentoPublico {
 
 export interface PortalIndicadoresPublico {
   documentos: PortalDocumentoPublico[];
+}
+
+export interface PortalDocumentoPublicoDetalhe extends PortalDocumentoPublico {
+  codigo: string;
 }
 
 export interface Tenant {

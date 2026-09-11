@@ -136,4 +136,19 @@ export const authService = {
       features,
     };
   },
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    const passwordMatches = await comparePassword(currentPassword, user.passwordHash);
+    if (!passwordMatches) {
+      throw new HttpError(401, "Senha atual incorreta.");
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  },
 };

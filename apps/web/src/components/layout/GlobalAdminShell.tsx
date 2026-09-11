@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Building2, Users, SlidersHorizontal, History, FileBarChart2, LogOut, Lock } from "lucide-react";
+import { LayoutDashboard, Building2, Users, SlidersHorizontal, History, FileBarChart2, Lock } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
-import { ThemeToggle } from "../ui/ThemeToggle";
+import { SessionMenu } from "./SessionMenu";
 
 const NAV_ITEMS = [
   { to: "/admin", label: "Painel", icon: LayoutDashboard, feature: "admin_painel" },
@@ -45,19 +45,13 @@ export function GlobalAdminShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <div className="mt-auto rounded-xl bg-white/5 p-3.5">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-sidebar-muted">Sessão</p>
-            <ThemeToggle />
+        <div className="mt-auto flex flex-col gap-3">
+          <div className="rounded-xl bg-white/5 p-3.5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-sidebar-muted">Usuário</p>
+            <p className="mt-1 truncate text-sm font-semibold text-sidebar-ink">{user?.name}</p>
+            <p className="mt-0.5 text-xs text-sidebar-muted">{user?.email}</p>
           </div>
-          <p className="truncate text-sm font-semibold text-sidebar-ink">{user?.name}</p>
-          <p className="mt-0.5 text-xs text-sidebar-muted">{user?.email}</p>
-          <button
-            onClick={logout}
-            className="mt-3 flex items-center gap-1.5 text-xs font-medium text-sidebar-muted hover:text-sidebar-ink"
-          >
-            <LogOut size={13} /> Sair
-          </button>
+          <SessionMenu onLogout={logout} />
         </div>
       </aside>
 

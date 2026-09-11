@@ -1,284 +1,20 @@
 import { useEffect, useState } from "react";
-import { Sparkles, FileStack, ChartLine, Plus, Trash2 } from "lucide-react";
-import {
-  api,
-  type AdminConstrutorTipo,
-  type AdminDocumentoPersonalizado,
-  type AdminPortalDocumento,
-  type PortalIndicadorTipo,
-} from "../../lib/api";
+import { FileStack, Plus, Trash2 } from "lucide-react";
+import { api, type AdminDocumentoPersonalizado } from "../../lib/api";
 import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 
-const REFERENCIA_LABEL: Record<AdminConstrutorTipo["referenciaTipo"], string> = {
-  PRO_GESTAO: "Ação do Pró-Gestão",
-  CRP: "Critério do CRP",
-  LIVRE: "Sem referência normativa",
-};
-
-const CONSTRUTOR_FORM_VAZIO = {
-  nome: "",
-  referenciaTipo: "PRO_GESTAO" as AdminConstrutorTipo["referenciaTipo"],
-  acaoCodigo: "",
-  criterionCode: "",
-  promptInstrucoes: "",
-  ativo: true,
-};
-
-function ConstrutorDocumentosSection() {
-  const [tipos, setTipos] = useState<AdminConstrutorTipo[]>([]);
-  const [acoes, setAcoes] = useState<{ codigo: string; numero: string; nome: string }[]>([]);
-  const [criterios, setCriterios] = useState<{ code: string; title: string }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [form, setForm] = useState(CONSTRUTOR_FORM_VAZIO);
-  const [erro, setErro] = useState<string | null>(null);
-  const [salvando, setSalvando] = useState(false);
-
-  const carregar = () =>
-    Promise.all([
-      api.adminListConstrutorTipos(),
-      api.adminListConstrutorCatalogoAcoes(),
-      api.adminListConstrutorCatalogoCriterios(),
-    ]).then(([t, a, c]) => {
-      setTipos(t.tipos);
-      setAcoes(a.acoes);
-      setCriterios(c.criterios);
-    });
-
-  useEffect(() => {
-    carregar().finally(() => setLoading(false));
-  }, []);
-
-  function novo() {
-    setErro(null);
-    setEditandoId(null);
-    setForm(CONSTRUTOR_FORM_VAZIO);
-    setMostrarModal(true);
-  }
-
-  function editar(t: AdminConstrutorTipo) {
-    setErro(null);
-    setEditandoId(t.id);
-    setForm({
-      nome: t.nome,
-      referenciaTipo: t.referenciaTipo,
-      acaoCodigo: t.acaoCodigo ?? "",
-      criterionCode: t.criterionCode ?? "",
-      promptInstrucoes: t.promptInstrucoes,
-      ativo: t.ativo,
-    });
-    setMostrarModal(true);
-  }
-
-  async function salvar() {
-    setErro(null);
-    setSalvando(true);
-    const payload = {
-      nome: form.nome,
-      referenciaTipo: form.referenciaTipo,
-      acaoCodigo: form.referenciaTipo === "PRO_GESTAO" ? form.acaoCodigo || null : null,
-      criterionCode: form.referenciaTipo === "CRP" ? form.criterionCode || null : null,
-      promptInstrucoes: form.promptInstrucoes,
-      ativo: form.ativo,
-    };
-    try {
-      if (editandoId) {
-        await api.adminUpdateConstrutorTipo(editandoId, payload);
-      } else {
-        await api.adminCreateConstrutorTipo(payload);
-      }
-      setMostrarModal(false);
-      setEditandoId(null);
-      setForm(CONSTRUTOR_FORM_VAZIO);
-      await carregar();
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao salvar tipo de documento.");
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function excluir(id: string) {
-    const confirmado = window.confirm("Excluir este tipo de documento? Execuções já geradas continuam no histórico dos tenants.");
-    if (!confirmado) return;
-    setErro(null);
-    try {
-      await api.adminDeleteConstrutorTipo(id);
-      await carregar();
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao excluir.");
-    }
-  }
-
-  async function sincronizar() {
-    setErro(null);
-    try {
-      const res = await api.adminSincronizarConstrutorTipos();
-      await carregar();
-      if (res.criados === 0) {
-        setErro("Nenhuma ação nova para trazer — todas as ações do Pró-Gestão já têm um tipo de documento.");
-      }
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao sincronizar com o catálogo do Pró-Gestão.");
-    }
-  }
-
-  return (
-    <section className="mb-10">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-lg font-bold text-ink">Construtor de Documentos — Prompts de IA</h2>
-          <p className="text-sm text-ink-muted">
-            Cada tipo de documento tem seu próprio prompt: o que a IA deve entender e fazer ao montar aquele
-            documento a partir dos relatórios enviados pelo usuário. Ligar a uma ação do Pró-Gestão ou a um
-            critério do CRP dá à IA o contexto normativo (objetivo, campos, base legal) do que aquele documento
-            significa — e o RPPS só vê aquele tipo se o nível de aderência configurado para ele alcançar essa
-            ação.
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <Button variant="ghost" onClick={sincronizar}>
-            Trazer ações do Pró-Gestão
-          </Button>
-          <Button onClick={novo}>Novo tipo de documento</Button>
-        </div>
-      </div>
-
-      {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
-
-      {loading ? (
-        <p className="text-sm text-ink-muted">Carregando…</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {tipos.map((t) => (
-            <Card key={t.id} className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium text-ink">{t.nome}</p>
-                  <p className="mt-0.5 text-xs text-ink-muted">
-                    {REFERENCIA_LABEL[t.referenciaTipo]}
-                    {t.acao ? ` — ${t.acao.nome}` : ""}
-                    {t.criterion ? ` — ${t.criterion.title}` : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge tone={t.ativo ? "ok" : "neutral"}>{t.ativo ? "Ativo" : "Inativo"}</Badge>
-                  <Button variant="ghost" onClick={() => editar(t)}>
-                    Editar
-                  </Button>
-                  <button onClick={() => excluir(t.id)} className="text-xs font-medium text-crit hover:underline">
-                    excluir
-                  </button>
-                </div>
-              </div>
-            </Card>
-          ))}
-          {tipos.length === 0 && <p className="text-sm text-ink-muted">Nenhum tipo de documento cadastrado ainda.</p>}
-        </div>
-      )}
-
-      <Modal
-        open={mostrarModal}
-        onClose={() => setMostrarModal(false)}
-        title={editandoId ? "Editar tipo de documento" : "Novo tipo de documento"}
-        icon={<Sparkles size={16} />}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setMostrarModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={salvar} disabled={salvando}>
-              {salvando ? "Salvando…" : "Salvar"}
-            </Button>
-          </>
-        }
-      >
-        {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
-        <div className="flex flex-col gap-3">
-          <Campo label="Nome do documento" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
-
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink">Referência normativa</span>
-            <select
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm"
-              value={form.referenciaTipo}
-              onChange={(e) => setForm({ ...form, referenciaTipo: e.target.value as AdminConstrutorTipo["referenciaTipo"] })}
-            >
-              <option value="PRO_GESTAO">Ação do Pró-Gestão</option>
-              <option value="CRP">Critério do CRP</option>
-              <option value="LIVRE">Sem referência normativa</option>
-            </select>
-          </label>
-
-          {form.referenciaTipo === "PRO_GESTAO" && (
-            <label className="block text-sm">
-              <span className="mb-1 block font-medium text-ink">Ação do Pró-Gestão</span>
-              <select
-                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm"
-                value={form.acaoCodigo}
-                onChange={(e) => setForm({ ...form, acaoCodigo: e.target.value })}
-              >
-                <option value="">Selecione…</option>
-                {acoes.map((a) => (
-                  <option key={a.codigo} value={a.codigo}>
-                    {a.numero} — {a.nome}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          {form.referenciaTipo === "CRP" && (
-            <label className="block text-sm">
-              <span className="mb-1 block font-medium text-ink">Critério do CRP</span>
-              <select
-                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm"
-                value={form.criterionCode}
-                onChange={(e) => setForm({ ...form, criterionCode: e.target.value })}
-              >
-                <option value="">Selecione…</option>
-                {criterios.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink">Instruções para a IA</span>
-            <textarea
-              rows={6}
-              value={form.promptInstrucoes}
-              onChange={(e) => setForm({ ...form, promptInstrucoes: e.target.value })}
-              placeholder="O que a IA deve identificar em cada relatório e como organizar o documento final…"
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
-            />
-          </label>
-
-          <label className="flex items-center gap-2 text-sm text-ink">
-            <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />
-            Disponível para os RPPS com o plano que inclui o Construtor
-          </label>
-        </div>
-      </Modal>
-    </section>
-  );
-}
-
 type CampoForm = { id?: string; descricao: string; obrigatorio: boolean };
 
 const DOCUMENTO_FORM_VAZIO = { nome: "", descricao: "", promptInstrucoes: "", campos: [] as CampoForm[] };
 
-// Documentos Personalizados: ao contrário do Construtor (que monta documentos por IA a partir
-// de fontes já existentes), aqui o Super Admin cria do zero um tipo documental livre (ex.: DIPR)
-// com os campos que quiser — o preenchimento e a publicação ficam por conta do tenant (ver
-// DocumentosPage.tsx, seção "Personalizados").
+// Personalizados: único ponto de cadastro de documento hoje — o Super Admin só nomeia o
+// documento (ex.: DPIN) e, opcionalmente, dá um comentário de apoio pra IA. Sem catálogo de
+// indicadores pré-cadastrado: a IA decide sozinha, no Construtor de Documentos, quais indicadores
+// extrair de cada PDF (ver extrairIndicadoresAutonomamente, anthropic.client.ts) — o comentário
+// aqui só se soma ao prompt-base fixo no código, nunca o substitui.
 function DocumentosPersonalizadosSection() {
   const [documentos, setDocumentos] = useState<AdminDocumentoPersonalizado[]>([]);
   const [loading, setLoading] = useState(true);
@@ -418,10 +154,12 @@ function DocumentosPersonalizadosSection() {
     <section className="mb-10">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg font-bold text-ink">Documentos Personalizados</h2>
+          <h2 className="font-display text-lg font-bold text-ink">Personalizados</h2>
           <p className="text-sm text-ink-muted">
-            Tipos de documento livres, fora do catálogo oficial do Pró-Gestão/CRP (ex.: DIPR). Crie o nome e os
-            campos aqui — cada RPPS preenche e publica na própria aba "Documentos", em "Personalizados".
+            Nomeie o documento (ex.: DPIN) e, se quiser, dê um comentário de apoio pra IA — ele se soma ao prompt
+            padrão já definido no código, nunca o substitui. É esta lista que aparece pro RPPS escolher no
+            Construtor de Documentos: lá a IA identifica sozinha os indicadores mais importantes de cada PDF
+            enviado, sem precisar de nenhum campo pré-cadastrado.
           </p>
         </div>
         <Button onClick={novo}>Novo documento personalizado</Button>
@@ -493,22 +231,22 @@ function DocumentosPersonalizadosSection() {
           </label>
 
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink">Instruções para a IA (opcional)</span>
+            <span className="mb-1 block font-medium text-ink">Comentário de apoio pra IA (opcional)</span>
             <textarea
               rows={4}
               value={form.promptInstrucoes}
               onChange={(e) => setForm({ ...form, promptInstrucoes: e.target.value })}
-              placeholder="Deixe em branco para este documento existir só no preenchimento manual. Preencha e ele também aparece pro RPPS montar por IA no Construtor de Documentos, a partir de relatórios enviados…"
+              placeholder="Deixe em branco pra IA seguir só o prompt padrão do código. Preencha pra dar uma orientação extra sobre o que procurar neste documento específico…"
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
             />
             <span className="mt-1 block text-xs text-ink-muted">
-              Sem referência normativa própria — a IA segue só este texto (mesmo comportamento de um tipo "sem
-              referência" no Construtor).
+              Some ao prompt padrão já definido no código — nunca o substitui. A IA decide sozinha quais
+              indicadores extrair, sem precisar de nenhum campo pré-cadastrado aqui.
             </span>
           </label>
 
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-ink">Campos de preenchimento</span>
+            <span className="text-sm font-medium text-ink">Campos de preenchimento manual (opcional)</span>
             <Button variant="ghost" onClick={adicionarCampo}>
               <Plus size={14} /> Adicionar campo
             </Button>
@@ -535,287 +273,7 @@ function DocumentosPersonalizadosSection() {
                 </button>
               </div>
             ))}
-            {form.campos.length === 0 && <p className="text-xs text-ink-muted">Nenhum campo ainda — adicione ao menos um.</p>}
-          </div>
-        </div>
-      </Modal>
-    </section>
-  );
-}
-
-type IndicadorForm = { id?: string; nome: string; tipo: PortalIndicadorTipo; unidade: string };
-
-const PORTAL_DOCUMENTO_FORM_VAZIO = { nome: "", descricao: "", indicadores: [] as IndicadorForm[] };
-
-const TIPO_INDICADOR_LABEL: Record<PortalIndicadorTipo, string> = {
-  NUMERICO: "Número",
-  MOEDA: "Moeda (R$)",
-  TEXTO: "Texto",
-  DATA: "Data",
-};
-
-// Catálogo do conteúdo central do Portal Previdenciário (ver PortalPrevidenciarioPage): cada
-// documento (ex.: DIPR) agrupa indicadores tipados. Filtro, gráfico e relatório no frontend do
-// tenant são genéricos em cima do `tipo` de cada indicador — cadastrar um documento novo aqui
-// já basta pra ele funcionar lá, sem precisar de código novo.
-function PortalIndicadoresSection() {
-  const [documentos, setDocumentos] = useState<AdminPortalDocumento[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [editando, setEditando] = useState<AdminPortalDocumento | null>(null);
-  const [form, setForm] = useState(PORTAL_DOCUMENTO_FORM_VAZIO);
-  const [erro, setErro] = useState<string | null>(null);
-  const [salvando, setSalvando] = useState(false);
-
-  const carregar = () => api.adminListPortalDocumentos().then((res) => setDocumentos(res.documentos));
-
-  useEffect(() => {
-    carregar().finally(() => setLoading(false));
-  }, []);
-
-  function novo() {
-    setErro(null);
-    setEditando(null);
-    setForm(PORTAL_DOCUMENTO_FORM_VAZIO);
-    setMostrarModal(true);
-  }
-
-  function editar(d: AdminPortalDocumento) {
-    setErro(null);
-    setEditando(d);
-    setForm({
-      nome: d.nome,
-      descricao: d.descricao ?? "",
-      indicadores: d.indicadores.map((i) => ({ id: i.id, nome: i.nome, tipo: i.tipo, unidade: i.unidade ?? "" })),
-    });
-    setMostrarModal(true);
-  }
-
-  function adicionarIndicador() {
-    setForm((f) => ({ ...f, indicadores: [...f.indicadores, { nome: "", tipo: "NUMERICO", unidade: "" }] }));
-  }
-
-  function atualizarIndicador(index: number, patch: Partial<IndicadorForm>) {
-    setForm((f) => ({ ...f, indicadores: f.indicadores.map((ind, i) => (i === index ? { ...ind, ...patch } : ind)) }));
-  }
-
-  function removerIndicadorDoForm(index: number) {
-    setForm((f) => ({ ...f, indicadores: f.indicadores.filter((_, i) => i !== index) }));
-  }
-
-  async function salvar() {
-    setErro(null);
-    if (!form.nome.trim()) {
-      setErro("Dê um nome ao documento.");
-      return;
-    }
-    setSalvando(true);
-    try {
-      if (editando) {
-        await api.adminUpdatePortalDocumento(editando.id, {
-          nome: form.nome,
-          descricao: form.descricao.trim() || null,
-        });
-        for (const indicador of form.indicadores) {
-          if (indicador.id) {
-            await api.adminUpdateIndicadorPortalDocumento(editando.id, indicador.id, {
-              nome: indicador.nome,
-              tipo: indicador.tipo,
-              unidade: indicador.unidade.trim() || null,
-            });
-          } else if (indicador.nome.trim()) {
-            await api.adminAddIndicadorPortalDocumento(editando.id, {
-              nome: indicador.nome,
-              tipo: indicador.tipo,
-              unidade: indicador.unidade.trim() || null,
-            });
-          }
-        }
-      } else {
-        await api.adminCreatePortalDocumento({
-          nome: form.nome,
-          descricao: form.descricao.trim() || null,
-          indicadores: form.indicadores
-            .filter((i) => i.nome.trim())
-            .map((i) => ({ nome: i.nome, tipo: i.tipo, unidade: i.unidade.trim() || null })),
-        });
-      }
-      setMostrarModal(false);
-      setEditando(null);
-      setForm(PORTAL_DOCUMENTO_FORM_VAZIO);
-      await carregar();
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao salvar documento.");
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function removerIndicadorSalvo(index: number) {
-    if (!editando) {
-      removerIndicadorDoForm(index);
-      return;
-    }
-    const indicador = form.indicadores[index];
-    if (!indicador.id) {
-      removerIndicadorDoForm(index);
-      return;
-    }
-    setErro(null);
-    try {
-      await api.adminRemoveIndicadorPortalDocumento(editando.id, indicador.id);
-      removerIndicadorDoForm(index);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao remover indicador.");
-    }
-  }
-
-  async function alternarAtivo(d: AdminPortalDocumento) {
-    setErro(null);
-    try {
-      await api.adminUpdatePortalDocumento(d.id, { ativo: !d.ativo });
-      await carregar();
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao alterar status.");
-    }
-  }
-
-  async function excluir(d: AdminPortalDocumento) {
-    const confirmado = window.confirm(
-      `Excluir "${d.nome}"? Valores já lançados pelos RPPS pra esses indicadores somem do Portal Previdenciário. Esta ação não pode ser desfeita.`,
-    );
-    if (!confirmado) return;
-    setErro(null);
-    try {
-      await api.adminDeletePortalDocumento(d.id);
-      await carregar();
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao excluir.");
-    }
-  }
-
-  return (
-    <section className="mb-10">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-lg font-bold text-ink">Portal Previdenciário — Indicadores</h2>
-          <p className="text-sm text-ink-muted">
-            Catálogo de documentos (ex.: DIPR) e seus indicadores. Cada RPPS lança os valores por competência
-            (manualmente ou por PDF) na própria página do Portal Previdenciário — filtro, gráfico e relatório lá se
-            adaptam sozinhos ao que for cadastrado aqui.
-          </p>
-        </div>
-        <Button onClick={novo}>Novo documento</Button>
-      </div>
-
-      {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
-
-      {loading ? (
-        <p className="text-sm text-ink-muted">Carregando…</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {documentos.map((d) => (
-            <Card key={d.id} className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium text-ink">{d.nome}</p>
-                  <p className="mt-0.5 text-xs text-ink-muted">
-                    {d.indicadores.length} indicador{d.indicadores.length === 1 ? "" : "es"}
-                    {d.descricao ? ` — ${d.descricao}` : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge tone={d.ativo ? "ok" : "neutral"}>{d.ativo ? "Ativo" : "Inativo"}</Badge>
-                  <Button variant="ghost" onClick={() => alternarAtivo(d)}>
-                    {d.ativo ? "Desativar" : "Ativar"}
-                  </Button>
-                  <Button variant="ghost" onClick={() => editar(d)}>
-                    Editar
-                  </Button>
-                  <button onClick={() => excluir(d)} className="text-xs font-medium text-crit hover:underline">
-                    excluir
-                  </button>
-                </div>
-              </div>
-            </Card>
-          ))}
-          {documentos.length === 0 && <p className="text-sm text-ink-muted">Nenhum documento cadastrado ainda.</p>}
-        </div>
-      )}
-
-      <Modal
-        open={mostrarModal}
-        onClose={() => setMostrarModal(false)}
-        title={editando ? "Editar documento" : "Novo documento"}
-        icon={<ChartLine size={16} />}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setMostrarModal(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={salvar} disabled={salvando}>
-              {salvando ? "Salvando…" : "Salvar"}
-            </Button>
-          </>
-        }
-      >
-        {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
-        <div className="flex flex-col gap-3">
-          <Campo label="Nome do documento (ex.: DIPR)" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink">Descrição (opcional)</span>
-            <textarea
-              rows={2}
-              value={form.descricao}
-              onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
-            />
-          </label>
-
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-ink">Indicadores</span>
-            <Button variant="ghost" onClick={adicionarIndicador}>
-              <Plus size={14} /> Adicionar indicador
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2">
-            {form.indicadores.map((indicador, i) => (
-              <div key={indicador.id ?? `novo-${i}`} className="flex items-center gap-2 rounded-lg border border-border p-2">
-                <input
-                  value={indicador.nome}
-                  onChange={(e) => atualizarIndicador(i, { nome: e.target.value })}
-                  placeholder="Nome do indicador (ex.: Valor total de repasses)"
-                  className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
-                />
-                <select
-                  value={indicador.tipo}
-                  onChange={(e) => atualizarIndicador(i, { tipo: e.target.value as PortalIndicadorTipo })}
-                  className="shrink-0 rounded-lg border border-border bg-bg px-2 py-2 text-sm outline-none focus:border-petrol"
-                >
-                  {Object.entries(TIPO_INDICADOR_LABEL).map(([valor, label]) => (
-                    <option key={valor} value={valor}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  value={indicador.unidade}
-                  onChange={(e) => atualizarIndicador(i, { unidade: e.target.value })}
-                  placeholder="Unidade (ex.: R$)"
-                  className="w-28 shrink-0 rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
-                />
-                <button
-                  onClick={() => removerIndicadorSalvo(i)}
-                  className="shrink-0 text-crit hover:text-crit/80"
-                  title="Remover indicador"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-            {form.indicadores.length === 0 && (
-              <p className="text-xs text-ink-muted">Nenhum indicador ainda — adicione ao menos um.</p>
-            )}
+            {form.campos.length === 0 && <p className="text-xs text-ink-muted">Nenhum campo ainda.</p>}
           </div>
         </div>
       </Modal>
@@ -833,9 +291,7 @@ export function AdminParametrizacoesPage() {
         </p>
       </header>
 
-      <ConstrutorDocumentosSection />
       <DocumentosPersonalizadosSection />
-      <PortalIndicadoresSection />
     </div>
   );
 }

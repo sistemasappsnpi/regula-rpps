@@ -1,19 +1,16 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShieldCheck, ClipboardList, FileStack, Sparkles, Settings, LogOut, Lock, BarChart3 } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, ClipboardList, Sparkles, Lock, BarChart3 } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
-import { ThemeToggle } from "../ui/ThemeToggle";
+import { SessionMenu } from "./SessionMenu";
 
 const NAV_ITEMS = [
   { to: "/", label: "Painel", icon: LayoutDashboard, feature: null },
   { to: "/crp", label: "Compliance CRP", icon: ShieldCheck, feature: "crp_compliance" },
   { to: "/pro-gestao", label: "Pró-Gestão RPPS", icon: ClipboardList, feature: "pro_gestao" },
-  { to: "/documentos", label: "Documentos", icon: FileStack, feature: "pro_gestao" },
   { to: "/construtor", label: "Construtor", icon: Sparkles, feature: "construtor_documentos" },
   { to: "/portal-indicadores", label: "Portal Previdenciário", icon: BarChart3, feature: "portal_previdenciario_indicadores" },
 ] as const;
-
-const SISTEMA_ITEMS = [{ to: "/configuracoes", label: "Configurações", icon: Settings }];
 
 const PLAN_LABELS: Record<string, string> = {
   ESSENCIAL: "Plano Essencial",
@@ -59,26 +56,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <p className="mb-1 mt-6 px-3 text-[10px] font-bold uppercase tracking-wider text-sidebar-section">Sistema</p>
-        <nav className="flex flex-1 flex-col gap-0.5">
-          {SISTEMA_ITEMS.map((item) => (
-            <NavItem key={item.to} to={item.to} label={item.label} icon={item.icon} status="soon" />
-          ))}
-        </nav>
-
-        <div className="mt-auto rounded-xl bg-white/5 p-3.5">
-          <div className="mb-2 flex items-center justify-between">
+        <div className="mt-auto flex flex-col gap-3">
+          <div className="rounded-xl bg-white/5 p-3.5">
             <p className="text-[11px] font-medium uppercase tracking-wide text-sidebar-muted">Tenant ativo</p>
-            <ThemeToggle />
+            <p className="mt-1 truncate text-sm font-semibold text-sidebar-ink">{tenant?.name}</p>
+            <p className="mt-0.5 text-xs font-medium text-gold">{tenant ? PLAN_LABELS[tenant.plan] : ""}</p>
           </div>
-          <p className="truncate text-sm font-semibold text-sidebar-ink">{tenant?.name}</p>
-          <p className="mt-0.5 text-xs font-medium text-gold">{tenant ? PLAN_LABELS[tenant.plan] : ""}</p>
-          <button
-            onClick={logout}
-            className="mt-3 flex items-center gap-1.5 text-xs font-medium text-sidebar-muted hover:text-sidebar-ink"
-          >
-            <LogOut size={13} /> Sair
-          </button>
+          <SessionMenu onLogout={logout} />
         </div>
       </aside>
 

@@ -204,3 +204,64 @@ portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next
     next(err);
   }
 });
+
+// Página pública dedicada de um único documento (ex.: /portal-previdenciario/:slug/dpin) — mesmo
+// dado do endpoint "/indicadores" acima, só que escopado a um documento (resolvido pelo `codigo`
+// do DocumentoPersonalizado, já que é ele que o admin nomeia em Parametrizações → Personalizados),
+// pra render de menu/rodapé + gráfico próprios dessa página.
+portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, res, next) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
+    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+
+    const docPersonalizado = await prisma.documentoPersonalizado.findUnique({
+      where: { codigo: req.params.codigo },
+    });
+    if (!docPersonalizado || !docPersonalizado.ativo || !docPersonalizado.portalDocumentoId) {
+      throw new HttpError(404, "Documento não encontrado.");
+    }
+
+    const documento = await prisma.portalDocumento.findUnique({
+      where: { id: docPersonalizado.portalDocumentoId },
+      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+    });
+    if (!documento || !documento.ativo) throw new HttpError(404, "Documento não encontrado.");
+
+    const indicadorIds = documento.indicadores.map((i) => i.id);
+    const valores = indicadorIds.length
+      ? await prisma.tenantPortalIndicadorValor.findMany({
+          where: { tenantId: tenant.id, indicadorId: { in: indicadorIds } },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+
+    const seen = new Set<string>();
+    const vigentes: typeof valores = [];
+    for (const v of valores) {
+      const key = `${v.indicadorId}|${v.competencia.toISOString()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      vigentes.push(v);
+    }
+
+    res.json({
+      documento: {
+        id: documento.id,
+        nome: documento.nome,
+        codigo: docPersonalizado.codigo,
+        indicadores: documento.indicadores.map((indicador) => ({
+          id: indicador.id,
+          nome: indicador.nome,
+          tipo: indicador.tipo,
+          unidade: indicador.unidade,
+          valores: vigentes
+            .filter((v) => v.indicadorId === indicador.id)
+            .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
+            .map((v) => ({ competencia: v.competencia, valor: v.valor, origem: v.origem })),
+        })),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});

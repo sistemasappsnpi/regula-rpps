@@ -80,3 +80,23 @@ authRouter.post("/login", async (req, res, next) => {
     next(err);
   }
 });
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
+// Autotroca de senha do próprio usuário logado (tenant ou Super Admin) — exige a senha atual,
+// diferente do link de primeiro acesso (ver primeiro-acesso.routes.ts), que não tem senha prévia.
+authRouter.post("/change-password", requireAuth, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    }
+    await authService.changePassword(req.auth!.userId, parsed.data.currentPassword, parsed.data.newPassword);
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});

@@ -205,6 +205,106 @@ export async function extrairIndicadoresDoPdf(
   return parsed.resultados;
 }
 
+export interface IndicadorAutonomoResultado {
+  nome: string;
+  tipo: "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
+  unidade: string | null;
+  competencia: string | null; // "YYYY-MM", inferida do próprio documento
+  valor: string;
+  pagina: number | null;
+  trecho: string | null;
+}
+
+const PROMPT_BASE_INDICADORES_AUTONOMO =
+  "Você está analisando um documento de um Regime Próprio de Previdência Social (RPPS) brasileiro para " +
+  "montar, de forma autônoma, um catálogo de indicadores estruturados por competência (mês/ano). Não existe " +
+  "uma lista pré-definida de campos — você decide sozinho quais são os indicadores mais importantes deste " +
+  "documento (ex.: valores financeiros e de repasse, número de segurados/beneficiários, alíquotas e " +
+  "percentuais, reservas técnicas, datas-chave, prazos e outros números que um gestor de RPPS acompanharia). " +
+  "Extraia SOMENTE o que está literalmente escrito no documento — nunca infira ou invente um valor, nome de " +
+  "indicador ou competência que não esteja implícita no texto (ex.: cabeçalho de tabela mensal, período do " +
+  "relatório declarado no próprio documento). Um mesmo indicador pode aparecer várias vezes, uma para cada " +
+  "competência encontrada (ex.: uma série de 12 meses vira 12 resultados com o mesmo nome de indicador). Dê a " +
+  "cada indicador um nome curto e claro (ex.: \"Valor total de repasses\", \"Número de segurados ativos\"), " +
+  "classifique seu tipo (NUMERICO, MOEDA, TEXTO ou DATA) e, quando fizer sentido, uma unidade (ex.: \"R$\", " +
+  "\"%\", \"pessoas\"). Para todo valor encontrado, cite a página exata e um trecho literal (até ~300 " +
+  "caracteres) de onde ele veio.";
+
+/**
+ * Extração estruturada e autônoma pro Portal Previdenciário: irmã de extrairIndicadoresDoPdf, mas sem
+ * receber um catálogo de indicadores pré-cadastrado — a própria IA decide quais indicadores extrair,
+ * seguindo o prompt-base fixo acima mais o comentário de apoio opcional do admin (promptInstrucoes do
+ * DocumentoPersonalizado), que é só um complemento, nunca substitui o prompt-base.
+ */
+export async function extrairIndicadoresAutonomamente(
+  documentoNome: string,
+  comentarioAdmin: string | null,
+  paginas: { pagina: number; texto: string }[],
+): Promise<IndicadorAutonomoResultado[]> {
+  const anthropic = getClient();
+
+  const documentoComPaginas = paginas.map((p) => `--- PÁGINA ${p.pagina} ---\n${p.texto}`).join("\n\n");
+
+  const tool: Anthropic.Tool = {
+    name: "registrar_extracao_autonoma",
+    description: "Registra cada indicador encontrado no documento, um por competência.",
+    input_schema: {
+      type: "object",
+      properties: {
+        resultados: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              nome: { type: "string", description: "Nome curto e claro do indicador." },
+              tipo: { type: "string", enum: ["NUMERICO", "MOEDA", "TEXTO", "DATA"] },
+              unidade: { type: ["string", "null"], description: "Ex.: \"R$\", \"%\", \"pessoas\", ou null." },
+              competencia: {
+                type: ["string", "null"],
+                description: "Mês/ano de referência do valor, no formato \"YYYY-MM\", ou null se não encontrado.",
+              },
+              valor: { type: "string" },
+              pagina: { type: ["integer", "null"], description: "Número da página onde o valor foi encontrado." },
+              trecho: { type: ["string", "null"], description: "Trecho literal do documento de onde o valor veio." },
+            },
+            required: ["nome", "tipo", "unidade", "competencia", "valor", "pagina", "trecho"],
+          },
+        },
+      },
+      required: ["resultados"],
+    },
+  };
+
+  const message = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 4096,
+    tools: [tool],
+    tool_choice: { type: "tool", name: "registrar_extracao_autonoma" },
+    messages: [
+      {
+        role: "user",
+        content:
+          `${PROMPT_BASE_INDICADORES_AUTONOMO}\n\n` +
+          (comentarioAdmin?.trim()
+            ? `Orientação adicional definida pelo administrador da plataforma para este documento:\n${comentarioAdmin.trim()}\n\n`
+            : "") +
+          `Documento: "${documentoNome}"\n\n` +
+          `Documento (marcado por página):\n\n${documentoComPaginas}`,
+      },
+    ],
+  });
+
+  const toolUse = message.content.find(
+    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+  );
+  if (!toolUse) {
+    throw new Error("A IA não retornou um resultado estruturado de extração.");
+  }
+
+  const parsed = toolUse.input as { resultados: IndicadorAutonomoResultado[] };
+  return parsed.resultados;
+}
+
 export interface FonteParaComposicao {
   acaoNome: string;
   acaoCodigo: string;

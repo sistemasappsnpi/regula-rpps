@@ -1,34 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Download, Printer } from "lucide-react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { api, type PortalDocumentoPublico, type PortalIndicadoresPublico, type PortalPrevidenciario } from "../lib/api";
+import { api, type PortalIndicadoresPublico, type PortalPrevidenciario } from "../lib/api";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { PortalPrevidenciarioLayout } from "../components/layout/PortalPrevidenciarioLayout";
-
-function formatarCompetencia(iso: string): string {
-  const [ano, mes] = iso.slice(0, 7).split("-");
-  return `${mes}/${ano}`;
-}
-
-function baixarCsv(nomeArquivo: string, documentos: PortalDocumentoPublico[]) {
-  const linhas = ["Documento,Indicador,Competencia,Valor"];
-  for (const doc of documentos) {
-    for (const indicador of doc.indicadores) {
-      for (const v of indicador.valores) {
-        linhas.push(`"${doc.nome}","${indicador.nome}",${formatarCompetencia(v.competencia)},"${v.valor}"`);
-      }
-    }
-  }
-  const blob = new Blob([linhas.join("\n")], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = nomeArquivo;
-  link.click();
-  URL.revokeObjectURL(url);
-}
+import { DocumentoIndicadoresCard, baixarCsv } from "../components/portal-previdenciario/DocumentoIndicadoresCard";
 
 // Conteúdo central do Portal Previdenciário: filtro por documento/período + gráfico (indicadores
 // numéricos/moeda) ou tabela (texto/data) dos valores já lançados pelo RPPS (manual ou aprovados
@@ -118,53 +95,7 @@ function IndicadoresRelatorio({ slug }: { slug: string }) {
 
       <div className="flex flex-col gap-6">
         {documentosFiltrados.map((doc) => (
-          <Card key={doc.id} className="p-6">
-            <p className="mb-4 font-display text-lg font-bold text-ink">{doc.nome}</p>
-            <div className="flex flex-col gap-6">
-              {doc.indicadores
-                .filter((i) => i.valores.length > 0)
-                .map((indicador) => {
-                  const numerico = indicador.tipo === "NUMERICO" || indicador.tipo === "MOEDA";
-                  return (
-                    <div key={indicador.id}>
-                      <p className="mb-2 text-sm font-medium text-ink">
-                        {indicador.nome}
-                        {indicador.unidade ? <span className="ml-1 text-xs text-ink-muted">({indicador.unidade})</span> : null}
-                      </p>
-                      {numerico ? (
-                        <div className="h-56 w-full">
-                          <ResponsiveContainer>
-                            <LineChart
-                              data={indicador.valores.map((v) => ({
-                                competencia: formatarCompetencia(v.competencia),
-                                valor: Number(String(v.valor).replace(/\./g, "").replace(",", ".")),
-                              }))}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="competencia" fontSize={12} />
-                              <YAxis fontSize={12} />
-                              <Tooltip />
-                              <Line type="monotone" dataKey="valor" stroke="var(--nav-active, #0a4d53)" strokeWidth={2} dot />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {indicador.valores.map((v, i) => (
-                              <tr key={i} className="border-b border-border last:border-0">
-                                <td className="py-1 text-ink-muted">{formatarCompetencia(v.competencia)}</td>
-                                <td className="py-1 text-right text-ink">{v.valor}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  );
-                })}
-            </div>
-          </Card>
+          <DocumentoIndicadoresCard key={doc.id} documento={doc} />
         ))}
       </div>
     </div>

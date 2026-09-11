@@ -2,13 +2,12 @@ import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import {
   montarDocumentoConstrutor,
-  extrairIndicadoresDoPdf,
+  extrairIndicadoresAutonomamente,
   isAiConfigured,
   type DocumentoFonteConstrutor,
 } from "../ai/anthropic.client";
-import { nivelAlcanca } from "../pro-gestao/pro-gestao.repository";
-import { isFeatureEnabledForUser } from "../../middleware/features";
 import { normalizarCompetencia } from "../portal-indicadores/portal-indicadores.service";
+import { slugify } from "../../utils/slugify";
 
 /**
  * Monta o "contexto normativo" que a IA recebe para entender o que um tipo de documento
@@ -41,43 +40,23 @@ async function montarContextoManual(tipo: { referenciaTipo: string; acaoCodigo: 
 
 export const construtorRepository = {
   /**
-   * Tipos "PRO_GESTAO" só aparecem para o tenant se a ação ligada tiver pelo menos um campo
-   * dentro do alcance do nível que o Admin Global configurou para ele (Tenant.nivelProGestaoAlvo
-   * — mesmo gate usado em /documentos, ver DocumentoDetalhePage e nivelAlcanca). Tipos CRP e
-   * LIVRE não são afetados por nível (conceito exclusivo do Pró-Gestão) — só pelo plano
-   * contratado, já checado pelo requireFeature("construtor_documentos") na rota.
+   * Único caminho hoje pro tenant selecionar algo no Construtor: os tipos PERSONALIZADO, um por
+   * DocumentoPersonalizado (ver syncConstrutorTipoParaPersonalizado, admin.repository.ts). Tipos
+   * PRO_GESTAO/CRP/LIVRE/PORTAL_PREVIDENCIARIO de sessões anteriores continuam no banco, mas
+   * não aparecem mais pro tenant — enxugado a pedido do usuário pra simplificar o fluxo.
    */
-  async listTiposAtivos(tenantId: string, userId: string) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { nivelProGestaoAlvo: true } });
-    const nivelAlvo = tenant?.nivelProGestaoAlvo ?? "I";
-
+  async listTiposAtivos(_tenantId: string, _userId: string) {
     const tipos = await prisma.construtorTipoDocumento.findMany({
-      where: { ativo: true },
+      where: { ativo: true, referenciaTipo: "PERSONALIZADO" },
       orderBy: { sortOrder: "asc" },
-      include: {
-        acao: { select: { nome: true, campos: { select: { nivelMinimo: true } } } },
-        criterion: { select: { title: true } },
-        portalDocumento: { select: { nome: true } },
-      },
     });
 
-    // Tipos PORTAL_PREVIDENCIARIO exigem a feature própria além de construtor_documentos (já
-    // checada no middleware da rota) — mesmo espírito do filtro por nível abaixo para PRO_GESTAO.
-    const podeIndicadores = await isFeatureEnabledForUser(userId, tenantId, "portal_previdenciario_indicadores");
-
-    return tipos
-      .filter((t) => {
-        if (t.referenciaTipo === "PORTAL_PREVIDENCIARIO") return podeIndicadores;
-        if (t.referenciaTipo !== "PRO_GESTAO" || !t.acao) return true;
-        if (t.acao.campos.length === 0) return true;
-        return t.acao.campos.some((c) => nivelAlcanca(c.nivelMinimo, nivelAlvo));
-      })
-      .map((t) => ({
-        id: t.id,
-        nome: t.nome,
-        referenciaTipo: t.referenciaTipo,
-        referenciaNome: t.acao?.nome ?? t.criterion?.title ?? t.portalDocumento?.nome ?? null,
-      }));
+    return tipos.map((t) => ({
+      id: t.id,
+      nome: t.nome,
+      referenciaTipo: t.referenciaTipo,
+      referenciaNome: null as string | null,
+    }));
   },
 
   /**
@@ -105,8 +84,8 @@ export const construtorRepository = {
       throw new HttpError(404, "Algum documento-fonte não foi encontrado para este RPPS.");
     }
 
-    if (tipo.referenciaTipo === "PORTAL_PREVIDENCIARIO") {
-      return construtorRepository.gerarExecucaoPortalIndicadores(input, tipo, documentos);
+    if (tipo.referenciaTipo === "PERSONALIZADO") {
+      return construtorRepository.gerarExecucaoIndicadoresAutonomos(input, tipo, documentos);
     }
 
     const contextoManual = await montarContextoManual(tipo);
@@ -142,37 +121,34 @@ export const construtorRepository = {
   },
 
   /**
-   * Caminho de geração para tipos PORTAL_PREVIDENCIARIO: em vez de montar um texto único citando
-   * fontes, extrai {indicador, competência, valor} de cada PDF-fonte (um indicador pode aparecer
-   * várias vezes, uma por competência) e cria uma ConstrutorIndicadorSugestao por resultado
-   * encontrado, pra revisão humana item a item (mesmo requisito de "nunca aprovar tudo em lote"
-   * do resto do sistema, ver uploads.routes.ts). conteudo/citacoes ficam vazios — o conteúdo de
-   * verdade desta execução mora nas sugestões.
+   * Caminho de geração para tipos PERSONALIZADO: em vez de montar um texto único citando fontes,
+   * a IA decide sozinha quais indicadores extrair de cada PDF-fonte (ver
+   * extrairIndicadoresAutonomamente) — sem catálogo pré-cadastrado — e cria uma
+   * ConstrutorIndicadorSugestao por resultado encontrado, pra revisão humana item a item (mesmo
+   * requisito de "nunca aprovar tudo em lote" do resto do sistema, ver uploads.routes.ts).
+   * conteudo/citacoes ficam vazios — o conteúdo de verdade desta execução mora nas sugestões.
    */
-  async gerarExecucaoPortalIndicadores(
+  async gerarExecucaoIndicadoresAutonomos(
     input: { tenantId: string; userId: string; tipoDocumentoId: string; documentoUploadIds: string[] },
-    tipo: { id: string; portalDocumentoId: string | null },
+    tipo: { id: string; documentoPersonalizadoId: string | null; promptInstrucoes: string },
     documentos: { id: string; nomeArquivo: string; paginasTexto: string }[],
   ) {
-    if (!tipo.portalDocumentoId) {
-      throw new HttpError(404, "Este tipo de documento não está ligado a nenhum documento do Portal Previdenciário.");
+    if (!tipo.documentoPersonalizadoId) {
+      throw new HttpError(404, "Este tipo de documento não está ligado a nenhum documento personalizado.");
+    }
+
+    const docPersonalizado = await prisma.documentoPersonalizado.findUnique({
+      where: { id: tipo.documentoPersonalizadoId },
+    });
+    if (!docPersonalizado || !docPersonalizado.portalDocumentoId) {
+      throw new HttpError(404, "Este documento ainda não tem um espelho do Portal Previdenciário configurado.");
     }
 
     const portalDocumento = await prisma.portalDocumento.findUnique({
-      where: { id: tipo.portalDocumentoId },
+      where: { id: docPersonalizado.portalDocumentoId },
       include: { indicadores: true },
     });
     if (!portalDocumento) throw new HttpError(404, "Documento do Portal Previdenciário não encontrado.");
-    if (portalDocumento.indicadores.length === 0) {
-      throw new HttpError(400, "Este documento ainda não tem nenhum indicador cadastrado no catálogo.");
-    }
-
-    const indicadoresParaExtrair = portalDocumento.indicadores.map((i) => ({
-      indicadorId: i.indicadorId,
-      nome: i.nome,
-      tipo: i.tipo,
-      unidade: i.unidade,
-    }));
 
     const execucao = await prisma.tenantConstrutorExecucao.create({
       data: {
@@ -184,20 +160,46 @@ export const construtorRepository = {
       },
     });
 
+    // Indicadores já criados nesta execução, pra não criar duplicata quando o mesmo nome
+    // aparece em mais de um PDF-fonte ou mais de uma vez no resultado da IA.
+    const indicadoresPorNome = new Map(portalDocumento.indicadores.map((i) => [i.nome.trim().toLowerCase(), i]));
+
     for (const documento of documentos) {
       const paginas = JSON.parse(documento.paginasTexto) as { pagina: number; texto: string }[];
-      const resultados = await extrairIndicadoresDoPdf(documento.nomeArquivo, paginas, indicadoresParaExtrair);
+      const resultados = await extrairIndicadoresAutonomamente(documento.nomeArquivo, tipo.promptInstrucoes, paginas);
 
       for (const resultado of resultados) {
-        if (!resultado.encontrado || !resultado.valor || !resultado.competencia) continue;
-        const indicadorDb = portalDocumento.indicadores.find((i) => i.indicadorId === resultado.indicadorId);
-        if (!indicadorDb) continue;
+        if (!resultado.valor || !resultado.competencia || !resultado.nome.trim()) continue;
 
         let competencia: Date;
         try {
           competencia = normalizarCompetencia(resultado.competencia);
         } catch {
           continue;
+        }
+
+        const chave = resultado.nome.trim().toLowerCase();
+        let indicadorDb = indicadoresPorNome.get(chave);
+        if (!indicadorDb) {
+          const usados = new Set(portalDocumento.indicadores.map((i) => i.indicadorId));
+          const base = slugify(resultado.nome) || `indicador-${indicadoresPorNome.size + 1}`;
+          let indicadorId = base;
+          let n = 1;
+          while (usados.has(indicadorId)) indicadorId = `${base}-${++n}`;
+          usados.add(indicadorId);
+
+          indicadorDb = await prisma.portalIndicador.create({
+            data: {
+              documentoId: portalDocumento.id,
+              indicadorId,
+              nome: resultado.nome.trim(),
+              tipo: resultado.tipo,
+              unidade: resultado.unidade,
+              sortOrder: portalDocumento.indicadores.length + indicadoresPorNome.size,
+            },
+          });
+          indicadoresPorNome.set(chave, indicadorDb);
+          portalDocumento.indicadores.push(indicadorDb);
         }
 
         await prisma.construtorIndicadorSugestao.create({
