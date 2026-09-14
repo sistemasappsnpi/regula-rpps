@@ -598,6 +598,21 @@ function GraficoTendencia({
 
   const ultimoPonto = dados[dados.length - 1];
 
+  // Indicadores agrupados aqui aparecem em TODOS os lançamentos e têm a mesma unidade, mas podem
+  // ter magnitudes bem diferentes de verdade (ex.: "Limite Inferior 0%" ao lado de "Estratégia
+  // Alvo 24%") — um eixo Y linear compartilhado esmaga rente ao zero as linhas pequenas, mesmo
+  // problema das barras. Aqui não dá pra só trocar a escala do eixo pra raiz quadrada (deformaria
+  // a FORMA da tendência, que é o que esse gráfico existe pra mostrar) — a solução genérica é dar
+  // a cada indicador seu próprio mini-gráfico com eixo independente quando a dispersão é grande:
+  // cada linha sempre ocupa o espaço vertical inteiro dela. Com poucos indicadores de magnitude
+  // parecida, continua um único gráfico sobreposto — comparar direto é melhor quando dá.
+  const todosValores = dados
+    .flatMap((p) => indicadores.map((ind) => p[ind.id]))
+    .filter((v): v is number => typeof v === "number");
+  const valoresAbs = todosValores.map((v) => Math.abs(v)).filter((v) => v > 0);
+  const maxValorAbs = valoresAbs.length ? Math.max(...valoresAbs) : 0;
+  const precisaSepararEscalas = indicadores.length > 1 && valoresAbs.some((v) => v < maxValorAbs / 8);
+
   return (
     <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor, atraso)}>
       <div className="mb-1 flex items-center gap-2">
@@ -611,83 +626,150 @@ function GraficoTendencia({
         só o retrato do mais recente.
       </p>
 
-      {/* Valor mais recente de cada linha, por extenso, com o nome completo (nunca truncado: é o
-          principal jeito do leitor entender do que esse gráfico está falando) — o próprio gráfico
-          (eixo compacto + linha subindo) não deixa claro QUANTO cada indicador vale hoje nem O QUE
-          exatamente ele é, só a tendência. */}
-      {ultimoPonto && (
-        <div className="mb-3 flex flex-col gap-1.5">
+      {precisaSepararEscalas ? (
+        // Um mini-gráfico por indicador, cada um com seu próprio eixo — nome + valor mais recente
+        // juntos ali em cima (mesma informação que os chips davam antes), sem competir de escala
+        // com os outros.
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {indicadores.map((ind, i) => {
-            const valor = ultimoPonto[ind.id];
-            if (typeof valor !== "number") return null;
             const corLinha = CORES_GRAFICO[i % CORES_GRAFICO.length];
+            const pontosInd = dados
+              .map((p) => ({ competencia: p.competencia, valor: p[ind.id] }))
+              .filter((p): p is { competencia: string; valor: number } => typeof p.valor === "number");
+            const valorAtual = pontosInd[pontosInd.length - 1]?.valor;
             return (
-              <div key={ind.id} className="flex items-start gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs">
-                <span
-                  className="mt-1 h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: `rgb(var(--color-${corLinha}))` }}
-                />
-                <span className="min-w-0 flex-1 text-ink-muted">{ind.nome}</span>
-                <span className="shrink-0 tabular font-semibold text-ink">
-                  {valor.toLocaleString("pt-BR")}
-                  {unidade ? ` ${unidade}` : ""}
-                </span>
+              <div key={ind.id} className="min-w-0 rounded-lg border border-border p-3">
+                <div className="flex items-start gap-1.5 text-xs">
+                  <span
+                    className="mt-1 h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: `rgb(var(--color-${corLinha}))` }}
+                  />
+                  <span className="min-w-0 flex-1 text-ink-muted">{ind.nome}</span>
+                  {typeof valorAtual === "number" && (
+                    <span className="shrink-0 tabular font-semibold text-ink">
+                      {valorAtual.toLocaleString("pt-BR")}
+                      {unidade ? ` ${unidade}` : ""}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 h-16 w-full">
+                  <ResponsiveContainer>
+                    <LineChart data={pontosInd} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                      <YAxis hide domain={["auto", "auto"]} />
+                      <XAxis dataKey="competencia" hide />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null;
+                          return (
+                            <div className="rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-lift">
+                              <p className="mb-1 font-medium text-ink">{label}</p>
+                              <p className="tabular text-ink-muted" style={{ color: `rgb(var(--color-${corLinha}))` }}>
+                                {payload[0]?.value?.toLocaleString("pt-BR")}
+                                {unidade ? ` ${unidade}` : ""}
+                              </p>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="valor"
+                        stroke={`rgb(var(--color-${corLinha}))`}
+                        strokeWidth={2}
+                        dot={{ r: 3, strokeWidth: 0 }}
+                        activeDot={{ r: 5, strokeWidth: 0 }}
+                        animationDuration={600}
+                        animationEasing="ease-out"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             );
           })}
         </div>
-      )}
-
-      <div className={`mt-2 w-full ${compacto ? "h-60" : "h-72"}`}>
-        <ResponsiveContainer>
-          <LineChart data={dados} margin={{ top: 20, right: 16, left: 0, bottom: 4 }}>
-            <CartesianGrid vertical={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
-            <XAxis dataKey="competencia" fontSize={11} stroke="rgb(var(--color-ink-muted))" tickLine={false} axisLine={false} />
-            <YAxis
-              width={52}
-              fontSize={10}
-              stroke="rgb(var(--color-ink-muted))"
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v: number) => formatarNumeroCompacto(v)}
-              domain={["auto", "auto"]}
-            />
-            <Tooltip
-              content={({ active, payload, label }) => {
-                if (!active || !payload?.length) return null;
+      ) : (
+        <>
+          {/* Valor mais recente de cada linha, por extenso, com o nome completo (nunca truncado: é
+              o principal jeito do leitor entender do que esse gráfico está falando) — o próprio
+              gráfico (eixo compacto + linha subindo) não deixa claro QUANTO cada indicador vale
+              hoje nem O QUE exatamente ele é, só a tendência. */}
+          {ultimoPonto && (
+            <div className="mb-3 flex flex-col gap-1.5">
+              {indicadores.map((ind, i) => {
+                const valor = ultimoPonto[ind.id];
+                if (typeof valor !== "number") return null;
+                const corLinha = CORES_GRAFICO[i % CORES_GRAFICO.length];
                 return (
-                  <div className="rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-lift">
-                    <p className="mb-1 font-medium text-ink">{label}</p>
-                    {payload.map((p) => (
-                      <p key={p.dataKey as string} className="tabular text-ink-muted" style={{ color: p.color }}>
-                        {indicadores.find((i) => i.id === p.dataKey)?.nome}: {p.value?.toLocaleString("pt-BR")}
-                        {unidade ? ` ${unidade}` : ""}
-                      </p>
-                    ))}
+                  <div key={ind.id} className="flex items-start gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs">
+                    <span
+                      className="mt-1 h-2 w-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: `rgb(var(--color-${corLinha}))` }}
+                    />
+                    <span className="min-w-0 flex-1 text-ink-muted">{ind.nome}</span>
+                    <span className="shrink-0 tabular font-semibold text-ink">
+                      {valor.toLocaleString("pt-BR")}
+                      {unidade ? ` ${unidade}` : ""}
+                    </span>
                   </div>
                 );
-              }}
-            />
-            {/* Sem <Legend> aqui de propósito: os chips de "valor mais recente" acima do gráfico já
-                são a legenda (mesma cor, nome completo, valor) — e a legenda do recharts, com 13
-                nomes longos, cresce sem limite e acaba desenhada por cima da própria linha. */}
-            {indicadores.map((ind, i) => (
-              <Line
-                key={ind.id}
-                type="monotone"
-                dataKey={ind.id}
-                name={ind.nome}
-                stroke={`rgb(var(--color-${CORES_GRAFICO[i % CORES_GRAFICO.length]}))`}
-                strokeWidth={2.5}
-                dot={{ r: 4, strokeWidth: 0 }}
-                activeDot={{ r: 6, strokeWidth: 0 }}
-                animationDuration={800}
-                animationEasing="ease-out"
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+              })}
+            </div>
+          )}
+
+          <div className={`mt-2 w-full ${compacto ? "h-60" : "h-72"}`}>
+            <ResponsiveContainer>
+              <LineChart data={dados} margin={{ top: 20, right: 16, left: 0, bottom: 4 }}>
+                <CartesianGrid vertical={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
+                <XAxis dataKey="competencia" fontSize={11} stroke="rgb(var(--color-ink-muted))" tickLine={false} axisLine={false} />
+                <YAxis
+                  width={52}
+                  fontSize={10}
+                  stroke="rgb(var(--color-ink-muted))"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v: number) => formatarNumeroCompacto(v)}
+                  domain={["auto", "auto"]}
+                />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    return (
+                      <div className="rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-lift">
+                        <p className="mb-1 font-medium text-ink">{label}</p>
+                        {payload.map((p) => (
+                          <p key={p.dataKey as string} className="tabular text-ink-muted" style={{ color: p.color }}>
+                            {indicadores.find((i) => i.id === p.dataKey)?.nome}: {p.value?.toLocaleString("pt-BR")}
+                            {unidade ? ` ${unidade}` : ""}
+                          </p>
+                        ))}
+                      </div>
+                    );
+                  }}
+                />
+                {/* Sem <Legend> aqui de propósito: os chips de "valor mais recente" acima do
+                    gráfico já são a legenda (mesma cor, nome completo, valor) — e a legenda do
+                    recharts, com nomes longos, cresce sem limite e acaba desenhada por cima da
+                    própria linha. */}
+                {indicadores.map((ind, i) => (
+                  <Line
+                    key={ind.id}
+                    type="monotone"
+                    dataKey={ind.id}
+                    name={ind.nome}
+                    stroke={`rgb(var(--color-${CORES_GRAFICO[i % CORES_GRAFICO.length]}))`}
+                    strokeWidth={2.5}
+                    dot={{ r: 4, strokeWidth: 0 }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    animationDuration={800}
+                    animationEasing="ease-out"
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      )}
     </div>
   );
 }
