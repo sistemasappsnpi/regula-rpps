@@ -416,7 +416,7 @@ function GraficoAlocacao({
                 fill={`url(#grad-aloc-${m.chave})`}
                 radius={[0, 4, 4, 0]}
                 maxBarSize={16}
-                minPointSize={3}
+                minPointSize={8}
                 animationDuration={900}
                 animationEasing="ease-out"
                 animationBegin={150 + i * 120}
@@ -525,7 +525,7 @@ function GraficoComparativo({
               }}
               cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }}
             />
-            <Bar dataKey="valor" radius={[0, 6, 6, 0]} maxBarSize={26} minPointSize={3} animationDuration={800} animationEasing="ease-out" animationBegin={150}>
+            <Bar dataKey="valor" radius={[0, 6, 6, 0]} maxBarSize={26} minPointSize={8} animationDuration={800} animationEasing="ease-out" animationBegin={150}>
               {dados.map((d, i) => (
                 <Cell key={d.id} fill={`url(#grad-comp-${CORES_GRAFICO[i % CORES_GRAFICO.length]})`} />
               ))}
