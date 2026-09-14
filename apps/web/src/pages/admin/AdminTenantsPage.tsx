@@ -5,12 +5,14 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Modal, ModalTab } from "../../components/ui/Modal";
 import { PermissoesEditor, type PermissaoItem } from "../../components/admin/PermissoesEditor";
+import { useConfirm } from "../../components/ui/confirm-context";
 import { Building2, Copy, RefreshCw, Check } from "lucide-react";
 
 const PLANOS: Tenant["plan"][] = ["ESSENCIAL", "GESTAO", "PERFORMANCE"];
 const NIVEIS_PRO_GESTAO: Nivel[] = ["I", "II", "III", "IV"];
 
 export function AdminTenantsPage() {
+  const confirmar = useConfirm();
   const [tenants, setTenants] = useState<AdminTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
@@ -125,10 +127,13 @@ export function AdminTenantsPage() {
   }
 
   async function excluir(t: AdminTenant) {
-    const confirmado = window.confirm(
-      `Excluir "${t.name}"? Isso apaga permanentemente todo o histórico de CRP, Pró-Gestão, uploads e documentos ` +
+    const confirmado = await confirmar({
+      message:
+        `Excluir "${t.name}"? Isso apaga permanentemente todo o histórico de CRP, Pró-Gestão, uploads e documentos ` +
         "deste RPPS. Os usuários vinculados continuam cadastrados, só perdem o acesso a este RPPS. Esta ação não pode ser desfeita.",
-    );
+      tone: "danger",
+      confirmLabel: "Excluir",
+    });
     if (!confirmado) return;
 
     setErro(null);
@@ -436,6 +441,7 @@ function AbaUsuarios({
   onChange: () => Promise<void>;
   onErro: (msg: string | null) => void;
 }) {
+  const confirmar = useConfirm();
   const [link, setLink] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
   const [regenerando, setRegenerando] = useState(false);
@@ -527,7 +533,11 @@ function AbaUsuarios({
   }
 
   async function removerVinculo(m: AdminTenant["membros"][number]) {
-    const confirmado = window.confirm(`Remover "${m.name}" deste RPPS? O usuário continua cadastrado na plataforma.`);
+    const confirmado = await confirmar({
+      message: `Remover "${m.name}" deste RPPS? O usuário continua cadastrado na plataforma.`,
+      tone: "danger",
+      confirmLabel: "Remover",
+    });
     if (!confirmado) return;
 
     onErro(null);

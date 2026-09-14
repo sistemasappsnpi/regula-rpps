@@ -319,16 +319,19 @@ model DocumentoUpload {
   descricao        String?      @db.Text // nota livre sobre o documento (ex.: "DAIR de março/2026")
   nomeArquivo      String
   caminhoArquivo   String
-  paginasTexto     String       @db.Text // JSON: [{ "pagina": 1, "texto": "..." }, ...]
+  paginasTexto     String       @db.LongText // JSON: [{ "pagina": 1, "texto": "..." }, ...] — LongText pq documentos
+                                              // grandes (muitas páginas) passam fácil do limite de 64KB do Text puro.
   status           UploadStatus @default(PENDENTE)
   erro             String?      @db.Text
   createdAt        DateTime     @default(now())
   uploadedByUserId String
 
-  tenant             Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  uploadedBy         User                      @relation(fields: [uploadedByUserId], references: [id])
+  tenant             Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploadedBy         User                          @relation(fields: [uploadedByUserId], references: [id])
   sugestoes          CampoExtraidoSugestao[]
-  construtorExecucao TenantConstrutorExecucao? @relation(fields: [construtorExecucaoId], references: [id], onDelete: SetNull)
+  construtorExecucao TenantConstrutorExecucao?     @relation(fields: [construtorExecucaoId], references: [id], onDelete: SetNull)
+  indicadorSugestoes ConstrutorIndicadorSugestao[]
+  portalIndicadorValores TenantPortalIndicadorValor[]
 
   @@index([tenantId])
   @@map("documento_uploads")
@@ -422,6 +425,7 @@ model ConstrutorIndicadorSugestao {
   id                  String         @id @default(cuid())
   execucaoId          String
   indicadorId         String // PortalIndicador.id
+  uploadId            String? // DocumentoUpload de origem — pra linkar o valor publicado ao PDF real
   competencia         DateTime // normalizado pro 1º dia do mês de referência
   valorSugerido       String         @db.Text
   documentoNomeOrigem String
@@ -433,6 +437,7 @@ model ConstrutorIndicadorSugestao {
 
   execucao  TenantConstrutorExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
   indicador PortalIndicador          @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  upload    DocumentoUpload?         @relation(fields: [uploadId], references: [id], onDelete: SetNull)
 
   @@map("construtor_indicador_sugestoes")
 }
@@ -614,19 +619,22 @@ model PortalIndicador {
 // Append-only, mesmo padrão de TenantProGestaoCampoValor — nunca sobrescreve; o valor vigente de
 // um (tenantId, indicadorId, competencia) é a linha mais recente (maior createdAt).
 model TenantPortalIndicadorValor {
-  id              String      @id @default(cuid())
-  tenantId        String
-  indicadorId     String
-  competencia     DateTime // normalizado pro primeiro dia do mês/trimestre de referência
-  valor           String      @db.Text
-  origem          FieldOrigin @default(MANUAL)
-  origemDetalhe   String?     @db.Text
-  criadoPorUserId String
-  createdAt       DateTime    @default(now())
+  id                String      @id @default(cuid())
+  tenantId          String
+  indicadorId       String
+  documentoUploadId String? // PDF de origem, quando o valor veio do Construtor de Documentos — permite
+                             // ao cidadão abrir o documento original no Portal Previdenciário público.
+  competencia       DateTime // normalizado pro primeiro dia do mês/trimestre de referência
+  valor             String      @db.Text
+  origem            FieldOrigin @default(MANUAL)
+  origemDetalhe     String?     @db.Text
+  criadoPorUserId   String
+  createdAt         DateTime    @default(now())
 
-  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  indicador PortalIndicador @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
-  criadoPor User            @relation(fields: [criadoPorUserId], references: [id])
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  indicador       PortalIndicador  @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  criadoPor       User             @relation(fields: [criadoPorUserId], references: [id])
+  documentoUpload DocumentoUpload? @relation(fields: [documentoUploadId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, indicadorId, competencia, createdAt])
   @@map("tenant_portal_indicador_valores")

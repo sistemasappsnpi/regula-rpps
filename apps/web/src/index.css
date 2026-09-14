@@ -43,6 +43,27 @@
   --color-crit: 248 113 113;
 }
 
+/* Portais públicos (Transparência e Portal Previdenciário) são documentos oficiais voltados ao
+   cidadão — sempre no tema claro, independente do tema escolhido pelo usuário logado no sistema
+   interno. Redeclara as mesmas variáveis do :root claro; como variável CSS é resolvida pelo
+   ancestral mais próximo que a declara, isso "trava" o claro nessa subárvore mesmo com
+   :root[data-theme="dark"] ativo mais acima. */
+.portal-publico-claro {
+  --color-bg: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-ink: 51 65 85;
+  --color-ink-muted: 100 116 139;
+  --color-border: 226 232 240;
+
+  --color-petrol: 8 145 178;
+  --color-gold: 124 58 237;
+  --color-ok: 22 163 74;
+  --color-warn: 217 119 6;
+  --color-crit: 220 38 38;
+
+  color-scheme: light;
+}
+
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-ink));
@@ -58,4 +79,38 @@ body {
 
 * {
   scrollbar-color: rgb(var(--color-border)) transparent;
+}
+
+/* Portal Previdenciário — cartões de indicador entrando em sequência, e o brilho animado atrás
+   da barra de busca grande (ver DocumentoExplorer.tsx). */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes glow-shift {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Título de destaque da página de documento (PortalPrevidenciarioDocumentoPage) — o degradê
+   desliza devagar por trás do texto, dando vida sem prejudicar a leitura. */
+@keyframes title-shimmer {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }

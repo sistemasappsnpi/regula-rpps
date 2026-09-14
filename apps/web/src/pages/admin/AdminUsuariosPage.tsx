@@ -5,11 +5,13 @@ import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { PermissoesEditor, type PermissaoItem } from "../../components/admin/PermissoesEditor";
+import { useConfirm } from "../../components/ui/confirm-context";
 
 // Cadastro exclusivo das contas Super Admin (acesso ao painel Admin Global) — usuários de cada
 // RPPS são geridos em RPPS clientes → editar → Usuários, escopados ao próprio cliente.
 export function AdminUsuariosPage() {
   const { user: usuarioLogado } = useAuth();
+  const confirmar = useConfirm();
   const [usuarios, setUsuarios] = useState<AdminUsuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -87,7 +89,11 @@ export function AdminUsuariosPage() {
   }
 
   async function excluirUsuario(u: AdminUsuario) {
-    const confirmado = window.confirm(`Excluir "${u.name}" (${u.email})? Esta ação não pode ser desfeita.`);
+    const confirmado = await confirmar({
+      message: `Excluir "${u.name}" (${u.email})? Esta ação não pode ser desfeita.`,
+      tone: "danger",
+      confirmLabel: "Excluir",
+    });
     if (!confirmado) return;
 
     setErro(null);

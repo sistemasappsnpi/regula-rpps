@@ -77,6 +77,62 @@ construtorRouter.post("/execucoes/:id/aprovar", async (req: AuthenticatedRequest
   }
 });
 
+// Aprova em lote todas as sugestões PENDENTES de uma execução, sem edição individual — a pedido
+// explícito do usuário, apesar do requisito padrão de revisão item a item (ver comentário acima
+// de /indicador-sugestoes/:id). Cada uma publica no Portal Previdenciário exatamente como o
+// aprovar individual faria, só que em sequência pra todas de uma vez.
+construtorRouter.post("/execucoes/:id/aprovar-todos-indicadores", async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const execucao = await prisma.tenantConstrutorExecucao.findUnique({
+      where: { id: req.params.id },
+      include: { indicadorSugestoes: true },
+    });
+    if (!execucao || execucao.tenantId !== req.auth!.tenantId!) {
+      throw new HttpError(404, "Execução não encontrada.");
+    }
+
+    const pendentes = execucao.indicadorSugestoes.filter((s) => s.status === "PENDENTE");
+    for (const sugestao of pendentes) {
+      await prisma.construtorIndicadorSugestao.update({
+        where: { id: sugestao.id },
+        data: { status: "APROVADA", valorFinal: sugestao.valorSugerido },
+      });
+      await registrarValorDeIndicador({
+        tenantId: req.auth!.tenantId!,
+        indicadorDbId: sugestao.indicadorId,
+        competencia: sugestao.competencia,
+        valor: sugestao.valorSugerido,
+        origem: "PDF_EXTRACTION",
+        origemDetalhe: `PDF "${sugestao.documentoNomeOrigem}"${
+          sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""
+        }${sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}`,
+        documentoUploadId: sugestao.uploadId,
+        userId: req.auth!.userId,
+      });
+    }
+
+    res.json(serializarExecucao(await construtorRepository.getExecucao(req.auth!.tenantId!, execucao.id)));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Exclui uma execução (ex.: rascunho de teste) — apaga a execução e suas sugestões (cascade), sem
+// mexer em valores já publicados no Portal Previdenciário (TenantPortalIndicadorValor é uma
+// entidade separada, não é revertida por esta exclusão).
+construtorRouter.delete("/execucoes/:id", async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const execucao = await prisma.tenantConstrutorExecucao.findUnique({ where: { id: req.params.id } });
+    if (!execucao || execucao.tenantId !== req.auth!.tenantId!) {
+      throw new HttpError(404, "Execução não encontrada.");
+    }
+    await prisma.tenantConstrutorExecucao.delete({ where: { id: execucao.id } });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
 const indicadorSugestaoSchema = z.object({
   status: z.enum(["APROVADA", "REJEITADA", "CORRIGIDA"]),
   valorFinal: z.string().optional(),
@@ -118,6 +174,7 @@ construtorRouter.patch("/indicador-sugestoes/:id", async (req: AuthenticatedRequ
         origemDetalhe: `PDF "${sugestao.documentoNomeOrigem}"${
           sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""
         }${sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}`,
+        documentoUploadId: sugestao.uploadId,
         userId: req.auth!.userId,
       });
     }

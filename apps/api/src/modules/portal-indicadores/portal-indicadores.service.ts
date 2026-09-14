@@ -25,7 +25,19 @@ function validarValorPorTipo(tipo: string, valor: string): void {
   }
 
   if (tipo === "DATA") {
-    if (Number.isNaN(Date.parse(v))) {
+    // dd/mm/aaaa (formato que a IA usa, espelhando o documento-fonte) ou aaaa-mm-dd (lançamento
+    // manual/ISO), com horário opcional (ex.: timestamp de assinatura digital "28/04/2026
+    // 16:21:57") — Date.parse() não serve aqui, não reconhece dd/mm/aaaa de forma confiável.
+    const br = /^(\d{2})\/(\d{2})\/(\d{4})(?:[ T]\d{2}:\d{2}(?::\d{2})?)?$/.exec(v);
+    const iso = /^(\d{4})-(\d{2})-(\d{2})(?:[ T]\d{2}:\d{2}(?::\d{2})?)?$/.exec(v);
+    const m = br ?? iso;
+    if (!m) {
+      throw new HttpError(400, `Valor "${valor}" não é uma data válida (use dd/mm/aaaa) para este indicador.`);
+    }
+    const [dia, mes, ano] = br ? [Number(m[1]), Number(m[2]), Number(m[3])] : [Number(m[3]), Number(m[2]), Number(m[1])];
+    const data = new Date(Date.UTC(ano, mes - 1, dia));
+    const valida = data.getUTCFullYear() === ano && data.getUTCMonth() === mes - 1 && data.getUTCDate() === dia;
+    if (!valida) {
       throw new HttpError(400, `Valor "${valor}" não é uma data válida para este indicador.`);
     }
     return;
@@ -48,6 +60,7 @@ export async function registrarValorDeIndicador(input: {
   valor: string;
   origem: FieldOrigin;
   origemDetalhe?: string | null;
+  documentoUploadId?: string | null;
   userId: string;
 }) {
   const indicador = await portalIndicadoresRepository.findIndicadorById(input.indicadorDbId);

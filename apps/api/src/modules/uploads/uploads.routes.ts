@@ -239,6 +239,13 @@ uploadsRouter.delete("/:uploadId", async (req: AuthenticatedRequest, res, next) 
       throw new HttpError(404, "Documento não encontrado.");
     }
 
+    // Se este PDF é a origem de algum valor já publicado no Portal Previdenciário, ele precisa
+    // continuar em disco pro cidadão conseguir abrir o documento original — não deixa excluir.
+    const emUso = await prisma.tenantPortalIndicadorValor.findFirst({ where: { documentoUploadId: documento.id } });
+    if (emUso) {
+      throw new HttpError(400, "Este arquivo é a origem de dados já publicados no Portal Previdenciário e não pode ser excluído.");
+    }
+
     await prisma.documentoUpload.delete({ where: { id: documento.id } });
     fs.rm(documento.caminhoArquivo, { force: true }, () => {
       /* melhor esforço: se o arquivo já não existir em disco, ignora */

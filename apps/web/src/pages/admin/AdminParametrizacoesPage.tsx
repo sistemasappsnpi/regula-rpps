@@ -5,6 +5,7 @@ import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
+import { useConfirm } from "../../components/ui/confirm-context";
 
 type CampoForm = { id?: string; descricao: string; obrigatorio: boolean };
 
@@ -16,6 +17,7 @@ const DOCUMENTO_FORM_VAZIO = { nome: "", descricao: "", promptInstrucoes: "", ca
 // extrair de cada PDF (ver extrairIndicadoresAutonomamente, anthropic.client.ts) — o comentário
 // aqui só se soma ao prompt-base fixo no código, nunca o substitui.
 function DocumentosPersonalizadosSection() {
+  const confirmar = useConfirm();
   const [documentos, setDocumentos] = useState<AdminDocumentoPersonalizado[]>([]);
   const [loading, setLoading] = useState(true);
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -137,9 +139,11 @@ function DocumentosPersonalizadosSection() {
   }
 
   async function excluir(d: AdminDocumentoPersonalizado) {
-    const confirmado = window.confirm(
-      `Excluir "${d.nome}"? Publicações já feitas pelos RPPS somem do Portal público. Esta ação não pode ser desfeita.`,
-    );
+    const confirmado = await confirmar({
+      message: `Excluir "${d.nome}"? Publicações já feitas pelos RPPS somem do Portal público. Esta ação não pode ser desfeita.`,
+      tone: "danger",
+      confirmLabel: "Excluir",
+    });
     if (!confirmado) return;
     setErro(null);
     try {
@@ -228,6 +232,10 @@ function DocumentosPersonalizadosSection() {
               onChange={(e) => setForm({ ...form, descricao: e.target.value })}
               className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
             />
+            <span className="mt-1 block text-xs text-ink-muted">
+              Só aparece nesta lista de cadastro, pra você mesmo se lembrar do que é este documento —{" "}
+              <strong>nunca é enviada pra IA</strong>. Pra orientar a extração, use o campo abaixo.
+            </span>
           </label>
 
           <label className="block text-sm">

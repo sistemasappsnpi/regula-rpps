@@ -1,15 +1,17 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShieldCheck, ClipboardList, Sparkles, Lock, BarChart3 } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, ClipboardList, Sparkles, Lock } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
 import { SessionMenu } from "./SessionMenu";
 
+// Aba "Portal Previdenciário" (/portal-indicadores) tirada do menu por pedido do usuário — a tela
+// não estava do jeito que ele queria, vai ser revista depois. A rota e a página continuam no
+// código (só sem link nenhum apontando pra elas) pra retomar de onde parou quando for repensada.
 const NAV_ITEMS = [
   { to: "/", label: "Painel", icon: LayoutDashboard, feature: null },
   { to: "/crp", label: "Compliance CRP", icon: ShieldCheck, feature: "crp_compliance" },
   { to: "/pro-gestao", label: "Pró-Gestão RPPS", icon: ClipboardList, feature: "pro_gestao" },
   { to: "/construtor", label: "Construtor", icon: Sparkles, feature: "construtor_documentos" },
-  { to: "/portal-indicadores", label: "Portal Previdenciário", icon: BarChart3, feature: "portal_previdenciario_indicadores" },
 ] as const;
 
 const PLAN_LABELS: Record<string, string> = {

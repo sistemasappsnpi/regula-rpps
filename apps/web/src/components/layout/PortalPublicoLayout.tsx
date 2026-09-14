@@ -25,7 +25,7 @@ export function PortalPublicoLayout({
   const [escala, setEscala] = useState(1);
 
   return (
-    <div style={{ fontSize: `${escala * 100}%` }} className="flex min-h-screen flex-col bg-bg">
+    <div style={{ fontSize: `${escala * 100}%` }} className="portal-publico-claro flex min-h-screen flex-col bg-bg">
       {menu.length > 0 && (
         <nav className="border-b border-border bg-surface px-6 py-3">
           <div className="mx-auto flex max-w-3xl flex-wrap gap-x-8 gap-y-2">

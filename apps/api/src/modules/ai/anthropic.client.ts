@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../../config/env";
 
-const MODEL = "claude-sonnet-4-5";
+const MODEL = "claude-sonnet-5";
 
 let client: Anthropic | null = null;
 
@@ -75,7 +75,8 @@ export async function extrairCamposDoPdf(
 
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 16000,
+    output_config: { effort: "medium" },
     tools: [tool],
     tool_choice: { type: "tool", name: "registrar_extracao" },
     messages: [
@@ -100,8 +101,8 @@ export async function extrairCamposDoPdf(
     throw new Error("A IA não retornou um resultado estruturado de extração.");
   }
 
-  const parsed = toolUse.input as { resultados: CampoExtraidoResultado[] };
-  return parsed.resultados;
+  const parsed = toolUse.input as { resultados?: CampoExtraidoResultado[] };
+  return Array.isArray(parsed.resultados) ? parsed.resultados : [];
 }
 
 export interface IndicadorParaExtrair {
@@ -171,7 +172,8 @@ export async function extrairIndicadoresDoPdf(
 
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 16000,
+    output_config: { effort: "medium" },
     tools: [tool],
     tool_choice: { type: "tool", name: "registrar_extracao_indicadores" },
     messages: [
@@ -201,8 +203,8 @@ export async function extrairIndicadoresDoPdf(
     throw new Error("A IA não retornou um resultado estruturado de extração de indicadores.");
   }
 
-  const parsed = toolUse.input as { resultados: IndicadorExtraidoResultado[] };
-  return parsed.resultados;
+  const parsed = toolUse.input as { resultados?: IndicadorExtraidoResultado[] };
+  return Array.isArray(parsed.resultados) ? parsed.resultados : [];
 }
 
 export interface IndicadorAutonomoResultado {
@@ -221,14 +223,37 @@ const PROMPT_BASE_INDICADORES_AUTONOMO =
   "uma lista pré-definida de campos — você decide sozinho quais são os indicadores mais importantes deste " +
   "documento (ex.: valores financeiros e de repasse, número de segurados/beneficiários, alíquotas e " +
   "percentuais, reservas técnicas, datas-chave, prazos e outros números que um gestor de RPPS acompanharia). " +
-  "Extraia SOMENTE o que está literalmente escrito no documento — nunca infira ou invente um valor, nome de " +
-  "indicador ou competência que não esteja implícita no texto (ex.: cabeçalho de tabela mensal, período do " +
-  "relatório declarado no próprio documento). Um mesmo indicador pode aparecer várias vezes, uma para cada " +
-  "competência encontrada (ex.: uma série de 12 meses vira 12 resultados com o mesmo nome de indicador). Dê a " +
-  "cada indicador um nome curto e claro (ex.: \"Valor total de repasses\", \"Número de segurados ativos\"), " +
-  "classifique seu tipo (NUMERICO, MOEDA, TEXTO ou DATA) e, quando fizer sentido, uma unidade (ex.: \"R$\", " +
-  "\"%\", \"pessoas\"). Para todo valor encontrado, cite a página exata e um trecho literal (até ~300 " +
-  "caracteres) de onde ele veio.";
+  "Extraia SOMENTE o que está literalmente escrito no documento — nunca infira ou invente um valor ou nome de " +
+  "indicador que não esteja no texto.\n\n" +
+  "Antes de extrair, entenda que tipo de documento é este e o que ele representa — isso decide como você " +
+  "preenche a competência de cada indicador:\n" +
+  "- Se o documento reporta uma SÉRIE ao longo do tempo (ex.: uma tabela com uma linha por mês), use o " +
+  "mês/ano de cada linha como a competência daquele valor — um mesmo indicador aparece várias vezes, uma por " +
+  "competência encontrada (ex.: uma série de 12 meses vira 12 resultados com o mesmo nome de indicador).\n" +
+  "- Se o documento é um RETRATO PONTUAL (ex.: uma política, um plano, um demonstrativo aprovado uma vez, sem " +
+  "série mensal) — existe UMA ÚNICA competência para o documento inteiro, e ela vale para TODOS os " +
+  "indicadores, sem exceção. Escolha essa competência UMA vez, olhando pro documento como um todo, nesta " +
+  "ordem de preferência: (1) uma data de posição/referência explícita do relatório (ex.: \"Posição da Carteira " +
+  "de Investimentos em: DD/MM/AAAA\", \"Data-base\", \"Competência\"); (2) a data de aprovação ou elaboração " +
+  "do documento; (3) a data de publicação. Depois de escolher essa competência, aplique-a a TODO indicador " +
+  "que você extrair — inclusive tabelas sem coluna de data (composição de carteira, estratégia de alocação, " +
+  "membros de conselho, instituições credenciadas etc.).\n" +
+  "- ARMADILHA COMUM: um indicador retrato-pontual pode ter, dentro do seu PRÓPRIO valor, uma data " +
+  "completamente diferente da competência do documento — ex.: a data de assinatura digital de quem assina o " +
+  "relatório, a data de uma reunião de conselho citada numa ata, a data de um contrato, a data de um evento " +
+  "(\"Cisão\", nomeação, credenciamento). Essa data faz parte do VALOR do indicador (ex.: \"CATIA DA SILVA " +
+  "FERRAZ — assinado digitalmente em 05/08/2026\" ou \"26/11/2025 — Política de Investimento 2026\") e NUNCA " +
+  "deve virar a competência desse indicador. A competência de CADA indicador de um documento retrato-pontual é " +
+  "sempre a mesma data única do documento inteiro, escolhida uma vez no início — nunca uma data lida dentro do " +
+  "texto/trecho específico daquele indicador.\n" +
+  "- Só deixe a competência como null se o documento genuinamente não tiver NENHUMA data em lugar nenhum do " +
+  "texto (nem de série, nem de posição/aprovação/elaboração/publicação) — isso deve ser raro.\n" +
+  "Nunca invente uma data que não esteja escrita no documento, mas também não descarte um dado só porque ele " +
+  "não está numa tabela com coluna de mês — procure a data de referência do documento antes de desistir.\n\n" +
+  "Dê a cada indicador um nome curto e claro (ex.: \"Valor total de repasses\", \"Número de segurados " +
+  "ativos\"), classifique seu tipo (NUMERICO, MOEDA, TEXTO ou DATA) e, quando fizer sentido, uma unidade " +
+  "(ex.: \"R$\", \"%\", \"pessoas\"). Para todo valor encontrado, cite a página exata e um trecho literal " +
+  "(até ~300 caracteres) de onde ele veio.";
 
 /**
  * Extração estruturada e autônoma pro Portal Previdenciário: irmã de extrairIndicadoresDoPdf, mas sem
@@ -277,7 +302,8 @@ export async function extrairIndicadoresAutonomamente(
 
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 16000,
+    output_config: { effort: "medium" },
     tools: [tool],
     tool_choice: { type: "tool", name: "registrar_extracao_autonoma" },
     messages: [
@@ -301,8 +327,8 @@ export async function extrairIndicadoresAutonomamente(
     throw new Error("A IA não retornou um resultado estruturado de extração.");
   }
 
-  const parsed = toolUse.input as { resultados: IndicadorAutonomoResultado[] };
-  return parsed.resultados;
+  const parsed = toolUse.input as { resultados?: IndicadorAutonomoResultado[] };
+  return Array.isArray(parsed.resultados) ? parsed.resultados : [];
 }
 
 export interface FonteParaComposicao {
@@ -363,7 +389,8 @@ export async function comporRascunho(
 
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 16000,
+    output_config: { effort: "medium" },
     tools: [tool],
     tool_choice: { type: "tool", name: "registrar_rascunho" },
     messages: [
@@ -385,8 +412,8 @@ export async function comporRascunho(
     throw new Error("A IA não retornou um rascunho estruturado.");
   }
 
-  const parsed = toolUse.input as { itens: ItemComposto[] };
-  return parsed.itens;
+  const parsed = toolUse.input as { itens?: ItemComposto[] };
+  return Array.isArray(parsed.itens) ? parsed.itens : [];
 }
 
 export interface DocumentoFonteConstrutor {
@@ -490,5 +517,6 @@ export async function montarDocumentoConstrutor(input: {
     throw new Error("A IA não retornou um documento estruturado.");
   }
 
-  return toolUse.input as DocumentoConstruido;
+  const parsed = toolUse.input as Partial<DocumentoConstruido>;
+  return { conteudo: parsed.conteudo ?? "", citacoes: Array.isArray(parsed.citacoes) ? parsed.citacoes : [] };
 }

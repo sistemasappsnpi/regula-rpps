@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { History } from "lucide-react";
+import { History, Pencil, X } from "lucide-react";
 import { api, type PortalDocumentoCatalogo, type PortalIndicadorCatalogo, type PortalIndicadorValor } from "../lib/api";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
+import { dataBrParaInput, dataInputParaBr } from "../lib/br-date";
 
 function mesAtual(): string {
   return new Date().toISOString().slice(0, 7);
@@ -10,15 +11,17 @@ function mesAtual(): string {
 
 // Lançamento manual dos indicadores do Portal Previdenciário (ver PortalDocumento/PortalIndicador,
 // cadastrados pelo Admin Global) — via alternativa ao envio de PDF pelo Construtor de Documentos
-// (ver /construtor) para quando o RPPS não tem um PDF pra enviar. O "vigente" de cada indicador é
-// por competência (mês/ano), não único como no Pró-Gestão — por isso a competência é escolhida
-// uma vez no topo da página e vale pra todos os lançamentos daquela sessão de edição.
+// (ver /construtor) para quando o RPPS não tem um PDF pra enviar. Por padrão a página é só uma
+// listagem do que já está publicado na competência escolhida — o campo de edição só aparece pro
+// indicador que o usuário clicar em "Editar", pra não jogar dezenas de inputs abertos na tela de
+// uma vez (documentos como o DAIR têm 40+ indicadores).
 export function PortalIndicadoresLancamentoPage() {
   const [documentos, setDocumentos] = useState<PortalDocumentoCatalogo[]>([]);
   const [loading, setLoading] = useState(true);
   const [competencia, setCompetencia] = useState(mesAtual());
-  const [rascunho, setRascunho] = useState<Record<string, string>>({});
-  const [salvando, setSalvando] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [valorEdicao, setValorEdicao] = useState("");
+  const [salvandoId, setSalvandoId] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [historicoAberto, setHistoricoAberto] = useState<string | null>(null);
   const [historico, setHistorico] = useState<PortalIndicadorValor[]>([]);
@@ -43,30 +46,39 @@ export function PortalIndicadoresLancamentoPage() {
     return mapa;
   }, [documentos, competencia]);
 
-  function valorAtual(indicador: PortalIndicadorCatalogo): string {
-    if (indicador.id in rascunho) return rascunho[indicador.id];
-    return valorNaCompetencia.get(indicador.id) ?? "";
-  }
-
-  function alterar(indicadorId: string, valor: string) {
-    setRascunho((prev) => ({ ...prev, [indicadorId]: valor }));
-  }
-
-  async function salvar() {
+  function iniciarEdicao(indicador: PortalIndicadorCatalogo) {
     setErro(null);
-    setSalvando(true);
+    const bruto = valorNaCompetencia.get(indicador.id) ?? "";
+    // Mesma lógica de conversão de antes: DATA guardado "dd/mm/aaaa" vira "aaaa-mm-dd" pro
+    // <input type="date">; NUMERICO/MOEDA fica texto livre pq aceitam vírgula decimal (padrão BR).
+    const iso = indicador.tipo === "DATA" ? dataBrParaInput(bruto) : "";
+    const usarInputData = indicador.tipo === "DATA" && (bruto === "" || iso !== "");
+    setValorEdicao(usarInputData ? iso : bruto);
+    setEditandoId(indicador.id);
+  }
+
+  function cancelarEdicao() {
+    setEditandoId(null);
+    setValorEdicao("");
+  }
+
+  async function salvarEdicao(indicador: PortalIndicadorCatalogo) {
+    const usarInputData =
+      indicador.tipo === "DATA" && (valorEdicao === "" || dataBrParaInput(dataInputParaBr(valorEdicao)) !== "");
+    const valorFinal = usarInputData ? dataInputParaBr(valorEdicao) : valorEdicao;
+    if (!valorFinal.trim()) return;
+
+    setErro(null);
+    setSalvandoId(indicador.id);
     try {
-      for (const [indicadorId, valor] of Object.entries(rascunho)) {
-        if (!valor.trim()) continue;
-        if (valor === (valorNaCompetencia.get(indicadorId) ?? "")) continue;
-        await api.setIndicadorValor(indicadorId, competencia, valor);
-      }
-      setRascunho({});
+      await api.setIndicadorValor(indicador.id, competencia, valorFinal);
+      setEditandoId(null);
+      setValorEdicao("");
       await carregar();
     } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao salvar valores.");
+      setErro(err instanceof Error ? err.message : "Erro ao salvar valor.");
     } finally {
-      setSalvando(false);
+      setSalvandoId(null);
     }
   }
 
@@ -87,8 +99,9 @@ export function PortalIndicadoresLancamentoPage() {
       <header className="mb-6">
         <h1 className="font-display text-2xl font-bold text-ink">Portal Previdenciário — Indicadores</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Lance manualmente o valor de cada indicador do catálogo por competência (mês/ano). Se preferir, envie um
-          PDF pelo Construtor de Documentos e revise as sugestões extraídas por IA.
+          O que já está publicado no Portal Previdenciário, por documento. Clique em "Editar" pra lançar ou corrigir
+          um valor manualmente — ou envie um PDF pelo Construtor de Documentos e revise as sugestões extraídas por
+          IA.
         </p>
       </header>
 
@@ -99,10 +112,15 @@ export function PortalIndicadoresLancamentoPage() {
             type="month"
             className="mt-1 block w-48 rounded-lg border border-border bg-surface p-2 text-sm"
             value={competencia}
-            onChange={(e) => setCompetencia(e.target.value)}
+            onChange={(e) => {
+              setCompetencia(e.target.value);
+              cancelarEdicao();
+            }}
           />
         </label>
       </Card>
+
+      {erro && <p className="mb-4 text-sm text-crit">{erro}</p>}
 
       {documentos.length === 0 ? (
         <Card className="p-5">
@@ -116,36 +134,80 @@ export function PortalIndicadoresLancamentoPage() {
           {documentos.map((doc) => (
             <Card key={doc.id} className="p-5">
               <p className="mb-3 font-display text-base font-bold text-ink">{doc.nome}</p>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col">
                 {doc.indicadores.map((indicador) => {
-                  // MOEDA fica como texto livre (não "number"): o padrão brasileiro usa vírgula
-                  // decimal ("1.500.000,50"), que um <input type="number"> rejeita silenciosamente
-                  // (o campo aparenta ficar vazio mesmo com valor já lançado).
-                  const inputType = indicador.tipo === "NUMERICO" ? "number" : indicador.tipo === "DATA" ? "date" : "text";
+                  const bruto = valorNaCompetencia.get(indicador.id) ?? "";
+                  const emEdicao = editandoId === indicador.id;
+                  const inputType = indicador.tipo === "DATA" && (bruto === "" || dataBrParaInput(bruto) !== "") ? "date" : "text";
+
                   return (
-                    <div key={indicador.id} className="rounded-lg border border-border p-3">
-                      <div className="flex flex-wrap items-end justify-between gap-2">
-                        <label className="flex-1 text-xs text-ink-muted">
-                          {indicador.nome}
-                          {indicador.unidade ? ` (${indicador.unidade})` : ""}
-                          <input
-                            type={inputType}
-                            inputMode={indicador.tipo === "MOEDA" ? "decimal" : undefined}
-                            placeholder={indicador.tipo === "MOEDA" ? "0,00" : undefined}
-                            className="mt-1 block w-full rounded-lg border border-border bg-surface p-2 text-sm"
-                            value={valorAtual(indicador)}
-                            onChange={(e) => alterar(indicador.id, e.target.value)}
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => verHistorico(indicador.id)}
-                          className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink"
-                          title="Ver histórico"
-                        >
-                          <History size={13} /> Histórico
-                        </button>
-                      </div>
+                    <div key={indicador.id} className="border-b border-border/60 py-2.5 last:border-0">
+                      {!emEdicao ? (
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-ink-muted">
+                              {indicador.nome}
+                              {indicador.unidade ? ` (${indicador.unidade})` : ""}
+                            </p>
+                            <p className={`mt-0.5 text-sm ${bruto ? "font-medium text-ink" : "italic text-ink-muted"}`}>
+                              {bruto || "sem valor lançado nesta competência"}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => verHistorico(indicador.id)}
+                              className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink"
+                              title="Ver histórico"
+                            >
+                              <History size={13} /> Histórico
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => iniciarEdicao(indicador)}
+                              className="flex items-center gap-1 text-xs font-medium text-petrol hover:underline"
+                            >
+                              <Pencil size={13} /> Editar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <label className="block text-xs text-ink-muted">
+                            {indicador.nome}
+                            {indicador.unidade ? ` (${indicador.unidade})` : ""}
+                            <div className="mt-1 flex items-center gap-2">
+                              <input
+                                autoFocus
+                                type={inputType}
+                                inputMode={indicador.tipo === "MOEDA" || indicador.tipo === "NUMERICO" ? "decimal" : undefined}
+                                placeholder={indicador.tipo === "MOEDA" ? "0,00" : undefined}
+                                className="block w-full rounded-lg border border-petrol/40 bg-surface p-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-petrol/40"
+                                value={valorEdicao}
+                                onChange={(e) => setValorEdicao(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") salvarEdicao(indicador);
+                                  if (e.key === "Escape") cancelarEdicao();
+                                }}
+                              />
+                              <Button
+                                onClick={() => salvarEdicao(indicador)}
+                                disabled={salvandoId === indicador.id || !valorEdicao.trim()}
+                              >
+                                {salvandoId === indicador.id ? "Salvando…" : "Salvar"}
+                              </Button>
+                              <button
+                                type="button"
+                                onClick={cancelarEdicao}
+                                className="text-ink-muted hover:text-ink"
+                                title="Cancelar"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          </label>
+                        </div>
+                      )}
                       {historicoAberto === indicador.id && (
                         <div className="mt-2 rounded-lg bg-ink/5 p-2 text-xs text-ink-muted">
                           {historico.length === 0 ? (
@@ -166,16 +228,6 @@ export function PortalIndicadoresLancamentoPage() {
               </div>
             </Card>
           ))}
-        </div>
-      )}
-
-      {erro && <p className="mt-3 text-sm text-crit">{erro}</p>}
-
-      {documentos.length > 0 && (
-        <div className="mt-4 flex justify-end">
-          <Button onClick={salvar} disabled={salvando || Object.keys(rascunho).length === 0}>
-            {salvando ? "Salvando…" : "Salvar alterações"}
-          </Button>
         </div>
       )}
     </div>

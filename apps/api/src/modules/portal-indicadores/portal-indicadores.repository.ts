@@ -54,6 +54,7 @@ export const portalIndicadoresRepository = {
     valor: string;
     origem: FieldOrigin;
     origemDetalhe?: string | null;
+    documentoUploadId?: string | null;
     userId: string;
   }) {
     return prisma.tenantPortalIndicadorValor.create({
@@ -64,6 +65,7 @@ export const portalIndicadoresRepository = {
         valor: input.valor,
         origem: input.origem,
         origemDetalhe: input.origemDetalhe ?? null,
+        documentoUploadId: input.documentoUploadId ?? null,
         criadoPorUserId: input.userId,
       },
     });

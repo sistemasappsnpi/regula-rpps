@@ -50,7 +50,7 @@ export function PortalPrevidenciarioLayout({
   const cor = corPrimaria && /^#[0-9a-fA-F]{6}$/.test(corPrimaria) ? corPrimaria : COR_PADRAO;
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="portal-publico-claro flex min-h-screen flex-col bg-bg">
       <header className="border-b border-border bg-white px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center">
           <a href={slug ? `/portal-previdenciario/${slug}` : "#"} className="flex items-center gap-2">

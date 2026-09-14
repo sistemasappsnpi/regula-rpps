@@ -464,6 +464,12 @@ export const api = {
   aprovarConstrutorExecucao: (id: string) =>
     request<ConstrutorExecucao>(`/construtor/execucoes/${id}/aprovar`, { method: "POST" }),
 
+  aprovarTodosIndicadoresConstrutor: (id: string) =>
+    request<ConstrutorExecucao>(`/construtor/execucoes/${id}/aprovar-todos-indicadores`, { method: "POST" }),
+
+  excluirConstrutorExecucao: (id: string) =>
+    request<unknown>(`/construtor/execucoes/${id}`, { method: "DELETE" }),
+
   // --- Admin Global: Construtor de Documentos (tipos / prompts de IA) --------------------
 
   adminListConstrutorCatalogoAcoes: () =>
@@ -762,7 +768,7 @@ export interface ConstrutorExecucao {
   citacoes: ConstrutorCitacao[];
   geradoEm: string;
   aprovadoEm: string | null;
-  tipoDocumento: { nome: string; referenciaTipo: ConstrutorTipoResumo["referenciaTipo"] };
+  tipoDocumento: { id: string; nome: string; referenciaTipo: ConstrutorTipoResumo["referenciaTipo"] };
   documentos: { id: string; nomeArquivo: string }[];
   indicadorSugestoes: IndicadorSugestao[];
 }
@@ -931,6 +937,8 @@ export interface PortalIndicadorPublicoValor {
   competencia: string;
   valor: string;
   origem: "MANUAL" | "PDF_EXTRACTION" | "AI_COMPOSED";
+  documentoUploadId: string | null;
+  documentoUploadNome: string | null;
 }
 
 export interface PortalIndicadorPublico {

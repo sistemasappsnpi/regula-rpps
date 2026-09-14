@@ -1,10 +1,11 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "ghost";
+type Variant = "primary" | "ghost" | "danger";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   primary: "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-soft hover:brightness-110 active:brightness-95",
   ghost: "bg-surface text-ink hover:bg-ink/5 border border-border shadow-soft",
+  danger: "bg-crit text-white shadow-soft hover:brightness-110 active:brightness-95",
 };
 
 export function Button({

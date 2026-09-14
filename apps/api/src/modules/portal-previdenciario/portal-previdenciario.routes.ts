@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
@@ -168,6 +170,7 @@ portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next
       ? await prisma.tenantPortalIndicadorValor.findMany({
           where: { tenantId: tenant.id, indicadorId: { in: todosIndicadorIds } },
           orderBy: { createdAt: "desc" },
+          include: { documentoUpload: { select: { id: true, nomeArquivo: true } } },
         })
       : [];
 
@@ -194,7 +197,13 @@ portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next
           valores: vigentes
             .filter((v) => v.indicadorId === indicador.id)
             .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
-            .map((v) => ({ competencia: v.competencia, valor: v.valor, origem: v.origem })),
+            .map((v) => ({
+              competencia: v.competencia,
+              valor: v.valor,
+              origem: v.origem,
+              documentoUploadId: v.documentoUpload?.id ?? null,
+              documentoUploadNome: v.documentoUpload?.nomeArquivo ?? null,
+            })),
         })),
       }))
       .filter((doc) => doc.indicadores.some((i) => i.valores.length > 0));
@@ -232,6 +241,7 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, re
       ? await prisma.tenantPortalIndicadorValor.findMany({
           where: { tenantId: tenant.id, indicadorId: { in: indicadorIds } },
           orderBy: { createdAt: "desc" },
+          include: { documentoUpload: { select: { id: true, nomeArquivo: true } } },
         })
       : [];
 
@@ -257,10 +267,55 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, re
           valores: vigentes
             .filter((v) => v.indicadorId === indicador.id)
             .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
-            .map((v) => ({ competencia: v.competencia, valor: v.valor, origem: v.origem })),
+            .map((v) => ({
+              competencia: v.competencia,
+              valor: v.valor,
+              origem: v.origem,
+              documentoUploadId: v.documentoUpload?.id ?? null,
+              documentoUploadNome: v.documentoUpload?.nomeArquivo ?? null,
+            })),
         })),
       },
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Serve o PDF original que deu origem a um valor publicado — só se esse `uploadId` for realmente
+// a origem de algum valor JÁ PUBLICADO deste documento/tenant (nunca serve um upload qualquer só
+// porque alguém adivinhou o id: uploads podem conter rascunhos não publicados de outros
+// documentos/execuções, que não são pra ser públicos).
+portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo/arquivos/:uploadId", async (req, res, next) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
+    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+
+    const docPersonalizado = await prisma.documentoPersonalizado.findUnique({
+      where: { codigo: req.params.codigo },
+    });
+    if (!docPersonalizado || !docPersonalizado.ativo || !docPersonalizado.portalDocumentoId) {
+      throw new HttpError(404, "Documento não encontrado.");
+    }
+
+    const referenciado = await prisma.tenantPortalIndicadorValor.findFirst({
+      where: {
+        tenantId: tenant.id,
+        documentoUploadId: req.params.uploadId,
+        indicador: { documentoId: docPersonalizado.portalDocumentoId },
+      },
+    });
+    if (!referenciado) throw new HttpError(404, "Arquivo não encontrado.");
+
+    const upload = await prisma.documentoUpload.findUnique({ where: { id: req.params.uploadId } });
+    if (!upload || upload.tenantId !== tenant.id) throw new HttpError(404, "Arquivo não encontrado.");
+
+    const caminhoAbsoluto = path.resolve(upload.caminhoArquivo);
+    if (!fs.existsSync(caminhoAbsoluto)) throw new HttpError(404, "Arquivo não encontrado.");
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${upload.nomeArquivo.replace(/["\\]/g, "")}"`);
+    res.sendFile(caminhoAbsoluto);
   } catch (err) {
     next(err);
   }

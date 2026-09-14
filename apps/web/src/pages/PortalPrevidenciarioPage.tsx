@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Download, Printer } from "lucide-react";
+import { Download, FileJson, Printer } from "lucide-react";
 import { api, type PortalIndicadoresPublico, type PortalPrevidenciario } from "../lib/api";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { PortalPrevidenciarioLayout } from "../components/layout/PortalPrevidenciarioLayout";
-import { DocumentoIndicadoresCard, baixarCsv } from "../components/portal-previdenciario/DocumentoIndicadoresCard";
+import { DocumentoIndicadoresCard, baixarCsv, baixarJson } from "../components/portal-previdenciario/DocumentoIndicadoresCard";
+import { useAutoRefresh } from "../lib/useAutoRefresh";
 
 // Conteúdo central do Portal Previdenciário: filtro por documento/período + gráfico (indicadores
 // numéricos/moeda) ou tabela (texto/data) dos valores já lançados pelo RPPS (manual ou aprovados
@@ -16,9 +17,17 @@ function IndicadoresRelatorio({ slug }: { slug: string }) {
   const [inicio, setInicio] = useState("");
   const [fim, setFim] = useState("");
 
-  useEffect(() => {
+  const carregarIndicadores = useCallback(() => {
     api.portalPrevidenciarioIndicadores(slug).then(setDados).catch(() => setDados({ documentos: [] }));
   }, [slug]);
+
+  useEffect(() => {
+    carregarIndicadores();
+  }, [carregarIndicadores]);
+
+  // Sem isso, quem aprova um lançamento numa aba não vê nada mudar em outra aba já aberta nesta
+  // página — busca de novo sozinha, sem precisar de F5.
+  useAutoRefresh(carregarIndicadores);
 
   const documentosFiltrados = useMemo(() => {
     if (!dados) return [];
@@ -83,9 +92,12 @@ function IndicadoresRelatorio({ slug }: { slug: string }) {
             onChange={(e) => setFim(e.target.value)}
           />
         </label>
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex flex-wrap gap-2">
           <Button variant="ghost" onClick={() => baixarCsv(`indicadores-${slug}.csv`, documentosFiltrados)}>
-            <Download size={14} /> Exportar CSV
+            <Download size={14} /> CSV
+          </Button>
+          <Button variant="ghost" onClick={() => baixarJson(`indicadores-${slug}.json`, documentosFiltrados)}>
+            <FileJson size={14} /> JSON
           </Button>
           <Button variant="ghost" onClick={() => window.print()}>
             <Printer size={14} /> Imprimir
@@ -111,13 +123,19 @@ export function PortalPrevidenciarioPage() {
   const [dados, setDados] = useState<PortalPrevidenciario | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
-  useEffect(() => {
+  const carregarDados = useCallback(() => {
     if (!slug) return;
     api
       .portalPrevidenciario(slug)
       .then(setDados)
       .catch((err) => setErro(err instanceof Error ? err.message : "Erro ao carregar o Portal Previdenciário."));
   }, [slug]);
+
+  useEffect(() => {
+    carregarDados();
+  }, [carregarDados]);
+
+  useAutoRefresh(carregarDados);
 
   if (erro) {
     return (

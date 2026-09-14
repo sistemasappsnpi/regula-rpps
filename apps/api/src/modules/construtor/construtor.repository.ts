@@ -9,6 +9,18 @@ import {
 import { normalizarCompetencia } from "../portal-indicadores/portal-indicadores.service";
 import { slugify } from "../../utils/slugify";
 
+// A IA nomeia indicadores livremente (não existe catálogo pré-definido pra ela seguir) — pequenas
+// variações de pontuação entre execuções (ex.: "Rentabilidade X 2026" numa rodada, "Rentabilidade
+// X - 2026" noutra) não podem virar dois indicadores diferentes no catálogo. Ignora tudo que não
+// for letra/número na comparação, mantendo o nome original (da primeira vez que apareceu) exibido.
+function chaveIndicador(nome: string): string {
+  return nome
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
 /**
  * Monta o "contexto normativo" que a IA recebe para entender o que um tipo de documento
  * exige, a partir da referência configurada pelo admin (ver ConstrutorTipoDocumento):
@@ -150,19 +162,25 @@ export const construtorRepository = {
     });
     if (!portalDocumento) throw new HttpError(404, "Documento do Portal Previdenciário não encontrado.");
 
-    const execucao = await prisma.tenantConstrutorExecucao.create({
-      data: {
-        tenantId: input.tenantId,
-        tipoDocumentoId: tipo.id,
-        conteudo: "",
-        citacoes: "[]",
-        geradoPorUserId: input.userId,
-      },
-    });
-
     // Indicadores já criados nesta execução, pra não criar duplicata quando o mesmo nome
     // aparece em mais de um PDF-fonte ou mais de uma vez no resultado da IA.
-    const indicadoresPorNome = new Map(portalDocumento.indicadores.map((i) => [i.nome.trim().toLowerCase(), i]));
+    const indicadoresPorNome = new Map(portalDocumento.indicadores.map((i) => [chaveIndicador(i.nome), i]));
+
+    // Sugestões ficam só em memória enquanto a IA ainda está processando (pode levar bastante
+    // tempo em documentos grandes) — só viram linha no banco (e só aparecem no Histórico) depois
+    // que TUDO terminar com sucesso, dentro da mesma transação que cria a execução. Antes disso a
+    // execução em si nem existia ainda, então não tinha como o usuário excluí-la no meio do
+    // processamento e derrubar a extração com uma violação de chave estrangeira — e se a extração
+    // falhar em qualquer ponto, nada é gravado (nenhuma execução malsucedida "vaza" pro Histórico).
+    const sugestoesData: {
+      indicadorId: string;
+      uploadId: string;
+      competencia: Date;
+      valorSugerido: string;
+      documentoNomeOrigem: string;
+      paginaOrigem: number | null;
+      trechoOrigem: string | null;
+    }[] = [];
 
     for (const documento of documentos) {
       const paginas = JSON.parse(documento.paginasTexto) as { pagina: number; texto: string }[];
@@ -178,7 +196,7 @@ export const construtorRepository = {
           continue;
         }
 
-        const chave = resultado.nome.trim().toLowerCase();
+        const chave = chaveIndicador(resultado.nome);
         let indicadorDb = indicadoresPorNome.get(chave);
         if (!indicadorDb) {
           const usados = new Set(portalDocumento.indicadores.map((i) => i.indicadorId));
@@ -202,23 +220,38 @@ export const construtorRepository = {
           portalDocumento.indicadores.push(indicadorDb);
         }
 
-        await prisma.construtorIndicadorSugestao.create({
-          data: {
-            execucaoId: execucao.id,
-            indicadorId: indicadorDb.id,
-            competencia,
-            valorSugerido: resultado.valor,
-            documentoNomeOrigem: documento.nomeArquivo,
-            paginaOrigem: resultado.pagina,
-            trechoOrigem: resultado.trecho,
-          },
+        sugestoesData.push({
+          indicadorId: indicadorDb.id,
+          uploadId: documento.id,
+          competencia,
+          valorSugerido: resultado.valor,
+          documentoNomeOrigem: documento.nomeArquivo,
+          paginaOrigem: resultado.pagina,
+          trechoOrigem: resultado.trecho,
         });
       }
     }
 
-    await prisma.documentoUpload.updateMany({
-      where: { id: { in: input.documentoUploadIds } },
-      data: { construtorExecucaoId: execucao.id },
+    const execucao = await prisma.$transaction(async (tx) => {
+      const criada = await tx.tenantConstrutorExecucao.create({
+        data: {
+          tenantId: input.tenantId,
+          tipoDocumentoId: tipo.id,
+          conteudo: "",
+          citacoes: "[]",
+          geradoPorUserId: input.userId,
+        },
+      });
+      if (sugestoesData.length > 0) {
+        await tx.construtorIndicadorSugestao.createMany({
+          data: sugestoesData.map((s) => ({ ...s, execucaoId: criada.id })),
+        });
+      }
+      await tx.documentoUpload.updateMany({
+        where: { id: { in: input.documentoUploadIds } },
+        data: { construtorExecucaoId: criada.id },
+      });
+      return criada;
     });
 
     return construtorRepository.getExecucao(input.tenantId, execucao.id);
@@ -229,7 +262,7 @@ export const construtorRepository = {
       where: { tenantId },
       orderBy: { geradoEm: "desc" },
       include: {
-        tipoDocumento: { select: { nome: true, referenciaTipo: true } },
+        tipoDocumento: { select: { id: true, nome: true, referenciaTipo: true } },
         documentos: { select: { id: true, nomeArquivo: true } },
         indicadorSugestoes: { include: { indicador: { select: { id: true, nome: true, tipo: true, unidade: true } } } },
       },
@@ -240,7 +273,7 @@ export const construtorRepository = {
     const execucao = await prisma.tenantConstrutorExecucao.findUnique({
       where: { id },
       include: {
-        tipoDocumento: { select: { nome: true, referenciaTipo: true } },
+        tipoDocumento: { select: { id: true, nome: true, referenciaTipo: true } },
         documentos: { select: { id: true, nomeArquivo: true } },
         indicadorSugestoes: { include: { indicador: { select: { id: true, nome: true, tipo: true, unidade: true } } } },
       },

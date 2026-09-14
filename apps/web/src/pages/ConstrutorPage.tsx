@@ -5,22 +5,51 @@ import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { ComboBox } from "../components/ui/ComboBox";
+import { useConfirm } from "../components/ui/confirm-context";
+import { dataBrParaInput, dataInputParaBr } from "../lib/br-date";
 
 // Construtor de Documentos: o usuário escolhe um documento personalizado (nomeado pelo Admin
 // Global em Parametrizações → Personalizados) e envia quantos PDFs-fonte quiser; a IA identifica
 // sozinha os indicadores mais importantes de cada um, sem catálogo pré-cadastrado. Cada indicador
 // sugerido nasce PENDENTE — precisa de revisão humana item a item antes de virar dado oficial.
+
+// A geração é uma única chamada síncrona à API (sem streaming de progresso do backend), então esse
+// progresso é simulado no cliente só para dar feedback de que algo está acontecendo durante a espera.
+const MENSAGENS_MONTAGEM = [
+  "Lendo os documentos enviados…",
+  "Extraindo o texto de cada página…",
+  "Analisando o conteúdo com a IA…",
+  "Identificando os dados relevantes…",
+  "Montando o documento final…",
+  "Quase pronto…",
+];
+
 export function ConstrutorPage() {
+  const confirmar = useConfirm();
   const [tipos, setTipos] = useState<ConstrutorTipoResumo[]>([]);
   const [execucoes, setExecucoes] = useState<ConstrutorExecucao[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [tipoSelecionadoId, setTipoSelecionadoId] = useState("");
+  const [tipoSelecionadoId, setTipoSelecionadoIdRaw] = useState("");
+  // Histórico junta execuções de todos os tipos documentais — sem filtro, um cliente com vários
+  // tipos configurados (DPIN, DAIR, ...) vê tudo misturado. Filtra pelo tipo escolhido acima por
+  // padrão; "ver histórico completo" existe só pra quem quiser navegar por tudo de propósito.
+  const [historicoTodos, setHistoricoTodos] = useState(false);
+  const setTipoSelecionadoId = (id: string) => {
+    setTipoSelecionadoIdRaw(id);
+    setHistoricoTodos(false);
+  };
   const [documentos, setDocumentos] = useState<Upload[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [gerando, setGerando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ConstrutorExecucao | null>(null);
+  const [progressoPct, setProgressoPct] = useState(0);
+  const [progressoMsgIdx, setProgressoMsgIdx] = useState(0);
+
+  const tipoSelecionado = tipos.find((t) => t.id === tipoSelecionadoId);
+  const execucoesFiltradas =
+    historicoTodos || !tipoSelecionado ? execucoes : execucoes.filter((e) => e.tipoDocumento.id === tipoSelecionadoId);
 
   const carregar = () =>
     Promise.all([api.listConstrutorTipos(), api.listConstrutorExecucoes()]).then(([t, e]) => {
@@ -35,6 +64,24 @@ export function ConstrutorPage() {
     carregar().finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!gerando) {
+      setProgressoPct(0);
+      setProgressoMsgIdx(0);
+      return;
+    }
+    const pctInterval = setInterval(() => {
+      setProgressoPct((p) => (p >= 92 ? 92 : p + (92 - p) * 0.08 + 0.5));
+    }, 300);
+    const msgInterval = setInterval(() => {
+      setProgressoMsgIdx((i) => Math.min(i + 1, MENSAGENS_MONTAGEM.length - 1));
+    }, 2800);
+    return () => {
+      clearInterval(pctInterval);
+      clearInterval(msgInterval);
+    };
+  }, [gerando]);
 
   async function enviarArquivo(file: File) {
     setErro(null);
@@ -86,6 +133,41 @@ export function ConstrutorPage() {
       await carregar();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao aprovar documento.");
+    }
+  }
+
+  async function aprovarTodosIndicadores(id: string) {
+    const confirmado = await confirmar({
+      message:
+        "Aprovar todos os indicadores pendentes desta execução? Cada valor vai ao ar imediatamente no Portal Previdenciário, sem revisão individual.",
+      tone: "danger",
+      confirmLabel: "Aprovar todos",
+    });
+    if (!confirmado) return;
+    setErro(null);
+    try {
+      const atualizada = await api.aprovarTodosIndicadoresConstrutor(id);
+      if (resultado?.id === id) setResultado(atualizada);
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao aprovar os indicadores.");
+    }
+  }
+
+  async function excluirExecucao(id: string) {
+    const confirmado = await confirmar({
+      message: "Excluir esta execução e suas sugestões? Esta ação não pode ser desfeita.",
+      tone: "danger",
+      confirmLabel: "Excluir",
+    });
+    if (!confirmado) return;
+    setErro(null);
+    try {
+      await api.excluirConstrutorExecucao(id);
+      if (resultado?.id === id) setResultado(null);
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao excluir execução.");
     }
   }
 
@@ -175,6 +257,18 @@ export function ConstrutorPage() {
               {gerando ? "Montando…" : "Montar documento"}
             </Button>
           </div>
+
+          {gerando && (
+            <div className="mt-4">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
+                <div
+                  className="h-full rounded-full bg-gold transition-[width] duration-300 ease-out"
+                  style={{ width: `${progressoPct}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-ink-muted">{MENSAGENS_MONTAGEM[progressoMsgIdx]}</p>
+            </div>
+          )}
         </Card>
       )}
 
@@ -186,7 +280,14 @@ export function ConstrutorPage() {
               <Badge tone={resultado.status === "APROVADO" ? "ok" : "warn"}>
                 {resultado.status === "APROVADO" ? "Aprovado" : "Rascunho — revise antes de aprovar"}
               </Badge>
+              {resultado.tipoDocumento.referenciaTipo === "PERSONALIZADO" &&
+                resultado.indicadorSugestoes.some((s) => s.status === "PENDENTE") && (
+                  <Button onClick={() => aprovarTodosIndicadores(resultado.id)}>Aprovar todos</Button>
+                )}
               {resultado.status !== "APROVADO" && <Button onClick={() => aprovar(resultado.id)}>Aprovar</Button>}
+              <Button variant="ghost" onClick={() => excluirExecucao(resultado.id)}>
+                Excluir
+              </Button>
             </div>
           </div>
 
@@ -227,9 +328,23 @@ export function ConstrutorPage() {
 
       {execucoes.length > 0 && (
         <section>
-          <h2 className="mb-3 font-display text-lg font-bold text-ink">Histórico</h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-lg font-bold text-ink">Histórico</h2>
+            {execucoesFiltradas.length !== execucoes.length && (
+              <button
+                type="button"
+                onClick={() => setHistoricoTodos(true)}
+                className="text-xs font-medium text-petrol hover:underline"
+              >
+                Ver histórico completo ({execucoes.length})
+              </button>
+            )}
+          </div>
           <div className="flex flex-col gap-2">
-            {execucoes.map((e) => (
+            {execucoesFiltradas.length === 0 && (
+              <p className="text-sm text-ink-muted">Nenhuma execução de "{tipoSelecionado?.nome}" ainda.</p>
+            )}
+            {execucoesFiltradas.map((e) => (
               <div key={e.id} className="flex items-center justify-between rounded-xl border border-border p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-ink">{e.tipoDocumento.nome}</p>
@@ -241,6 +356,9 @@ export function ConstrutorPage() {
                   <Badge tone={e.status === "APROVADO" ? "ok" : "warn"}>{e.status === "APROVADO" ? "Aprovado" : "Rascunho"}</Badge>
                   <Button variant="ghost" onClick={() => setResultado(e)}>
                     Ver
+                  </Button>
+                  <Button variant="ghost" onClick={() => excluirExecucao(e.id)}>
+                    Excluir
                   </Button>
                 </div>
               </div>
@@ -259,16 +377,28 @@ function IndicadorSugestaoCard({
   sugestao: IndicadorSugestao;
   onRevisar: (id: string, status: "APROVADA" | "REJEITADA" | "CORRIGIDA", valorFinal?: string, competenciaFinal?: string) => void;
 }) {
-  const [valor, setValor] = useState(sugestao.valorFinal ?? sugestao.valorSugerido);
+  const tipo = sugestao.indicador?.tipo ?? "TEXTO";
+  const valorSugeridoBruto = sugestao.valorFinal ?? sugestao.valorSugerido;
+  // Datas vêm da IA em dd/mm/aaaa (igual ao documento-fonte). <input type="date"> só aceita
+  // aaaa-mm-dd — convertemos pra exibir/editar e voltamos ao salvar. Se o valor tiver hora junto
+  // (ex.: timestamp de assinatura "28/04/2026 16:21:57"), a conversão falha e caímos pra texto
+  // livre, pra não esconder o valor real num campo que não consegue representá-lo.
+  const valorDataConvertido = tipo === "DATA" ? dataBrParaInput(valorSugeridoBruto) : "";
+  const usarInputData = tipo === "DATA" && valorDataConvertido !== "";
+
+  const [valor, setValor] = useState(usarInputData ? valorDataConvertido : valorSugeridoBruto);
   const [competencia, setCompetencia] = useState(sugestao.competencia.slice(0, 7));
   const decidido = sugestao.status !== "PENDENTE";
-  const tipo = sugestao.indicador?.tipo ?? "TEXTO";
-  // MOEDA fica como texto livre — <input type="number"> rejeita vírgula decimal (padrão BR) e
-  // deixaria o campo parecendo vazio mesmo com um valor sugerido preenchido.
-  const inputType = tipo === "NUMERICO" ? "number" : tipo === "DATA" ? "date" : "text";
+  // NUMERICO e MOEDA ficam como texto livre — <input type="number"> rejeita vírgula decimal
+  // (padrão BR) e deixaria o campo parecendo vazio mesmo com um valor sugerido preenchido.
+  const inputType = usarInputData ? "date" : "text";
+
+  function valorParaSalvar(): string {
+    return usarInputData ? dataInputParaBr(valor) : valor;
+  }
 
   function salvar(status: "APROVADA" | "CORRIGIDA") {
-    onRevisar(sugestao.id, status, valor, `${competencia}-01`);
+    onRevisar(sugestao.id, status, valorParaSalvar(), `${competencia}-01`);
   }
 
   return (
@@ -292,7 +422,7 @@ function IndicadorSugestaoCard({
           Valor
           <input
             type={inputType}
-            inputMode={tipo === "MOEDA" ? "decimal" : undefined}
+            inputMode={tipo === "MOEDA" || tipo === "NUMERICO" ? "decimal" : undefined}
             className="mt-0.5 block w-full rounded-lg border border-border bg-surface p-2 text-sm"
             value={valor}
             disabled={decidido}
@@ -310,7 +440,11 @@ function IndicadorSugestaoCard({
       ) : (
         <div className="mt-2 flex gap-2">
           <Button
-            onClick={() => salvar(valor === sugestao.valorSugerido && `${competencia}-01` === sugestao.competencia.slice(0, 10) ? "APROVADA" : "CORRIGIDA")}
+            onClick={() => {
+              const inalterado =
+                valorParaSalvar() === sugestao.valorSugerido && `${competencia}-01` === sugestao.competencia.slice(0, 10);
+              salvar(inalterado ? "APROVADA" : "CORRIGIDA");
+            }}
           >
             Aprovar este indicador
           </Button>
