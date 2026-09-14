@@ -5,7 +5,11 @@ import { requireFeature } from "../../middleware/features";
 import { HttpError } from "../../middleware/errorHandler";
 import { prisma } from "../../db/prisma";
 import { construtorRepository } from "./construtor.repository";
-import { normalizarCompetencia, registrarValorDeIndicador } from "../portal-indicadores/portal-indicadores.service";
+import {
+  normalizarCompetencia,
+  registrarInstanciaDeIndicadorGrupo,
+  registrarValorDeIndicador,
+} from "../portal-indicadores/portal-indicadores.service";
 
 // Construtor de Documentos: o usuário escolhe um tipo de documento (configurado pelo Admin
 // Global) e quantos documentos-fonte já enviados quiser (ver /uploads/construtor) e pede pra IA
@@ -18,6 +22,65 @@ export const construtorRouter = Router();
 function serializarExecucao<T extends { citacoes: string }>(execucao: T) {
   return { ...execucao, citacoes: JSON.parse(execucao.citacoes) };
 }
+
+// Publica uma sugestão aprovada/corrigida no Portal Previdenciário — ramifica pra
+// registrarInstanciaDeIndicadorGrupo quando o indicador tem subcampos (valorFinal é um JSON
+// {subcampoId: valor} nesse caso) ou pro fluxo escalar de sempre quando não tem.
+async function publicarSugestao(
+  sugestao: {
+    indicadorId: string;
+    documentoNomeOrigem: string;
+    paginaOrigem: number | null;
+    trechoOrigem: string | null;
+    uploadId: string | null;
+    indicador: { subcampos: { id: string }[] };
+  },
+  valorFinal: string,
+  competenciaFinal: Date,
+  tenantId: string,
+  userId: string,
+) {
+  const origemDetalhe = `PDF "${sugestao.documentoNomeOrigem}"${
+    sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""
+  }${sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}`;
+
+  if (sugestao.indicador.subcampos.length > 0) {
+    let subcampoValores: Record<string, string>;
+    try {
+      const parsed = JSON.parse(valorFinal);
+      if (!parsed || typeof parsed !== "object") throw new Error("formato inválido");
+      subcampoValores = parsed;
+    } catch {
+      throw new HttpError(400, "Valor inválido pra um campo com subcampos.");
+    }
+    await registrarInstanciaDeIndicadorGrupo({
+      tenantId,
+      indicadorDbId: sugestao.indicadorId,
+      competencia: competenciaFinal,
+      subcampoValores: Object.entries(subcampoValores).map(([subcampoId, valor]) => ({
+        subcampoId,
+        valor: String(valor),
+        origemDetalhe,
+      })),
+      origem: "PDF_EXTRACTION",
+      documentoUploadId: sugestao.uploadId,
+      userId,
+    });
+    return;
+  }
+
+  await registrarValorDeIndicador({
+    tenantId,
+    indicadorDbId: sugestao.indicadorId,
+    competencia: competenciaFinal,
+    valor: valorFinal,
+    origem: "PDF_EXTRACTION",
+    origemDetalhe,
+    documentoUploadId: sugestao.uploadId,
+    userId,
+  });
+}
+
 construtorRouter.use(requireAuth, requireTenant, requireFeature("construtor_documentos"));
 
 construtorRouter.get("/tipos", async (req: AuthenticatedRequest, res, next) => {
@@ -85,30 +148,21 @@ construtorRouter.post("/execucoes/:id/aprovar-todos-indicadores", async (req: Au
   try {
     const execucao = await prisma.tenantConstrutorExecucao.findUnique({
       where: { id: req.params.id },
-      include: { indicadorSugestoes: true },
+      include: { indicadorSugestoes: { include: { indicador: { include: { subcampos: true } } } } },
     });
     if (!execucao || execucao.tenantId !== req.auth!.tenantId!) {
       throw new HttpError(404, "Execução não encontrada.");
     }
 
-    const pendentes = execucao.indicadorSugestoes.filter((s) => s.status === "PENDENTE");
+    // Sugestões "não encontrado" (encontrado=false, checklist) nascem com valorSugerido vazio —
+    // aprovar em lote nunca publica um campo vazio; só quando alguém preencheu manualmente antes.
+    const pendentes = execucao.indicadorSugestoes.filter((s) => s.status === "PENDENTE" && s.valorSugerido.trim() !== "");
     for (const sugestao of pendentes) {
       await prisma.construtorIndicadorSugestao.update({
         where: { id: sugestao.id },
         data: { status: "APROVADA", valorFinal: sugestao.valorSugerido },
       });
-      await registrarValorDeIndicador({
-        tenantId: req.auth!.tenantId!,
-        indicadorDbId: sugestao.indicadorId,
-        competencia: sugestao.competencia,
-        valor: sugestao.valorSugerido,
-        origem: "PDF_EXTRACTION",
-        origemDetalhe: `PDF "${sugestao.documentoNomeOrigem}"${
-          sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""
-        }${sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}`,
-        documentoUploadId: sugestao.uploadId,
-        userId: req.auth!.userId,
-      });
+      await publicarSugestao(sugestao, sugestao.valorSugerido, sugestao.competencia, req.auth!.tenantId!, req.auth!.userId);
     }
 
     res.json(serializarExecucao(await construtorRepository.getExecucao(req.auth!.tenantId!, execucao.id)));
@@ -133,6 +187,30 @@ construtorRouter.delete("/execucoes/:id", async (req: AuthenticatedRequest, res,
   }
 });
 
+const novaSugestaoSchema = z.object({
+  indicadorId: z.string().min(1),
+  competencia: z.string().min(1),
+});
+
+// Cria manualmente uma sugestão em branco pra um indicador com subcampos — usado quando a IA
+// achou menos ocorrências do que realmente existem no documento (ex.: faltou um membro de comitê).
+construtorRouter.post("/execucoes/:id/indicador-sugestoes", async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const parsed = novaSugestaoSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, "Payload inválido.");
+    const competencia = normalizarCompetencia(parsed.data.competencia);
+    const sugestao = await construtorRepository.criarSugestaoVazia(
+      req.auth!.tenantId!,
+      req.params.id,
+      parsed.data.indicadorId,
+      competencia,
+    );
+    res.status(201).json(sugestao);
+  } catch (err) {
+    next(err);
+  }
+});
+
 const indicadorSugestaoSchema = z.object({
   status: z.enum(["APROVADA", "REJEITADA", "CORRIGIDA"]),
   valorFinal: z.string().optional(),
@@ -148,7 +226,7 @@ construtorRouter.patch("/indicador-sugestoes/:id", async (req: AuthenticatedRequ
 
     const sugestao = await prisma.construtorIndicadorSugestao.findUnique({
       where: { id: req.params.id },
-      include: { execucao: true },
+      include: { execucao: true, indicador: { include: { subcampos: true } } },
     });
     if (!sugestao || sugestao.execucao.tenantId !== req.auth!.tenantId!) {
       throw new HttpError(404, "Sugestão não encontrada.");
@@ -159,24 +237,17 @@ construtorRouter.patch("/indicador-sugestoes/:id", async (req: AuthenticatedRequ
       ? normalizarCompetencia(parsed.data.competenciaFinal)
       : sugestao.competencia;
 
+    if ((parsed.data.status === "APROVADA" || parsed.data.status === "CORRIGIDA") && !valorFinal.trim()) {
+      throw new HttpError(400, "Preencha um valor antes de aprovar este campo.");
+    }
+
     const atualizada = await prisma.construtorIndicadorSugestao.update({
       where: { id: sugestao.id },
       data: { status: parsed.data.status, valorFinal, competencia: competenciaFinal },
     });
 
     if (parsed.data.status === "APROVADA" || parsed.data.status === "CORRIGIDA") {
-      await registrarValorDeIndicador({
-        tenantId: req.auth!.tenantId!,
-        indicadorDbId: sugestao.indicadorId,
-        competencia: competenciaFinal,
-        valor: valorFinal,
-        origem: "PDF_EXTRACTION",
-        origemDetalhe: `PDF "${sugestao.documentoNomeOrigem}"${
-          sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""
-        }${sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}`,
-        documentoUploadId: sugestao.uploadId,
-        userId: req.auth!.userId,
-      });
+      await publicarSugestao(sugestao, valorFinal, competenciaFinal, req.auth!.tenantId!, req.auth!.userId);
     }
 
     res.json(atualizada);

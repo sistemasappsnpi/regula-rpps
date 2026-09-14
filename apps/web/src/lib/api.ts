@@ -167,27 +167,7 @@ export const api = {
     return data as PortalPrevidenciario;
   },
 
-  documentoPersonalizadoPublico: async (slug: string, codigo: string): Promise<DocumentoPersonalizadoPublico> => {
-    const res = await fetch(`/api/public/documentos-personalizados/${slug}/${codigo}`);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error ?? "Documento não encontrado ou ainda não publicado.");
-    return data as DocumentoPersonalizadoPublico;
-  },
-
-  // --- Documentos Personalizados (tenant: preencher e publicar) --------------------------
-
-  listDocumentosPersonalizados: () => request<{ documentos: DocumentoPersonalizadoTenant[] }>("/documentos-personalizados"),
-
-  setDocumentoPersonalizadoCampoValor: (campoDbId: string, valor: string) =>
-    request<unknown>(`/documentos-personalizados/campos/${campoDbId}/valor`, {
-      method: "PUT",
-      body: JSON.stringify({ valor }),
-    }),
-
-  publicarDocumentoPersonalizado: (documentoId: string) =>
-    request<unknown>(`/documentos-personalizados/${documentoId}/publicar`, { method: "POST" }),
-
-  // --- Admin Global: Documentos Personalizados (catálogo) ---------------------------------
+  // --- Admin Global: Documentos Personalizados (tipo documental do Construtor + checklist) -
 
   adminListDocumentosPersonalizados: () => request<{ documentos: AdminDocumentoPersonalizado[] }>("/admin/documentos-personalizados"),
 
@@ -195,34 +175,59 @@ export const api = {
     nome: string;
     descricao: string | null;
     promptInstrucoes: string | null;
-    campos: { descricao: string; obrigatorio: boolean }[];
+    modoExtracaoIA: ModoExtracaoIA;
   }) => request<AdminDocumentoPersonalizado>("/admin/documentos-personalizados", { method: "POST", body: JSON.stringify(input) }),
 
   adminUpdateDocumentoPersonalizado: (
     id: string,
-    patch: Partial<{ nome: string; descricao: string | null; promptInstrucoes: string | null; ativo: boolean }>,
+    patch: Partial<{ nome: string; descricao: string | null; promptInstrucoes: string | null; modoExtracaoIA: ModoExtracaoIA; ativo: boolean }>,
   ) => request<AdminDocumentoPersonalizado>(`/admin/documentos-personalizados/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
 
   adminDeleteDocumentoPersonalizado: (id: string) => request<unknown>(`/admin/documentos-personalizados/${id}`, { method: "DELETE" }),
 
-  adminAddCampoDocumentoPersonalizado: (documentoId: string, input: { descricao: string; obrigatorio: boolean }) =>
-    request<DocumentoPersonalizadoCampoAdmin>(`/admin/documentos-personalizados/${documentoId}/campos`, {
+  // Checklist de campos pra IA — sem subcampo é escalar, com 1+ subcampos vira um grupo repetível.
+  adminAddCampoChecklist: (documentoId: string, input: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null }) =>
+    request<AdminPortalIndicador>(`/admin/documentos-personalizados/${documentoId}/campos`, {
       method: "POST",
       body: JSON.stringify(input),
     }),
 
-  adminUpdateCampoDocumentoPersonalizado: (
+  adminUpdateCampoChecklist: (
     documentoId: string,
     campoId: string,
-    patch: Partial<{ descricao: string; obrigatorio: boolean }>,
+    patch: Partial<{ nome: string; tipo: PortalIndicadorTipo; unidade: string | null }>,
   ) =>
-    request<DocumentoPersonalizadoCampoAdmin>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}`, {
+    request<AdminPortalIndicador>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}`, {
       method: "PATCH",
       body: JSON.stringify(patch),
     }),
 
-  adminRemoveCampoDocumentoPersonalizado: (documentoId: string, campoId: string) =>
+  adminRemoveCampoChecklist: (documentoId: string, campoId: string) =>
     request<unknown>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}`, { method: "DELETE" }),
+
+  adminAddSubcampoChecklist: (
+    documentoId: string,
+    campoId: string,
+    input: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null },
+  ) =>
+    request<AdminPortalIndicadorSubcampo>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}/subcampos`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  adminUpdateSubcampoChecklist: (
+    documentoId: string,
+    campoId: string,
+    subcampoId: string,
+    patch: Partial<{ nome: string; tipo: PortalIndicadorTipo; unidade: string | null }>,
+  ) =>
+    request<AdminPortalIndicadorSubcampo>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}/subcampos/${subcampoId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+
+  adminRemoveSubcampoChecklist: (documentoId: string, campoId: string, subcampoId: string) =>
+    request<unknown>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}/subcampos/${subcampoId}`, { method: "DELETE" }),
 
   // --- Admin Global: Portal Previdenciário (catálogo de indicadores) ----------------------
 
@@ -283,6 +288,14 @@ export const api = {
     request<IndicadorSugestao>(`/construtor/indicador-sugestoes/${sugestaoId}`, {
       method: "PATCH",
       body: JSON.stringify({ status, valorFinal, competenciaFinal }),
+    }),
+
+  // Adiciona manualmente uma ocorrência em branco pra um indicador com subcampos (ex.: a IA achou
+  // 8 membros de comitê mas o documento tem 9) — nasce PENDENTE, encontrado=false.
+  criarIndicadorSugestao: (execucaoId: string, indicadorId: string, competencia: string) =>
+    request<IndicadorSugestao>(`/construtor/execucoes/${execucaoId}/indicador-sugestoes`, {
+      method: "POST",
+      body: JSON.stringify({ indicadorId, competencia }),
     }),
 
   portalPrevidenciarioIndicadores: async (slug: string): Promise<PortalIndicadoresPublico> => {
@@ -829,58 +842,29 @@ export interface PortalPrevidenciario {
   sincronizadoEm: string;
 }
 
-export interface DocumentoPersonalizadoPublico {
-  tenant: PortalTenantInfo;
-  documento: { nome: string; descricao: string | null };
-  publicadoEm: string | null;
-  itens: { campoId: string; descricao: string; valor: string }[];
-  menu: PortalMenuSecao[];
-}
-
-export interface DocumentoPersonalizadoCampoTenant {
-  id: string;
-  campoId: string;
-  descricao: string;
-  obrigatorio: boolean;
-  valorAtual: string | null;
-}
-
-export interface DocumentoPersonalizadoTenant {
-  id: string;
-  codigo: string;
-  nome: string;
-  descricao: string | null;
-  publicacao: { id: string; status: "RASCUNHO" | "APROVADO" | "DESATUALIZADO"; geradoEm: string; aprovadoEm: string | null } | null;
-  campos: DocumentoPersonalizadoCampoTenant[];
-}
-
-export interface DocumentoPersonalizadoCampoAdmin {
-  id: string;
-  documentoId: string;
-  campoId: string;
-  descricao: string;
-  obrigatorio: boolean;
-  sortOrder: number;
-}
-
-export interface AdminDocumentoPersonalizado {
-  id: string;
-  codigo: string;
-  nome: string;
-  descricao: string | null;
-  promptInstrucoes: string | null;
-  ativo: boolean;
-  campos: DocumentoPersonalizadoCampoAdmin[];
-}
+export type ModoExtracaoIA = "COMENTARIO_APENAS" | "CHECKLIST_APENAS" | "AMBOS";
 
 export type PortalIndicadorTipo = "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
 
+export interface AdminPortalIndicadorSubcampo {
+  id: string;
+  subcampoId: string;
+  nome: string;
+  tipo: PortalIndicadorTipo;
+  unidade: string | null;
+  sortOrder: number;
+}
+
+// Sem subcampo: campo escalar (comportamento de sempre). Com 1+ subcampos: vira um grupo
+// repetível — ver comentário no schema.prisma (PortalIndicador.subcampos). Opcional porque nem
+// toda consulta desse tipo inclui subcampos (ex.: catálogo geral do Portal Previdenciário).
 export interface AdminPortalIndicador {
   id: string;
   indicadorId: string;
   nome: string;
   tipo: PortalIndicadorTipo;
   unidade: string | null;
+  subcampos?: AdminPortalIndicadorSubcampo[];
 }
 
 export interface AdminPortalDocumento {
@@ -890,6 +874,19 @@ export interface AdminPortalDocumento {
   descricao: string | null;
   ativo: boolean;
   indicadores: AdminPortalIndicador[];
+}
+
+export interface AdminDocumentoPersonalizado {
+  id: string;
+  codigo: string;
+  nome: string;
+  descricao: string | null;
+  promptInstrucoes: string | null;
+  modoExtracaoIA: ModoExtracaoIA;
+  ativo: boolean;
+  // Checklist de campos pra IA mora no PortalDocumento espelhado — null enquanto o espelho ainda
+  // não foi criado (não deveria acontecer na prática, o sync roda logo após criar o documento).
+  portalDocumento: AdminPortalDocumento | null;
 }
 
 export interface PortalIndicadorValor {
@@ -924,13 +921,24 @@ export interface IndicadorSugestao {
   id: string;
   indicadorId: string;
   competencia: string;
+  // false = campo do checklist que a IA não achou no PDF — nasce com valorSugerido="" esperando
+  // preenchimento manual (ver ConstrutorPage.tsx). Se nunca for preenchido/aprovado, some do Portal.
+  encontrado: boolean;
+  // Escalar: texto simples. Indicador com subcampos: JSON {subcampoId: valor} — uma sugestão por
+  // OCORRÊNCIA (ex.: uma por membro de comitê).
   valorSugerido: string;
   valorFinal: string | null;
   documentoNomeOrigem: string;
   paginaOrigem: number | null;
   trechoOrigem: string | null;
   status: "PENDENTE" | "APROVADA" | "REJEITADA" | "CORRIGIDA";
-  indicador?: { id: string; nome: string; tipo: PortalIndicadorTipo; unidade: string | null };
+  indicador?: {
+    id: string;
+    nome: string;
+    tipo: PortalIndicadorTipo;
+    unidade: string | null;
+    subcampos: AdminPortalIndicadorSubcampo[];
+  };
 }
 
 export interface PortalIndicadorPublicoValor {
@@ -941,12 +949,25 @@ export interface PortalIndicadorPublicoValor {
   documentoUploadNome: string | null;
 }
 
+export interface PortalIndicadorInstanciaPublica {
+  id: string;
+  competencia: string;
+  documentoUploadId: string | null;
+  documentoUploadNome: string | null;
+  subcampoValores: { subcampoId: string; nome: string; valor: string }[];
+}
+
 export interface PortalIndicadorPublico {
   id: string;
   nome: string;
   tipo: PortalIndicadorTipo;
   unidade: string | null;
+  // Indicador escalar: só `valores`. Indicador com subcampos (grupo): `valores` fica vazio,
+  // `subcampos`/`instancias` vêm preenchidos — uma instância por ocorrência (ex.: uma por membro
+  // de comitê), todas as ativas da competência aparecem, não só a mais recente.
   valores: PortalIndicadorPublicoValor[];
+  subcampos?: { subcampoId: string; nome: string; tipo: PortalIndicadorTipo; unidade: string | null }[];
+  instancias?: PortalIndicadorInstanciaPublica[];
 }
 
 export interface PortalDocumentoPublico {

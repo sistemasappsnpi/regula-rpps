@@ -70,3 +70,32 @@ export async function registrarValorDeIndicador(input: {
 
   return portalIndicadoresRepository.setIndicadorValor(input);
 }
+
+/**
+ * Registra UMA ocorrência de um indicador "grupo" (com subcampos, ex.: um membro de comitê) —
+ * irmã de registrarValorDeIndicador, mas cria uma TenantPortalIndicadorInstancia com N valores
+ * de subcampo em vez de um único TenantPortalIndicadorValor. Válida cada subcampo contra o tipo
+ * cadastrado (PortalIndicadorSubcampo.tipo), mesma regra de sempre.
+ */
+export async function registrarInstanciaDeIndicadorGrupo(input: {
+  tenantId: string;
+  indicadorDbId: string;
+  competencia: Date;
+  subcampoValores: { subcampoId: string; valor: string; origemDetalhe?: string | null }[];
+  origem: FieldOrigin;
+  documentoUploadId?: string | null;
+  userId: string;
+}) {
+  const indicador = await portalIndicadoresRepository.findIndicadorComSubcampos(input.indicadorDbId);
+  if (!indicador) throw new HttpError(404, "Indicador não encontrado.");
+  if (indicador.subcampos.length === 0) throw new HttpError(400, "Este indicador não tem subcampos configurados.");
+
+  const subcampoPorId = new Map(indicador.subcampos.map((s) => [s.id, s]));
+  for (const sv of input.subcampoValores) {
+    const subcampo = subcampoPorId.get(sv.subcampoId);
+    if (!subcampo) throw new HttpError(400, `Subcampo "${sv.subcampoId}" não pertence a este indicador.`);
+    validarValorPorTipo(subcampo.tipo, sv.valor);
+  }
+
+  return portalIndicadoresRepository.setInstanciaDeIndicadorGrupo(input);
+}

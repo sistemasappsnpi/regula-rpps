@@ -20,6 +20,10 @@ export const portalIndicadoresRepository = {
     return prisma.portalIndicador.findUnique({ where: { id: indicadorDbId } });
   },
 
+  async findIndicadorComSubcampos(indicadorDbId: string) {
+    return prisma.portalIndicador.findUnique({ where: { id: indicadorDbId }, include: { subcampos: true } });
+  },
+
   /** Valor vigente de cada (indicadorId, competência) = a linha mais recente (nunca sobrescrevemos). */
   async currentValuesPorCompetencia(tenantId: string, indicadorDbIds: string[]) {
     if (indicadorDbIds.length === 0) return [];
@@ -68,6 +72,36 @@ export const portalIndicadoresRepository = {
         documentoUploadId: input.documentoUploadId ?? null,
         criadoPorUserId: input.userId,
       },
+    });
+  },
+
+  /** Uma ocorrência de um indicador "grupo" (com subcampos) — ex.: um membro de comitê. */
+  async setInstanciaDeIndicadorGrupo(input: {
+    tenantId: string;
+    indicadorDbId: string;
+    competencia: Date;
+    subcampoValores: { subcampoId: string; valor: string; origemDetalhe?: string | null }[];
+    origem: FieldOrigin;
+    documentoUploadId?: string | null;
+    userId: string;
+  }) {
+    return prisma.tenantPortalIndicadorInstancia.create({
+      data: {
+        tenantId: input.tenantId,
+        indicadorId: input.indicadorDbId,
+        competencia: input.competencia,
+        origem: input.origem,
+        documentoUploadId: input.documentoUploadId ?? null,
+        criadoPorUserId: input.userId,
+        valores: {
+          create: input.subcampoValores.map((s) => ({
+            subcampoId: s.subcampoId,
+            valor: s.valor,
+            origemDetalhe: s.origemDetalhe ?? null,
+          })),
+        },
+      },
+      include: { valores: true },
     });
   },
 };

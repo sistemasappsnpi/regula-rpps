@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { FileText, Sparkles, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, FileText, Plus, Sparkles, X } from "lucide-react";
 import { api, type ConstrutorExecucao, type ConstrutorTipoResumo, type IndicadorSugestao, type Upload } from "../lib/api";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -188,6 +188,18 @@ export function ConstrutorPage() {
     }
   }
 
+  // Adiciona manualmente uma ocorrência em branco pra um indicador com subcampos — pra quando a
+  // IA achou menos ocorrências do que realmente existem no PDF (ex.: faltou um membro de comitê).
+  async function adicionarOcorrencia(execucaoId: string, indicadorId: string, competencia: string) {
+    setErro(null);
+    try {
+      const nova = await api.criarIndicadorSugestao(execucaoId, indicadorId, competencia);
+      setResultado((atual) => (atual ? { ...atual, indicadorSugestoes: [...atual.indicadorSugestoes, nova] } : atual));
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao adicionar ocorrência.");
+    }
+  }
+
   if (loading) return <p className="text-sm text-ink-muted">Carregando…</p>;
 
   return (
@@ -295,11 +307,7 @@ export function ConstrutorPage() {
             resultado.indicadorSugestoes.length === 0 ? (
               <p className="text-sm text-ink-muted">Nenhum indicador foi encontrado nos documentos enviados.</p>
             ) : (
-              <div className="flex flex-col gap-2">
-                {resultado.indicadorSugestoes.map((s) => (
-                  <IndicadorSugestaoCard key={s.id} sugestao={s} onRevisar={revisarIndicadorSugestao} />
-                ))}
-              </div>
+              <SugestoesRevisao resultado={resultado} onRevisar={revisarIndicadorSugestao} onAdicionarOcorrencia={adicionarOcorrencia} />
             )
           ) : (
             <>
@@ -370,13 +378,54 @@ export function ConstrutorPage() {
   );
 }
 
-function IndicadorSugestaoCard({
-  sugestao,
+type OnRevisar = (id: string, status: "APROVADA" | "REJEITADA" | "CORRIGIDA", valorFinal?: string, competenciaFinal?: string) => void;
+
+// Separa as sugestões escalares (um valor por competência, revisão de sempre) das sugestões de
+// indicador com subcampos (agrupadas por indicador+competência, uma ocorrência por linha —
+// ex.: um membro de comitê) — a IA nunca inventa essa distinção, ela já vem do catálogo
+// (PortalIndicador.subcampos, ver checklist em Parametrizações).
+function SugestoesRevisao({
+  resultado,
   onRevisar,
+  onAdicionarOcorrencia,
 }: {
-  sugestao: IndicadorSugestao;
-  onRevisar: (id: string, status: "APROVADA" | "REJEITADA" | "CORRIGIDA", valorFinal?: string, competenciaFinal?: string) => void;
+  resultado: ConstrutorExecucao;
+  onRevisar: OnRevisar;
+  onAdicionarOcorrencia: (execucaoId: string, indicadorId: string, competencia: string) => void;
 }) {
+  const escalares: IndicadorSugestao[] = [];
+  const gruposMap = new Map<string, IndicadorSugestao[]>();
+  for (const s of resultado.indicadorSugestoes) {
+    if ((s.indicador?.subcampos.length ?? 0) > 0) {
+      const chave = `${s.indicadorId}|${s.competencia}`;
+      const arr = gruposMap.get(chave) ?? [];
+      arr.push(s);
+      gruposMap.set(chave, arr);
+    } else {
+      escalares.push(s);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {escalares.map((s) => (
+        <IndicadorSugestaoCard key={s.id} sugestao={s} onRevisar={onRevisar} />
+      ))}
+      {[...gruposMap.values()].map((ocorrencias) => (
+        <GrupoSugestaoCard
+          key={`${ocorrencias[0].indicadorId}|${ocorrencias[0].competencia}`}
+          ocorrencias={ocorrencias}
+          onRevisar={onRevisar}
+          onAdicionarOcorrencia={() =>
+            onAdicionarOcorrencia(resultado.id, ocorrencias[0].indicadorId, ocorrencias[0].competencia.slice(0, 7))
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+function IndicadorSugestaoCard({ sugestao, onRevisar }: { sugestao: IndicadorSugestao; onRevisar: OnRevisar }) {
   const tipo = sugestao.indicador?.tipo ?? "TEXTO";
   const valorSugeridoBruto = sugestao.valorFinal ?? sugestao.valorSugerido;
   // Datas vêm da IA em dd/mm/aaaa (igual ao documento-fonte). <input type="date"> só aceita
@@ -402,7 +451,12 @@ function IndicadorSugestaoCard({
   }
 
   return (
-    <div className="rounded-lg bg-ink/5 p-3">
+    <div className={`rounded-lg p-3 ${sugestao.encontrado ? "bg-ink/5" : "border border-warn/40 bg-warn/5"}`}>
+      {!sugestao.encontrado && (
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-warn">
+          <AlertTriangle size={13} /> Não encontrado no PDF — preencha manualmente ou rejeite.
+        </p>
+      )}
       <p className="mb-2 text-sm font-medium text-ink">
         {sugestao.indicador?.nome ?? sugestao.indicadorId}
         {sugestao.indicador?.unidade ? <span className="ml-1 text-xs text-ink-muted">({sugestao.indicador.unidade})</span> : null}
@@ -430,11 +484,13 @@ function IndicadorSugestaoCard({
           />
         </label>
       </div>
-      <p className="mt-2 text-xs text-ink-muted">
-        {sugestao.documentoNomeOrigem}
-        {sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""}
-        {sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}
-      </p>
+      {(sugestao.documentoNomeOrigem || sugestao.trechoOrigem) && (
+        <p className="mt-2 text-xs text-ink-muted">
+          {sugestao.documentoNomeOrigem}
+          {sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""}
+          {sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}
+        </p>
+      )}
       {decidido ? (
         <p className="mt-2 text-xs font-medium text-ink-muted">Status: {sugestao.status.toLowerCase()}</p>
       ) : (
@@ -442,14 +498,116 @@ function IndicadorSugestaoCard({
           <Button
             onClick={() => {
               const inalterado =
-                valorParaSalvar() === sugestao.valorSugerido && `${competencia}-01` === sugestao.competencia.slice(0, 10);
+                sugestao.encontrado &&
+                valorParaSalvar() === sugestao.valorSugerido &&
+                `${competencia}-01` === sugestao.competencia.slice(0, 10);
               salvar(inalterado ? "APROVADA" : "CORRIGIDA");
             }}
+            disabled={!valorParaSalvar().trim()}
           >
             Aprovar este indicador
           </Button>
           <Button variant="ghost" onClick={() => onRevisar(sugestao.id, "REJEITADA")}>
             Rejeitar
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Um indicador com subcampos (ex.: "Membro do Comitê") — cada ocorrência (pessoa) é uma sugestão
+// própria, mas todas aparecem juntas aqui, com um botão pra adicionar uma ocorrência que a IA não
+// tenha achado.
+function GrupoSugestaoCard({
+  ocorrencias,
+  onRevisar,
+  onAdicionarOcorrencia,
+}: {
+  ocorrencias: IndicadorSugestao[];
+  onRevisar: OnRevisar;
+  onAdicionarOcorrencia: () => void;
+}) {
+  const primeira = ocorrencias[0];
+  return (
+    <div className="rounded-lg border border-border p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium text-ink">
+          {primeira.indicador?.nome ?? primeira.indicadorId}
+          <span className="ml-1.5 text-xs font-normal text-ink-muted">
+            — {ocorrencias.length} ocorrência{ocorrencias.length === 1 ? "" : "s"}
+          </span>
+        </p>
+        <Button variant="ghost" onClick={onAdicionarOcorrencia}>
+          <Plus size={14} /> Adicionar ocorrência
+        </Button>
+      </div>
+      <div className="flex flex-col gap-2">
+        {ocorrencias.map((s) => (
+          <OcorrenciaSugestaoCard key={s.id} sugestao={s} onRevisar={onRevisar} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OcorrenciaSugestaoCard({ sugestao, onRevisar }: { sugestao: IndicadorSugestao; onRevisar: OnRevisar }) {
+  const subcampos = sugestao.indicador?.subcampos ?? [];
+  const bruto = sugestao.valorFinal ?? sugestao.valorSugerido;
+  const valoresIniciais = useMemo<Record<string, string>>(() => {
+    try {
+      const parsed = bruto.trim() ? JSON.parse(bruto) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }, [bruto]);
+
+  const [valores, setValores] = useState<Record<string, string>>(valoresIniciais);
+  const decidido = sugestao.status !== "PENDENTE";
+  const preenchido = Object.values(valores).some((v) => v?.trim());
+
+  function salvar() {
+    onRevisar(sugestao.id, sugestao.encontrado ? "APROVADA" : "CORRIGIDA", JSON.stringify(valores));
+  }
+
+  return (
+    <div className={`rounded-lg p-2.5 ${sugestao.encontrado ? "bg-ink/5" : "border border-warn/40 bg-warn/5"}`}>
+      {!sugestao.encontrado && (
+        <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-warn">
+          <AlertTriangle size={12} /> Não encontrado no PDF — preencha manualmente ou remova.
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {subcampos.map((sc) => (
+          <label key={sc.subcampoId} className="text-xs text-ink-muted">
+            {sc.nome}
+            {sc.unidade ? ` (${sc.unidade})` : ""}
+            <input
+              className="mt-0.5 block w-full rounded-lg border border-border bg-surface p-2 text-sm"
+              value={valores[sc.subcampoId] ?? ""}
+              disabled={decidido}
+              onChange={(e) => setValores((v) => ({ ...v, [sc.subcampoId]: e.target.value }))}
+            />
+          </label>
+        ))}
+      </div>
+      {(sugestao.documentoNomeOrigem || sugestao.trechoOrigem) && (
+        <p className="mt-2 text-xs text-ink-muted">
+          {sugestao.documentoNomeOrigem}
+          {sugestao.paginaOrigem ? `, pág. ${sugestao.paginaOrigem}` : ""}
+          {sugestao.trechoOrigem ? `: "${sugestao.trechoOrigem}"` : ""}
+        </p>
+      )}
+      {decidido ? (
+        <p className="mt-2 text-xs font-medium text-ink-muted">Status: {sugestao.status.toLowerCase()}</p>
+      ) : (
+        <div className="mt-2 flex gap-2">
+          <Button onClick={salvar} disabled={!preenchido}>
+            Aprovar esta ocorrência
+          </Button>
+          <Button variant="ghost" onClick={() => onRevisar(sugestao.id, "REJEITADA")}>
+            Remover
           </Button>
         </div>
       )}

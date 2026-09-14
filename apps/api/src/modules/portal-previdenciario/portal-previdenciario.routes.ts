@@ -154,6 +154,93 @@ portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
 // Construtor de Documentos) dos indicadores do catálogo — ver PortalDocumento/PortalIndicador/
 // TenantPortalIndicadorValor. Público, sem feature flag, mesmo padrão do endpoint de menu/rodapé
 // acima (decisão deliberada de manter simples).
+// Monta a representação pública de um lote de indicadores (valores vigentes por competência) —
+// compartilhado pelas duas rotas de conteúdo abaixo. Indicador sem subcampo é escalar (um valor
+// vigente por competência, igual de sempre); indicador COM subcampos vira um "grupo" — todas as
+// ocorrências ativas daquela competência aparecem (nunca só a mais recente: um grupo pode ter
+// várias ocorrências legítimas ao mesmo tempo, ex. vários membros de um comitê).
+async function indicadoresParaPublico(
+  indicadores: {
+    id: string;
+    nome: string;
+    tipo: string;
+    unidade: string | null;
+    subcampos: { id: string; subcampoId: string; nome: string; tipo: string; unidade: string | null; sortOrder: number }[];
+  }[],
+  tenantId: string,
+) {
+  const escalares = indicadores.filter((i) => i.subcampos.length === 0);
+  const grupos = indicadores.filter((i) => i.subcampos.length > 0);
+
+  const escalarIds = escalares.map((i) => i.id);
+  const valores = escalarIds.length
+    ? await prisma.tenantPortalIndicadorValor.findMany({
+        where: { tenantId, indicadorId: { in: escalarIds } },
+        orderBy: { createdAt: "desc" },
+        include: { documentoUpload: { select: { id: true, nomeArquivo: true } } },
+      })
+    : [];
+  const seen = new Set<string>();
+  const vigentes: typeof valores = [];
+  for (const v of valores) {
+    const key = `${v.indicadorId}|${v.competencia.toISOString()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    vigentes.push(v);
+  }
+
+  const grupoIds = grupos.map((i) => i.id);
+  const instancias = grupoIds.length
+    ? await prisma.tenantPortalIndicadorInstancia.findMany({
+        where: { tenantId, indicadorId: { in: grupoIds }, ativo: true },
+        orderBy: { competencia: "asc" },
+        include: { documentoUpload: { select: { id: true, nomeArquivo: true } }, valores: true },
+      })
+    : [];
+
+  return indicadores.map((indicador) => {
+    if (indicador.subcampos.length === 0) {
+      return {
+        id: indicador.id,
+        nome: indicador.nome,
+        tipo: indicador.tipo,
+        unidade: indicador.unidade,
+        valores: vigentes
+          .filter((v) => v.indicadorId === indicador.id)
+          .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
+          .map((v) => ({
+            competencia: v.competencia,
+            valor: v.valor,
+            origem: v.origem,
+            documentoUploadId: v.documentoUpload?.id ?? null,
+            documentoUploadNome: v.documentoUpload?.nomeArquivo ?? null,
+          })),
+      };
+    }
+
+    const nomePorSubcampoId = new Map(indicador.subcampos.map((s) => [s.id, s]));
+    return {
+      id: indicador.id,
+      nome: indicador.nome,
+      tipo: indicador.tipo,
+      unidade: indicador.unidade,
+      valores: [],
+      subcampos: indicador.subcampos.map((s) => ({ subcampoId: s.id, nome: s.nome, tipo: s.tipo, unidade: s.unidade })),
+      instancias: instancias
+        .filter((inst) => inst.indicadorId === indicador.id)
+        .map((inst) => ({
+          id: inst.id,
+          competencia: inst.competencia,
+          documentoUploadId: inst.documentoUpload?.id ?? null,
+          documentoUploadNome: inst.documentoUpload?.nomeArquivo ?? null,
+          subcampoValores: inst.valores
+            .sort((a, b) => (nomePorSubcampoId.get(a.subcampoId)?.sortOrder ?? 0) - (nomePorSubcampoId.get(b.subcampoId)?.sortOrder ?? 0))
+            .map((v) => ({ subcampoId: v.subcampoId, nome: nomePorSubcampoId.get(v.subcampoId)?.nome ?? v.subcampoId, valor: v.valor })),
+        })),
+    };
+  });
+}
+
 portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next) => {
   try {
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
@@ -162,53 +249,20 @@ portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next
     const documentos = await prisma.portalDocumento.findMany({
       where: { ativo: true },
       orderBy: { sortOrder: "asc" },
-      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+      include: { indicadores: { orderBy: { sortOrder: "asc" }, include: { subcampos: { orderBy: { sortOrder: "asc" } } } } },
     });
 
-    const todosIndicadorIds = documentos.flatMap((d) => d.indicadores.map((i) => i.id));
-    const valores = todosIndicadorIds.length
-      ? await prisma.tenantPortalIndicadorValor.findMany({
-          where: { tenantId: tenant.id, indicadorId: { in: todosIndicadorIds } },
-          orderBy: { createdAt: "desc" },
-          include: { documentoUpload: { select: { id: true, nomeArquivo: true } } },
-        })
-      : [];
-
-    // Vigente por (indicadorId, competência) = linha mais recente — mesmo dedup do módulo de
-    // lançamento manual (ver portal-indicadores.repository.ts).
-    const seen = new Set<string>();
-    const vigentes: typeof valores = [];
-    for (const v of valores) {
-      const key = `${v.indicadorId}|${v.competencia.toISOString()}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      vigentes.push(v);
-    }
-
-    const documentosComValores = documentos
-      .map((doc) => ({
+    const documentosComValores = await Promise.all(
+      documentos.map(async (doc) => ({
         id: doc.id,
         nome: doc.nome,
-        indicadores: doc.indicadores.map((indicador) => ({
-          id: indicador.id,
-          nome: indicador.nome,
-          tipo: indicador.tipo,
-          unidade: indicador.unidade,
-          valores: vigentes
-            .filter((v) => v.indicadorId === indicador.id)
-            .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
-            .map((v) => ({
-              competencia: v.competencia,
-              valor: v.valor,
-              origem: v.origem,
-              documentoUploadId: v.documentoUpload?.id ?? null,
-              documentoUploadNome: v.documentoUpload?.nomeArquivo ?? null,
-            })),
-        })),
-      }))
-      .filter((doc) => doc.indicadores.some((i) => i.valores.length > 0));
+        indicadores: await indicadoresParaPublico(doc.indicadores, tenant.id),
+      })),
+    );
 
-    res.json({ documentos: documentosComValores });
+    res.json({
+      documentos: documentosComValores.filter((doc) => doc.indicadores.some((i) => i.valores.length > 0 || (i.instancias?.length ?? 0) > 0)),
+    });
   } catch (err) {
     next(err);
   }
@@ -232,49 +286,16 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, re
 
     const documento = await prisma.portalDocumento.findUnique({
       where: { id: docPersonalizado.portalDocumentoId },
-      include: { indicadores: { orderBy: { sortOrder: "asc" } } },
+      include: { indicadores: { orderBy: { sortOrder: "asc" }, include: { subcampos: { orderBy: { sortOrder: "asc" } } } } },
     });
     if (!documento || !documento.ativo) throw new HttpError(404, "Documento não encontrado.");
-
-    const indicadorIds = documento.indicadores.map((i) => i.id);
-    const valores = indicadorIds.length
-      ? await prisma.tenantPortalIndicadorValor.findMany({
-          where: { tenantId: tenant.id, indicadorId: { in: indicadorIds } },
-          orderBy: { createdAt: "desc" },
-          include: { documentoUpload: { select: { id: true, nomeArquivo: true } } },
-        })
-      : [];
-
-    const seen = new Set<string>();
-    const vigentes: typeof valores = [];
-    for (const v of valores) {
-      const key = `${v.indicadorId}|${v.competencia.toISOString()}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      vigentes.push(v);
-    }
 
     res.json({
       documento: {
         id: documento.id,
         nome: documento.nome,
         codigo: docPersonalizado.codigo,
-        indicadores: documento.indicadores.map((indicador) => ({
-          id: indicador.id,
-          nome: indicador.nome,
-          tipo: indicador.tipo,
-          unidade: indicador.unidade,
-          valores: vigentes
-            .filter((v) => v.indicadorId === indicador.id)
-            .sort((a, b) => a.competencia.getTime() - b.competencia.getTime())
-            .map((v) => ({
-              competencia: v.competencia,
-              valor: v.valor,
-              origem: v.origem,
-              documentoUploadId: v.documentoUpload?.id ?? null,
-              documentoUploadNome: v.documentoUpload?.nomeArquivo ?? null,
-            })),
-        })),
+        indicadores: await indicadoresParaPublico(documento.indicadores, tenant.id),
       },
     });
   } catch (err) {

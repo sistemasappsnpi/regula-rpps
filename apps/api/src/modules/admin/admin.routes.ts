@@ -487,7 +487,7 @@ adminRouter.get("/relatorios/construtor-uso", async (req, res, next) => {
   }
 });
 
-// --- Documentos Personalizados (catálogo — preenchimento/publicação ficam do lado do tenant) --
+// --- Documentos Personalizados (tipo documental do Construtor de Documentos + checklist de IA) --
 
 adminRouter.get("/documentos-personalizados", async (_req, res, next) => {
   try {
@@ -497,18 +497,13 @@ adminRouter.get("/documentos-personalizados", async (_req, res, next) => {
   }
 });
 
-const campoPersonalizadoSchema = z.object({
-  descricao: z.string().min(2),
-  obrigatorio: z.boolean().default(false),
-});
+const modoExtracaoIASchema = z.enum(["COMENTARIO_APENAS", "CHECKLIST_APENAS", "AMBOS"]);
 
 const criarDocumentoPersonalizadoSchema = z.object({
   nome: z.string().min(3),
   descricao: z.string().nullable().optional(),
-  // Opcional: quando preenchido, este documento também vira montável por IA no Construtor de
-  // Documentos do tenant (ver adminRepository.syncConstrutorTipoParaPersonalizado).
   promptInstrucoes: z.string().nullable().optional(),
-  campos: z.array(campoPersonalizadoSchema).default([]),
+  modoExtracaoIA: modoExtracaoIASchema.default("COMENTARIO_APENAS"),
 });
 
 adminRouter.post("/documentos-personalizados", async (req, res, next) => {
@@ -519,7 +514,7 @@ adminRouter.post("/documentos-personalizados", async (req, res, next) => {
       nome: parsed.data.nome,
       descricao: parsed.data.descricao ?? null,
       promptInstrucoes: parsed.data.promptInstrucoes ?? null,
-      campos: parsed.data.campos,
+      modoExtracaoIA: parsed.data.modoExtracaoIA,
     });
     res.status(201).json(documento);
   } catch (err) {
@@ -531,6 +526,7 @@ const atualizarDocumentoPersonalizadoSchema = z.object({
   nome: z.string().min(3).optional(),
   descricao: z.string().nullable().optional(),
   promptInstrucoes: z.string().nullable().optional(),
+  modoExtracaoIA: modoExtracaoIASchema.optional(),
   ativo: z.boolean().optional(),
 });
 
@@ -554,27 +550,36 @@ adminRouter.delete("/documentos-personalizados/:id", async (req, res, next) => {
   }
 });
 
+// Checklist de campos pra IA (ver PortalIndicador/PortalIndicadorSubcampo) — campo sem subcampo
+// é escalar; com 1+ subcampos vira um grupo repetível (ver comentário em admin.repository.ts).
+const campoChecklistSchema = z.object({
+  nome: z.string().min(2),
+  tipo: z.enum(["NUMERICO", "MOEDA", "TEXTO", "DATA"]),
+  unidade: z.string().nullable().optional(),
+});
+
 adminRouter.post("/documentos-personalizados/:id/campos", async (req, res, next) => {
   try {
-    const parsed = campoPersonalizadoSchema.safeParse(req.body);
+    const parsed = campoChecklistSchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
-    const campo = await adminRepository.addCampoDocumentoPersonalizado(req.params.id, parsed.data);
+    const campo = await adminRepository.addCampoChecklist(req.params.id, { ...parsed.data, unidade: parsed.data.unidade ?? null });
     res.status(201).json(campo);
   } catch (err) {
     next(err);
   }
 });
 
-const atualizarCampoPersonalizadoSchema = z.object({
-  descricao: z.string().min(2).optional(),
-  obrigatorio: z.boolean().optional(),
+const atualizarCampoChecklistSchema = z.object({
+  nome: z.string().min(2).optional(),
+  tipo: z.enum(["NUMERICO", "MOEDA", "TEXTO", "DATA"]).optional(),
+  unidade: z.string().nullable().optional(),
 });
 
 adminRouter.patch("/documentos-personalizados/:id/campos/:campoId", async (req, res, next) => {
   try {
-    const parsed = atualizarCampoPersonalizadoSchema.safeParse(req.body);
+    const parsed = atualizarCampoChecklistSchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
-    const campo = await adminRepository.updateCampoDocumentoPersonalizado(req.params.campoId, parsed.data);
+    const campo = await adminRepository.updateCampoChecklist(req.params.campoId, parsed.data);
     res.json(campo);
   } catch (err) {
     next(err);
@@ -583,7 +588,38 @@ adminRouter.patch("/documentos-personalizados/:id/campos/:campoId", async (req, 
 
 adminRouter.delete("/documentos-personalizados/:id/campos/:campoId", async (req, res, next) => {
   try {
-    await adminRepository.deleteCampoDocumentoPersonalizado(req.params.campoId);
+    await adminRepository.deleteCampoChecklist(req.params.campoId);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.post("/documentos-personalizados/:id/campos/:campoId/subcampos", async (req, res, next) => {
+  try {
+    const parsed = campoChecklistSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    const subcampo = await adminRepository.addSubcampoChecklist(req.params.campoId, { ...parsed.data, unidade: parsed.data.unidade ?? null });
+    res.status(201).json(subcampo);
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.patch("/documentos-personalizados/:id/campos/:campoId/subcampos/:subcampoId", async (req, res, next) => {
+  try {
+    const parsed = atualizarCampoChecklistSchema.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
+    const subcampo = await adminRepository.updateSubcampoChecklist(req.params.subcampoId, parsed.data);
+    res.json(subcampo);
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.delete("/documentos-personalizados/:id/campos/:campoId/subcampos/:subcampoId", async (req, res, next) => {
+  try {
+    await adminRepository.deleteSubcampoChecklist(req.params.subcampoId);
     res.status(204).send();
   } catch (err) {
     next(err);

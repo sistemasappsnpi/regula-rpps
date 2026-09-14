@@ -1,18 +1,15 @@
-import { prisma } from "../../db/prisma";
-
 export interface MenuSecao {
   label: string;
   itens: { label: string; href: string }[];
 }
 
 /**
- * Menu de navegação do portal público de transparência de um RPPS — compartilhado entre a
- * página principal (/transparencia/:slug) e as páginas de documentos personalizados
- * publicados (/documentos-publicos/:slug/:codigo), pra manter a mesma navegação em qualquer
- * página do portal daquele tenant. Ver PortalPublicoLayout.tsx no frontend.
+ * Menu de navegação do portal público de transparência de um RPPS (/transparencia/:slug) — ver
+ * PortalPublicoLayout.tsx no frontend. Documentos Personalizados (DPIN, DAIR etc.) hoje vivem no
+ * Portal Previdenciário (/portal-previdenciario/:slug/:codigo), um menu separado.
  */
-export async function montarMenuPublico(tenantId: string, slug: string): Promise<MenuSecao[]> {
-  const secoes: MenuSecao[] = [
+export async function montarMenuPublico(_tenantId: string, slug: string): Promise<MenuSecao[]> {
+  return [
     {
       label: "Institucional",
       itens: [
@@ -21,20 +18,4 @@ export async function montarMenuPublico(tenantId: string, slug: string): Promise
       ],
     },
   ];
-
-  const publicacoes = await prisma.tenantDocumentoPersonalizadoPublicacao.findMany({
-    where: { tenantId, status: "APROVADO" },
-    include: { documento: { select: { codigo: true, nome: true, sortOrder: true } } },
-  });
-
-  if (publicacoes.length > 0) {
-    secoes.push({
-      label: "Documentos Personalizados",
-      itens: publicacoes
-        .sort((a, b) => a.documento.sortOrder - b.documento.sortOrder)
-        .map((p) => ({ label: p.documento.nome, href: `/documentos-publicos/${slug}/${p.documento.codigo}` })),
-    });
-  }
-
-  return secoes;
 }

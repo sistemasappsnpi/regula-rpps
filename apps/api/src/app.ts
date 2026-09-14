@@ -9,8 +9,6 @@ import { proGestaoRouter } from "./modules/pro-gestao/pro-gestao.routes";
 import { uploadsRouter } from "./modules/uploads/uploads.routes";
 import { construtorRouter } from "./modules/construtor/construtor.routes";
 import { portalIndicadoresRouter } from "./modules/portal-indicadores/portal-indicadores.routes";
-import { documentosPersonalizadosRouter } from "./modules/documentos-personalizados/documentos-personalizados.routes";
-import { documentosPersonalizadosPublicoRouter } from "./modules/documentos-personalizados/documentos-personalizados-publico.routes";
 import { transparenciaPublicRouter } from "./modules/transparencia/transparencia.routes";
 import { portalPrevidenciarioPublicRouter } from "./modules/portal-previdenciario/portal-previdenciario.routes";
 import { primeiroAcessoPublicRouter } from "./modules/primeiro-acesso/primeiro-acesso.routes";
@@ -34,11 +32,9 @@ export function createApp() {
   app.use("/uploads", uploadsRouter);
   app.use("/construtor", construtorRouter);
   app.use("/portal-indicadores", portalIndicadoresRouter);
-  app.use("/documentos-personalizados", documentosPersonalizadosRouter);
   app.use("/public/transparencia", transparenciaPublicRouter);
   app.use("/public/portal-previdenciario", portalPrevidenciarioPublicRouter);
   app.use("/public/primeiro-acesso", primeiroAcessoPublicRouter);
-  app.use("/public/documentos-personalizados", documentosPersonalizadosPublicoRouter);
   app.use("/admin", adminRouter);
 
   app.use(errorHandler);

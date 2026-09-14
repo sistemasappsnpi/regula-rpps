@@ -5,6 +5,7 @@ import {
   extrairIndicadoresAutonomamente,
   isAiConfigured,
   type DocumentoFonteConstrutor,
+  type IndicadorChecklist,
 } from "../ai/anthropic.client";
 import { normalizarCompetencia } from "../portal-indicadores/portal-indicadores.service";
 import { slugify } from "../../utils/slugify";
@@ -158,13 +159,30 @@ export const construtorRepository = {
 
     const portalDocumento = await prisma.portalDocumento.findUnique({
       where: { id: docPersonalizado.portalDocumentoId },
-      include: { indicadores: true },
+      include: { indicadores: { include: { subcampos: true } } },
     });
     if (!portalDocumento) throw new HttpError(404, "Documento do Portal Previdenciário não encontrado.");
 
     // Indicadores já criados nesta execução, pra não criar duplicata quando o mesmo nome
-    // aparece em mais de um PDF-fonte ou mais de uma vez no resultado da IA.
+    // aparece em mais de um PDF-fonte ou mais de uma vez no resultado da IA (só usado pra
+    // descoberta livre — em CHECKLIST_APENAS nunca entra aqui).
     const indicadoresPorNome = new Map(portalDocumento.indicadores.map((i) => [chaveIndicador(i.nome), i]));
+    const checklistPorId = new Map(portalDocumento.indicadores.map((i) => [i.id, i]));
+
+    // Fora do modo COMENTARIO_APENAS, todo indicador já cadastrado no catálogo deste documento
+    // (ver checklist de campos em Parametrizações) vira um alvo obrigatório de extração — a IA
+    // precisa tentar todos e sinalizar `encontrado=false` pros que não achar.
+    const checklist: IndicadorChecklist[] =
+      docPersonalizado.modoExtracaoIA === "COMENTARIO_APENAS"
+        ? []
+        : portalDocumento.indicadores.map((i) => ({
+            indicadorId: i.id,
+            nome: i.nome,
+            tipo: i.tipo,
+            unidade: i.unidade,
+            subcampos: i.subcampos.map((s) => ({ subcampoId: s.id, nome: s.nome, tipo: s.tipo, unidade: s.unidade })),
+          }));
+    const checklistEscalarIds = new Set(checklist.filter((c) => c.subcampos.length === 0).map((c) => c.indicadorId));
 
     // Sugestões ficam só em memória enquanto a IA ainda está processando (pode levar bastante
     // tempo em documentos grandes) — só viram linha no banco (e só aparecem no Histórico) depois
@@ -176,6 +194,7 @@ export const construtorRepository = {
       indicadorId: string;
       uploadId: string;
       competencia: Date;
+      encontrado: boolean;
       valorSugerido: string;
       documentoNomeOrigem: string;
       paginaOrigem: number | null;
@@ -184,51 +203,132 @@ export const construtorRepository = {
 
     for (const documento of documentos) {
       const paginas = JSON.parse(documento.paginasTexto) as { pagina: number; texto: string }[];
-      const resultados = await extrairIndicadoresAutonomamente(documento.nomeArquivo, tipo.promptInstrucoes, paginas);
+      const { resultados, resultadosGrupo } = await extrairIndicadoresAutonomamente(
+        documento.nomeArquivo,
+        tipo.promptInstrucoes,
+        paginas,
+        docPersonalizado.modoExtracaoIA,
+        checklist,
+      );
+
+      // Competência-âncora deste documento: um retrato-pontual usa a MESMA competência em tudo
+      // (ver PROMPT_COMPETENCIA), então serve de fallback pros campos do checklist que a IA
+      // marcou como não encontrados e por isso não trouxeram competência própria.
+      const competenciaAncoraStr =
+        resultados.find((r) => r.encontrado && r.competencia)?.competencia ??
+        resultadosGrupo.find((r) => r.competencia)?.competencia ??
+        null;
+
+      const vistosNoChecklist = new Set<string>();
 
       for (const resultado of resultados) {
-        if (!resultado.valor || !resultado.competencia || !resultado.nome.trim()) continue;
+        if (resultado.indicadorChecklistId) vistosNoChecklist.add(resultado.indicadorChecklistId);
+        if (!resultado.indicadorChecklistId && (!resultado.encontrado || !resultado.valor || !resultado.nome.trim())) continue;
 
+        const competenciaStr = resultado.competencia ?? (resultado.encontrado ? null : competenciaAncoraStr);
+        if (!competenciaStr) continue;
         let competencia: Date;
         try {
-          competencia = normalizarCompetencia(resultado.competencia);
+          competencia = normalizarCompetencia(competenciaStr);
         } catch {
           continue;
         }
 
-        const chave = chaveIndicador(resultado.nome);
-        let indicadorDb = indicadoresPorNome.get(chave);
+        let indicadorDb = resultado.indicadorChecklistId ? checklistPorId.get(resultado.indicadorChecklistId) : undefined;
         if (!indicadorDb) {
-          const usados = new Set(portalDocumento.indicadores.map((i) => i.indicadorId));
-          const base = slugify(resultado.nome) || `indicador-${indicadoresPorNome.size + 1}`;
-          let indicadorId = base;
-          let n = 1;
-          while (usados.has(indicadorId)) indicadorId = `${base}-${++n}`;
-          usados.add(indicadorId);
+          // Descoberta livre (nunca acontece em CHECKLIST_APENAS, checklist=[] nesse caso).
+          const chave = chaveIndicador(resultado.nome);
+          indicadorDb = indicadoresPorNome.get(chave);
+          if (!indicadorDb) {
+            const usados = new Set(portalDocumento.indicadores.map((i) => i.indicadorId));
+            const base = slugify(resultado.nome) || `indicador-${indicadoresPorNome.size + 1}`;
+            let indicadorId = base;
+            let n = 1;
+            while (usados.has(indicadorId)) indicadorId = `${base}-${++n}`;
+            usados.add(indicadorId);
 
-          indicadorDb = await prisma.portalIndicador.create({
-            data: {
-              documentoId: portalDocumento.id,
-              indicadorId,
-              nome: resultado.nome.trim(),
-              tipo: resultado.tipo,
-              unidade: resultado.unidade,
-              sortOrder: portalDocumento.indicadores.length + indicadoresPorNome.size,
-            },
-          });
-          indicadoresPorNome.set(chave, indicadorDb);
-          portalDocumento.indicadores.push(indicadorDb);
+            const novo = await prisma.portalIndicador.create({
+              data: {
+                documentoId: portalDocumento.id,
+                indicadorId,
+                nome: resultado.nome.trim(),
+                tipo: resultado.tipo,
+                unidade: resultado.unidade,
+                sortOrder: portalDocumento.indicadores.length + indicadoresPorNome.size,
+              },
+              include: { subcampos: true },
+            });
+            indicadoresPorNome.set(chave, novo);
+            portalDocumento.indicadores.push(novo);
+            indicadorDb = novo;
+          }
         }
 
         sugestoesData.push({
           indicadorId: indicadorDb.id,
           uploadId: documento.id,
           competencia,
-          valorSugerido: resultado.valor,
+          encontrado: resultado.encontrado,
+          valorSugerido: resultado.valor ?? "",
           documentoNomeOrigem: documento.nomeArquivo,
           paginaOrigem: resultado.pagina,
           trechoOrigem: resultado.trecho,
         });
+      }
+
+      // Ocorrências de campos com subcampos (ex.: um membro de comitê por ocorrência) — uma
+      // sugestão por ocorrência, valorSugerido guarda um JSON {subcampoId: valor}.
+      for (const ocorrencia of resultadosGrupo) {
+        const indicadorDb = checklistPorId.get(ocorrencia.indicadorChecklistId);
+        if (!indicadorDb || ocorrencia.subcampos.length === 0) continue;
+        vistosNoChecklist.add(ocorrencia.indicadorChecklistId);
+
+        const competenciaStr = ocorrencia.competencia ?? competenciaAncoraStr;
+        if (!competenciaStr) continue;
+        let competencia: Date;
+        try {
+          competencia = normalizarCompetencia(competenciaStr);
+        } catch {
+          continue;
+        }
+
+        sugestoesData.push({
+          indicadorId: indicadorDb.id,
+          uploadId: documento.id,
+          competencia,
+          encontrado: true,
+          valorSugerido: JSON.stringify(Object.fromEntries(ocorrencia.subcampos.map((s) => [s.subcampoId, s.valor]))),
+          documentoNomeOrigem: documento.nomeArquivo,
+          paginaOrigem: ocorrencia.pagina,
+          trechoOrigem: ocorrencia.trecho,
+        });
+      }
+
+      // Rede de segurança: campo escalar do checklist que a IA simplesmente não mencionou em
+      // nenhum resultado (nem achado, nem encontrado=false) — cria a sugestão vazia mesmo assim,
+      // sempre que houver competência-âncora pra ancorar nela.
+      if (competenciaAncoraStr) {
+        for (const indicadorId of checklistEscalarIds) {
+          if (vistosNoChecklist.has(indicadorId)) continue;
+          const indicadorDb = checklistPorId.get(indicadorId);
+          if (!indicadorDb) continue;
+          let competencia: Date;
+          try {
+            competencia = normalizarCompetencia(competenciaAncoraStr);
+          } catch {
+            continue;
+          }
+          sugestoesData.push({
+            indicadorId: indicadorDb.id,
+            uploadId: documento.id,
+            competencia,
+            encontrado: false,
+            valorSugerido: "",
+            documentoNomeOrigem: documento.nomeArquivo,
+            paginaOrigem: null,
+            trechoOrigem: null,
+          });
+        }
       }
     }
 
@@ -264,7 +364,13 @@ export const construtorRepository = {
       include: {
         tipoDocumento: { select: { id: true, nome: true, referenciaTipo: true } },
         documentos: { select: { id: true, nomeArquivo: true } },
-        indicadorSugestoes: { include: { indicador: { select: { id: true, nome: true, tipo: true, unidade: true } } } },
+        indicadorSugestoes: {
+          include: {
+            indicador: {
+              select: { id: true, nome: true, tipo: true, unidade: true, subcampos: { orderBy: { sortOrder: "asc" } } },
+            },
+          },
+        },
       },
     });
   },
@@ -275,7 +381,13 @@ export const construtorRepository = {
       include: {
         tipoDocumento: { select: { id: true, nome: true, referenciaTipo: true } },
         documentos: { select: { id: true, nomeArquivo: true } },
-        indicadorSugestoes: { include: { indicador: { select: { id: true, nome: true, tipo: true, unidade: true } } } },
+        indicadorSugestoes: {
+          include: {
+            indicador: {
+              select: { id: true, nome: true, tipo: true, unidade: true, subcampos: { orderBy: { sortOrder: "asc" } } },
+            },
+          },
+        },
       },
     });
     if (!execucao || execucao.tenantId !== tenantId) throw new HttpError(404, "Execução não encontrada.");
@@ -292,5 +404,28 @@ export const construtorRepository = {
       data: { status: "APROVADO", aprovadoEm: new Date(), aprovadoPorUserId: userId },
     });
     return construtorRepository.getExecucao(tenantId, id);
+  },
+
+  // Cria uma sugestão em branco (PENDENTE, encontrado=false) pro humano preencher na revisão —
+  // usado pra adicionar manualmente uma ocorrência que a IA não achou num indicador com
+  // subcampos (ver botão "Adicionar ocorrência" no Construtor).
+  async criarSugestaoVazia(tenantId: string, execucaoId: string, indicadorId: string, competencia: Date) {
+    const execucao = await prisma.tenantConstrutorExecucao.findUnique({ where: { id: execucaoId } });
+    if (!execucao || execucao.tenantId !== tenantId) throw new HttpError(404, "Execução não encontrada.");
+    const indicador = await prisma.portalIndicador.findUnique({ where: { id: indicadorId } });
+    if (!indicador) throw new HttpError(404, "Indicador não encontrado.");
+
+    return prisma.construtorIndicadorSugestao.create({
+      data: {
+        execucaoId,
+        indicadorId,
+        competencia,
+        encontrado: false,
+        valorSugerido: "",
+        documentoNomeOrigem: "Adicionado manualmente",
+        status: "PENDENTE",
+      },
+      include: { indicador: { include: { subcampos: true } } },
+    });
   },
 };

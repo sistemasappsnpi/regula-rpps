@@ -208,21 +208,53 @@ export async function extrairIndicadoresDoPdf(
 }
 
 export interface IndicadorAutonomoResultado {
+  // Preenchido com o `indicadorId` exato da lista de checklist quando o resultado corresponde a
+  // um desses campos; null quando é uma descoberta livre da IA (só acontece em modo COMENTARIO_APENAS
+  // ou AMBOS — em CHECKLIST_APENAS todo resultado tem que vir daqui).
+  indicadorChecklistId: string | null;
   nome: string;
   tipo: "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
   unidade: string | null;
   competencia: string | null; // "YYYY-MM", inferida do próprio documento
-  valor: string;
+  // false só ocorre pra campo do checklist que a IA não achou no PDF — nesse caso valor é null.
+  encontrado: boolean;
+  valor: string | null;
   pagina: number | null;
   trecho: string | null;
 }
 
-const PROMPT_BASE_INDICADORES_AUTONOMO =
-  "Você está analisando um documento de um Regime Próprio de Previdência Social (RPPS) brasileiro para " +
-  "montar, de forma autônoma, um catálogo de indicadores estruturados por competência (mês/ano). Não existe " +
-  "uma lista pré-definida de campos — você decide sozinho quais são os indicadores mais importantes deste " +
-  "documento (ex.: valores financeiros e de repasse, número de segurados/beneficiários, alíquotas e " +
-  "percentuais, reservas técnicas, datas-chave, prazos e outros números que um gestor de RPPS acompanharia). " +
+// Uma ocorrência de um campo do checklist COM subcampos (ex.: um membro de comitê) — ver
+// SubcampoParaExtrair/IndicadorChecklist abaixo.
+export interface OcorrenciaGrupoResultado {
+  indicadorChecklistId: string;
+  competencia: string | null;
+  subcampos: { subcampoId: string; valor: string }[];
+  pagina: number | null;
+  trecho: string | null;
+}
+
+export interface SubcampoParaExtrair {
+  subcampoId: string;
+  nome: string;
+  tipo: "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
+  unidade: string | null;
+}
+
+// Um campo do checklist configurado pelo admin (ver PortalIndicador/PortalIndicadorSubcampo) —
+// sem subcampos é um campo escalar comum; com 1+ subcampos, pode ter várias ocorrências por
+// competência (ex.: "Membro do Comitê" → nome/cargo/portaria, uma ocorrência por pessoa).
+export interface IndicadorChecklist {
+  indicadorId: string;
+  nome: string;
+  tipo: "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
+  unidade: string | null;
+  subcampos: SubcampoParaExtrair[];
+}
+
+export type ModoExtracaoIA = "COMENTARIO_APENAS" | "CHECKLIST_APENAS" | "AMBOS";
+
+// Regras de competência — mesmas pra qualquer modo de extração (checklist ou autônoma).
+const PROMPT_COMPETENCIA =
   "Extraia SOMENTE o que está literalmente escrito no documento — nunca infira ou invente um valor ou nome de " +
   "indicador que não esteja no texto.\n\n" +
   "Antes de extrair, entenda que tipo de documento é este e o que ele representa — isso decide como você " +
@@ -249,38 +281,107 @@ const PROMPT_BASE_INDICADORES_AUTONOMO =
   "- Só deixe a competência como null se o documento genuinamente não tiver NENHUMA data em lugar nenhum do " +
   "texto (nem de série, nem de posição/aprovação/elaboração/publicação) — isso deve ser raro.\n" +
   "Nunca invente uma data que não esteja escrita no documento, mas também não descarte um dado só porque ele " +
-  "não está numa tabela com coluna de mês — procure a data de referência do documento antes de desistir.\n\n" +
-  "Dê a cada indicador um nome curto e claro (ex.: \"Valor total de repasses\", \"Número de segurados " +
-  "ativos\"), classifique seu tipo (NUMERICO, MOEDA, TEXTO ou DATA) e, quando fizer sentido, uma unidade " +
-  "(ex.: \"R$\", \"%\", \"pessoas\"). Para todo valor encontrado, cite a página exata e um trecho literal " +
-  "(até ~300 caracteres) de onde ele veio.";
+  "não está numa tabela com coluna de mês — procure a data de referência do documento antes de desistir.";
+
+function listaChecklistTexto(checklist: IndicadorChecklist[]): string {
+  return checklist
+    .map((c) => {
+      const base = `- ${c.indicadorId}: ${c.nome} (tipo: ${c.tipo}${c.unidade ? `, unidade: ${c.unidade}` : ""})`;
+      if (c.subcampos.length === 0) return base;
+      const sub = c.subcampos
+        .map((s) => `${s.subcampoId} (${s.nome}, tipo: ${s.tipo}${s.unidade ? `, unidade: ${s.unidade}` : ""})`)
+        .join("; ");
+      return `${base} — TEM SUBCAMPOS, pode se repetir várias vezes (registre cada ocorrência em ` +
+        `\`resultadosGrupo\`, nunca em \`resultados\`): ${sub}`;
+    })
+    .join("\n");
+}
+
+function montarPromptExtracao(
+  modo: ModoExtracaoIA,
+  checklist: IndicadorChecklist[],
+  comentarioAdmin: string | null,
+): string {
+  const comentario = comentarioAdmin?.trim()
+    ? `\n\nOrientação adicional definida pelo administrador da plataforma para este documento:\n${comentarioAdmin.trim()}`
+    : "";
+
+  if (modo === "COMENTARIO_APENAS" || checklist.length === 0) {
+    return (
+      "Você está analisando um documento de um Regime Próprio de Previdência Social (RPPS) brasileiro para " +
+      "montar, de forma autônoma, um catálogo de indicadores estruturados por competência (mês/ano). Não existe " +
+      "uma lista pré-definida de campos — você decide sozinho quais são os indicadores mais importantes deste " +
+      "documento (ex.: valores financeiros e de repasse, número de segurados/beneficiários, alíquotas e " +
+      "percentuais, reservas técnicas, datas-chave, prazos e outros números que um gestor de RPPS acompanharia). " +
+      `${PROMPT_COMPETENCIA}\n\n` +
+      "Dê a cada indicador um nome curto e claro (ex.: \"Valor total de repasses\", \"Número de segurados " +
+      "ativos\"), classifique seu tipo (NUMERICO, MOEDA, TEXTO ou DATA) e, quando fizer sentido, uma unidade " +
+      "(ex.: \"R$\", \"%\", \"pessoas\"). Para todo valor encontrado, cite a página exata e um trecho literal " +
+      `(até ~300 caracteres) de onde ele veio. Deixe \`indicadorChecklistId\` como null (não existe checklist ` +
+      `pra este documento) e \`encontrado\` sempre true.${comentario}`
+    );
+  }
+
+  const listaChecklist = listaChecklistTexto(checklist);
+  const baseChecklist =
+    "Você está extraindo dados estruturados de um documento de um Regime Próprio de Previdência Social " +
+    "(RPPS) brasileiro pra popular um checklist fixo de campos — NÃO decida livremente quais indicadores " +
+    `extrair, extraia SOMENTE os campos listados abaixo.\n\n${PROMPT_COMPETENCIA}\n\n` +
+    "Pra cada campo abaixo, tente achar o valor no documento — cite a página exata e um trecho literal " +
+    "(até ~300 caracteres) de onde ele veio. Se não encontrar, registre um resultado com `encontrado=false` e " +
+    "`valor=null` mesmo assim, usando `indicadorChecklistId` igual ao da lista — NÃO pule nenhum campo, cada " +
+    "um precisa aparecer no resultado final, achado ou não.\n" +
+    "Campos marcados como \"TEM SUBCAMPOS\" se repetem: podem ter 0, 1 ou várias ocorrências no documento " +
+    "(ex.: vários membros de um comitê, várias contas correntes) — registre CADA ocorrência separadamente em " +
+    "`resultadosGrupo` (nunca em `resultados`), com um valor por subcampo listado; nunca junte várias " +
+    "ocorrências numa string só, e nunca deixe de registrar uma ocorrência que exista no documento.\n\n" +
+    `Campos a extrair:\n${listaChecklist}`;
+
+  if (modo === "CHECKLIST_APENAS") return `${baseChecklist}${comentario}`;
+
+  return (
+    `${baseChecklist}\n\n` +
+    "Além dos campos acima, você TAMBÉM pode registrar outros indicadores relevantes que encontrar no " +
+    "documento e que não estejam nessa lista — mesmo critério de nome/tipo/unidade de sempre, com " +
+    "`indicadorChecklistId=null` pra esses. Nunca deixe de tentar TODOS os campos do checklist só porque achou " +
+    `outros indicadores.${comentario}`
+  );
+}
 
 /**
- * Extração estruturada e autônoma pro Portal Previdenciário: irmã de extrairIndicadoresDoPdf, mas sem
- * receber um catálogo de indicadores pré-cadastrado — a própria IA decide quais indicadores extrair,
- * seguindo o prompt-base fixo acima mais o comentário de apoio opcional do admin (promptInstrucoes do
- * DocumentoPersonalizado), que é só um complemento, nunca substitui o prompt-base.
+ * Extração estruturada pro Portal Previdenciário. Combina dois modos numa função só: campos de um
+ * checklist pré-declarado pelo admin (`checklist`, ver PortalIndicador/PortalIndicadorSubcampo) —
+ * onde a IA precisa tentar TODOS e sinalizar `encontrado=false` quando não achar — e/ou descoberta
+ * autônoma livre, conforme `modo` (ver DocumentoPersonalizado.modoExtracaoIA). `comentarioAdmin`
+ * (promptInstrucoes) sempre soma ao prompt-base, nunca o substitui.
  */
 export async function extrairIndicadoresAutonomamente(
   documentoNome: string,
   comentarioAdmin: string | null,
   paginas: { pagina: number; texto: string }[],
-): Promise<IndicadorAutonomoResultado[]> {
+  modo: ModoExtracaoIA,
+  checklist: IndicadorChecklist[],
+): Promise<{ resultados: IndicadorAutonomoResultado[]; resultadosGrupo: OcorrenciaGrupoResultado[] }> {
   const anthropic = getClient();
 
   const documentoComPaginas = paginas.map((p) => `--- PÁGINA ${p.pagina} ---\n${p.texto}`).join("\n\n");
 
   const tool: Anthropic.Tool = {
     name: "registrar_extracao_autonoma",
-    description: "Registra cada indicador encontrado no documento, um por competência.",
+    description: "Registra cada indicador encontrado no documento, um por competência (ou uma por ocorrência, pra campos com subcampos).",
     input_schema: {
       type: "object",
       properties: {
         resultados: {
           type: "array",
+          description: "Campos escalares (sem subcampos) — do checklist ou descobertos livremente.",
           items: {
             type: "object",
             properties: {
+              indicadorChecklistId: {
+                type: ["string", "null"],
+                description: "id exato da lista de campos, ou null se for uma descoberta livre.",
+              },
               nome: { type: "string", description: "Nome curto e claro do indicador." },
               tipo: { type: "string", enum: ["NUMERICO", "MOEDA", "TEXTO", "DATA"] },
               unidade: { type: ["string", "null"], description: "Ex.: \"R$\", \"%\", \"pessoas\", ou null." },
@@ -288,15 +389,41 @@ export async function extrairIndicadoresAutonomamente(
                 type: ["string", "null"],
                 description: "Mês/ano de referência do valor, no formato \"YYYY-MM\", ou null se não encontrado.",
               },
-              valor: { type: "string" },
+              encontrado: { type: "boolean" },
+              valor: { type: ["string", "null"], description: "Valor extraído, ou null se encontrado=false." },
               pagina: { type: ["integer", "null"], description: "Número da página onde o valor foi encontrado." },
               trecho: { type: ["string", "null"], description: "Trecho literal do documento de onde o valor veio." },
             },
-            required: ["nome", "tipo", "unidade", "competencia", "valor", "pagina", "trecho"],
+            required: ["indicadorChecklistId", "nome", "tipo", "unidade", "competencia", "encontrado", "valor", "pagina", "trecho"],
+          },
+        },
+        resultadosGrupo: {
+          type: "array",
+          description: "Uma entrada por OCORRÊNCIA de um campo do checklist com subcampos (ex.: uma por pessoa).",
+          items: {
+            type: "object",
+            properties: {
+              indicadorChecklistId: { type: "string", description: "id de um campo do checklist que tem subcampos." },
+              competencia: { type: ["string", "null"] },
+              subcampos: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    subcampoId: { type: "string" },
+                    valor: { type: "string" },
+                  },
+                  required: ["subcampoId", "valor"],
+                },
+              },
+              pagina: { type: ["integer", "null"] },
+              trecho: { type: ["string", "null"] },
+            },
+            required: ["indicadorChecklistId", "competencia", "subcampos", "pagina", "trecho"],
           },
         },
       },
-      required: ["resultados"],
+      required: ["resultados", "resultadosGrupo"],
     },
   };
 
@@ -310,10 +437,7 @@ export async function extrairIndicadoresAutonomamente(
       {
         role: "user",
         content:
-          `${PROMPT_BASE_INDICADORES_AUTONOMO}\n\n` +
-          (comentarioAdmin?.trim()
-            ? `Orientação adicional definida pelo administrador da plataforma para este documento:\n${comentarioAdmin.trim()}\n\n`
-            : "") +
+          `${montarPromptExtracao(modo, checklist, comentarioAdmin)}\n\n` +
           `Documento: "${documentoNome}"\n\n` +
           `Documento (marcado por página):\n\n${documentoComPaginas}`,
       },
@@ -327,8 +451,14 @@ export async function extrairIndicadoresAutonomamente(
     throw new Error("A IA não retornou um resultado estruturado de extração.");
   }
 
-  const parsed = toolUse.input as { resultados?: IndicadorAutonomoResultado[] };
-  return Array.isArray(parsed.resultados) ? parsed.resultados : [];
+  const parsed = toolUse.input as {
+    resultados?: IndicadorAutonomoResultado[];
+    resultadosGrupo?: OcorrenciaGrupoResultado[];
+  };
+  return {
+    resultados: Array.isArray(parsed.resultados) ? parsed.resultados : [],
+    resultadosGrupo: Array.isArray(parsed.resultadosGrupo) ? parsed.resultadosGrupo : [],
+  };
 }
 
 export interface FonteParaComposicao {

@@ -9,8 +9,6 @@ import { CrpCompliancePage } from "./pages/CrpCompliancePage";
 import { ProGestaoPage } from "./pages/ProGestaoPage";
 import { DocumentosPage } from "./pages/DocumentosPage";
 import { DocumentoDetalhePage } from "./pages/DocumentoDetalhePage";
-import { DocumentoPersonalizadoDetalhePage } from "./pages/DocumentoPersonalizadoDetalhePage";
-import { DocumentoPersonalizadoPublicoPage } from "./pages/DocumentoPersonalizadoPublicoPage";
 import { CrpDocumentosPage } from "./pages/CrpDocumentosPage";
 import { ConstrutorPage } from "./pages/ConstrutorPage";
 import { PortalIndicadoresLancamentoPage } from "./pages/PortalIndicadoresLancamentoPage";
@@ -81,7 +79,6 @@ export default function App() {
       <Route path="/transparencia/:slug" element={<TransparenciaPublicaPage />} />
       <Route path="/portal-previdenciario/:slug" element={<PortalPrevidenciarioPage />} />
       <Route path="/portal-previdenciario/:slug/:codigo" element={<PortalPrevidenciarioDocumentoPage />} />
-      <Route path="/documentos-publicos/:slug/:codigo" element={<DocumentoPersonalizadoPublicoPage />} />
       <Route path="/primeiro-acesso/:token" element={<PrimeiroAcessoPage />} />
 
       <Route
@@ -145,16 +142,6 @@ export default function App() {
         }
       />
 
-      <Route
-        path="/documentos/personalizados/:codigo"
-        element={
-          <RequireTenantFeature feature="documentos_personalizados">
-            <DashboardShell>
-              <DocumentoPersonalizadoDetalhePage />
-            </DashboardShell>
-          </RequireTenantFeature>
-        }
-      />
 
       <Route
         path="/construtor"

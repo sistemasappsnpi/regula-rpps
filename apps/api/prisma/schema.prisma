@@ -59,6 +59,15 @@ enum ReferenciaConstrutor {
   PORTAL_PREVIDENCIARIO
 }
 
+// Como a extração por IA de um tipo documental usa o checklist de campos (PortalIndicador
+// pré-declarado pelo admin em Parametrizações) versus o comentário livre — ver
+// DocumentoPersonalizado.modoExtracaoIA e extrairIndicadoresAutonomamente.
+enum ModoExtracaoIA {
+  COMENTARIO_APENAS // hoje: só o comentário livre, a IA decide sozinha quais indicadores extrair
+  CHECKLIST_APENAS // a IA só extrai os campos do checklist, nunca inventa outro
+  AMBOS // a IA tenta preencher o checklist inteiro E pode descobrir campos extras
+}
+
 // Determina como um PortalIndicador é exibido no conteúdo central do Portal Previdenciário
 // (ver /docs — módulo novo): NUMERICO/MOEDA com mais de uma competência lançada vira gráfico de
 // série temporal automaticamente; com uma competência só, vira card de número; TEXTO/DATA nunca
@@ -129,15 +138,14 @@ model Tenant {
   memberships Membership[]
   crpStatuses TenantCrpCriterion[]
 
-  proGestaoAcoes      TenantProGestaoAcao[]
-  proGestaoCampoValor TenantProGestaoCampoValor[]
-  documentosCompostos TenantDocumentoComposto[]
-  documentoUploads    DocumentoUpload[]
-  construtorExecucoes TenantConstrutorExecucao[]
-  featureOverrides    TenantFeature[]
-  documentoPersonalizadoValores      TenantDocumentoPersonalizadoValor[]
-  documentoPersonalizadoPublicacoes  TenantDocumentoPersonalizadoPublicacao[]
-  portalIndicadorValores             TenantPortalIndicadorValor[]
+  proGestaoAcoes            TenantProGestaoAcao[]
+  proGestaoCampoValor       TenantProGestaoCampoValor[]
+  documentosCompostos       TenantDocumentoComposto[]
+  documentoUploads          DocumentoUpload[]
+  construtorExecucoes       TenantConstrutorExecucao[]
+  featureOverrides          TenantFeature[]
+  portalIndicadorValores    TenantPortalIndicadorValor[]
+  portalIndicadorInstancias TenantPortalIndicadorInstancia[]
 
   @@map("tenants")
 }
@@ -160,12 +168,12 @@ model User {
   isSuperAdmin Boolean   @default(false)
   createdAt    DateTime  @default(now())
 
-  memberships            Membership[]
-  campoValoresCriados    TenantProGestaoCampoValor[]
-  documentoUploadsFeitos DocumentoUpload[]
-  featureOverrides       UserFeature[]
-  campoValoresPersonalizadosCriados TenantDocumentoPersonalizadoValor[]
-  portalIndicadorValoresCriados     TenantPortalIndicadorValor[]
+  memberships                      Membership[]
+  campoValoresCriados              TenantProGestaoCampoValor[]
+  documentoUploadsFeitos           DocumentoUpload[]
+  featureOverrides                 UserFeature[]
+  portalIndicadorValoresCriados    TenantPortalIndicadorValor[]
+  portalIndicadorInstanciasCriadas TenantPortalIndicadorInstancia[]
 
   @@map("users")
 }
@@ -308,36 +316,37 @@ model TenantProGestaoCampoValor {
 
 // Upload de PDF existente para extração assistida por IA (item 1.b do escopo do MVP).
 model DocumentoUpload {
-  id               String       @id @default(cuid())
-  tenantId         String
-  acaoCodigo       String? // Pró-Gestão: para qual ação este PDF foi enviado
-  criterionCode    String? // CRP: para qual critério este PDF foi enviado
+  id                   String       @id @default(cuid())
+  tenantId             String
+  acaoCodigo           String? // Pró-Gestão: para qual ação este PDF foi enviado
+  criterionCode        String? // CRP: para qual critério este PDF foi enviado
   // Construtor de Documentos: quando o PDF é uma fonte livre escolhida pelo usuário para uma
   // execução (não pertence a acaoCodigo/criterionCode nenhum até ser usado numa geração — ver
   // TenantConstrutorExecucao). Null enquanto o arquivo só foi enviado e ainda não usado.
   construtorExecucaoId String?
-  descricao        String?      @db.Text // nota livre sobre o documento (ex.: "DAIR de março/2026")
-  nomeArquivo      String
-  caminhoArquivo   String
+  descricao            String?      @db.Text // nota livre sobre o documento (ex.: "DAIR de março/2026")
+  nomeArquivo          String
+  caminhoArquivo       String
   // Cópia opcional do PDF dentro do próprio banco — normalmente NULL (o arquivo mora em disco, em
   // caminhoArquivo). Só é preenchido quando um upload precisa "viajar" entre ambientes por SQL puro
   // (ex.: local -> produção, quando quem aplica só tem acesso de Importar/Exportar no phpMyAdmin,
   // sem SSH pro disco do servidor). A rota que serve o PDF cai pra cá se o arquivo não existir em
   // disco (ver portal-previdenciario.routes.ts).
-  conteudoArquivo  Bytes?       @db.LongBlob
-  paginasTexto     String       @db.LongText // JSON: [{ "pagina": 1, "texto": "..." }, ...] — LongText pq documentos
-                                              // grandes (muitas páginas) passam fácil do limite de 64KB do Text puro.
-  status           UploadStatus @default(PENDENTE)
-  erro             String?      @db.Text
-  createdAt        DateTime     @default(now())
-  uploadedByUserId String
+  conteudoArquivo      Bytes?       @db.LongBlob
+  paginasTexto         String       @db.LongText // JSON: [{ "pagina": 1, "texto": "..." }, ...] — LongText pq documentos
+  // grandes (muitas páginas) passam fácil do limite de 64KB do Text puro.
+  status               UploadStatus @default(PENDENTE)
+  erro                 String?      @db.Text
+  createdAt            DateTime     @default(now())
+  uploadedByUserId     String
 
-  tenant             Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  uploadedBy         User                          @relation(fields: [uploadedByUserId], references: [id])
-  sugestoes          CampoExtraidoSugestao[]
-  construtorExecucao TenantConstrutorExecucao?     @relation(fields: [construtorExecucaoId], references: [id], onDelete: SetNull)
-  indicadorSugestoes ConstrutorIndicadorSugestao[]
-  portalIndicadorValores TenantPortalIndicadorValor[]
+  tenant                    Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploadedBy                User                             @relation(fields: [uploadedByUserId], references: [id])
+  sugestoes                 CampoExtraidoSugestao[]
+  construtorExecucao        TenantConstrutorExecucao?        @relation(fields: [construtorExecucaoId], references: [id], onDelete: SetNull)
+  indicadorSugestoes        ConstrutorIndicadorSugestao[]
+  portalIndicadorValores    TenantPortalIndicadorValor[]
+  portalIndicadorInstancias TenantPortalIndicadorInstancia[]
 
   @@index([tenantId])
   @@map("documento_uploads")
@@ -354,32 +363,32 @@ model DocumentoUpload {
 // ---------------------------------------------------------------------------
 
 model ConstrutorTipoDocumento {
-  id               String               @id @default(cuid())
-  nome             String
-  referenciaTipo   ReferenciaConstrutor
-  acaoCodigo       String?
-  criterionCode    String?
+  id                       String               @id @default(cuid())
+  nome                     String
+  referenciaTipo           ReferenciaConstrutor
+  acaoCodigo               String?
+  criterionCode            String?
   // Só para referenciaTipo=PERSONALIZADO: linha espelhada automaticamente a partir de
   // DocumentoPersonalizado.promptInstrucoes (nunca criada/editada à mão — ver
   // syncConstrutorTipoParaPersonalizado). onDelete SetNull: se o documento personalizado for
   // excluído, este registro só perde a referência (fica inativo), nunca bloqueia a exclusão.
-  documentoPersonalizadoId String?      @unique
+  documentoPersonalizadoId String?              @unique
   // Só para referenciaTipo=PORTAL_PREVIDENCIARIO: espelhado automaticamente a partir de
   // PortalDocumento (nunca criado/editado à mão — ver syncConstrutorTipoParaPortalDocumento).
   // Sem prompt do admin: a extração é guiada pelo catálogo de PortalIndicador, não por texto
   // livre — ver extrairIndicadoresDoPdf.
-  portalDocumentoId String?             @unique
-  promptInstrucoes String               @db.Text
-  ativo            Boolean              @default(true)
-  sortOrder        Int                  @default(0)
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  portalDocumentoId        String?              @unique
+  promptInstrucoes         String               @db.Text
+  ativo                    Boolean              @default(true)
+  sortOrder                Int                  @default(0)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
 
-  acao      ProGestaoAcao?             @relation(fields: [acaoCodigo], references: [codigo])
-  criterion CrpCriterion?              @relation(fields: [criterionCode], references: [code])
-  documentoPersonalizado DocumentoPersonalizado? @relation(fields: [documentoPersonalizadoId], references: [id], onDelete: SetNull)
-  portalDocumento PortalDocumento?      @relation(fields: [portalDocumentoId], references: [id], onDelete: SetNull)
-  execucoes TenantConstrutorExecucao[]
+  acao                   ProGestaoAcao?             @relation(fields: [acaoCodigo], references: [codigo])
+  criterion              CrpCriterion?              @relation(fields: [criterionCode], references: [code])
+  documentoPersonalizado DocumentoPersonalizado?    @relation(fields: [documentoPersonalizadoId], references: [id], onDelete: SetNull)
+  portalDocumento        PortalDocumento?           @relation(fields: [portalDocumentoId], references: [id], onDelete: SetNull)
+  execucoes              TenantConstrutorExecucao[]
 
   @@map("construtor_tipos_documento")
 }
@@ -396,9 +405,9 @@ model TenantConstrutorExecucao {
   aprovadoEm        DateTime?
   aprovadoPorUserId String?
 
-  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tipoDocumento ConstrutorTipoDocumento @relation(fields: [tipoDocumentoId], references: [id])
-  documentos    DocumentoUpload[]
+  tenant             Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tipoDocumento      ConstrutorTipoDocumento       @relation(fields: [tipoDocumentoId], references: [id])
+  documentos         DocumentoUpload[]
   indicadorSugestoes ConstrutorIndicadorSugestao[]
 
   @@index([tenantId])
@@ -433,12 +442,16 @@ model ConstrutorIndicadorSugestao {
   indicadorId         String // PortalIndicador.id
   uploadId            String? // DocumentoUpload de origem — pra linkar o valor publicado ao PDF real
   competencia         DateTime // normalizado pro 1º dia do mês de referência
-  valorSugerido       String         @db.Text
+  // false = campo estava no checklist do tipo documental e a IA NÃO achou no PDF — a linha nasce
+  // com valorSugerido="" e status PENDENTE só pra aparecer na revisão esperando preenchimento
+  // manual (ver ConstrutorPage.tsx). Se ninguém editar/aprovar, nunca é publicada — some do Portal.
+  encontrado          Boolean        @default(true)
+  valorSugerido       String         @db.Text // pra indicador com subcampos: JSON {subcampoId: valor}
   documentoNomeOrigem String
   paginaOrigem        Int?
   trechoOrigem        String?        @db.Text
   status              SugestaoStatus @default(PENDENTE)
-  valorFinal          String?        @db.Text
+  valorFinal          String?        @db.Text // mesma regra: JSON quando o indicador tem subcampos
   createdAt           DateTime       @default(now())
 
   execucao  TenantConstrutorExecucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
@@ -489,94 +502,44 @@ model TenantCrpCriterion {
 }
 
 // ---------------------------------------------------------------------------
-// Documentos Personalizados: fora do catálogo oficial do Pró-Gestão/CRP (que vem do
-// knowledge-base e nunca é editado à mão), o Super Admin pode criar um "tipo de documento"
-// do zero — nome + campos livres — pra cobrir algo específico (ex.: DIPR) que não está nos
-// dois programas oficiais. Aparece pro RPPS na aba Documentos, seção "Personalizados", com o
-// mesmo motor de preenchimento do resto do sistema (campos opcionais, salvar tudo de uma vez —
-// ver DocumentoDetalhePage.tsx). Publicar gera um snapshot público, mesma ideia de aprovação
-// humana explícita do TenantDocumentoComposto, só que sem "fontes" — os dados já são do
-// próprio tenant, não compostos de outra ação.
+// Documentos Personalizados: o Super Admin cria um "tipo de documento" do zero — nome +
+// comentário de apoio pra IA + checklist opcional de campos esperados (ver PortalIndicador,
+// PortalIndicadorSubcampo) — pra cobrir algo específico (ex.: DPIN, DAIR) que não está nos
+// programas oficiais (Pró-Gestão/CRP). Vira automaticamente um tipo documental no Construtor de
+// Documentos (extração por IA) e um documento no Portal Previdenciário (onde os valores
+// aprovados ficam públicos). Não existe mais preenchimento manual sem IA — tudo passa pelo
+// Construtor (ver ADR: sessão que substituiu o antigo fluxo de "campos de preenchimento manual").
 // ---------------------------------------------------------------------------
 
 model DocumentoPersonalizado {
-  id        String   @id @default(cuid())
-  codigo    String   @unique // slug, ex.: "dipr"
-  nome      String
-  descricao String?  @db.Text
-  // Opcional: quando preenchido, este documento também vira montável por IA no Construtor de
-  // Documentos (aba "Personalizados" do seletor) — ver admin.repository.ts,
-  // syncConstrutorTipoParaPersonalizado. Sem referência normativa (PRO_GESTAO/CRP), a IA segue
-  // só este texto, mesmo comportamento de um tipo LIVRE no Construtor.
-  promptInstrucoes String? @db.Text
-  ativo     Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String         @id @default(cuid())
+  codigo           String         @unique // slug, ex.: "dpin"
+  nome             String
+  descricao        String?        @db.Text
+  // Opcional: soma ao prompt-base fixo no código pra guiar a IA (ver
+  // extrairIndicadoresAutonomamente) — nunca o substitui. Convive com o checklist de campos
+  // (PortalIndicador do documento espelhado) conforme `modoExtracaoIA` abaixo.
+  promptInstrucoes String?        @db.Text
+  // Decide se a extração usa o comentário livre, o checklist de campos, ou os dois — ver
+  // extrairIndicadoresAutonomamente e o comentário do enum ModoExtracaoIA.
+  modoExtracaoIA   ModoExtracaoIA @default(COMENTARIO_APENAS)
+  ativo            Boolean        @default(true)
+  sortOrder        Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   // Espelha automaticamente um PortalDocumento com o mesmo nome/codigo (nunca criado/editado à
-  // mão — ver syncPortalDocumentoParaDocumentoPersonalizado, admin.repository.ts). É onde a
-  // extração autônoma por IA do Construtor guarda os indicadores encontrados em cada PDF, pra
-  // alimentar a página pública dedicada deste documento. onDelete SetNull: se o documento
-  // personalizado for excluído, o espelho só perde a referência (fica inativo).
+  // mão — ver syncPortalDocumentoParaDocumentoPersonalizado, admin.repository.ts). É onde o
+  // checklist de campos (PortalIndicador) é cadastrado E onde a extração por IA do Construtor
+  // guarda os indicadores encontrados em cada PDF, pra alimentar a página pública dedicada deste
+  // documento. onDelete SetNull: se o documento personalizado for excluído, o espelho só perde a
+  // referência (fica inativo).
   portalDocumentoId String? @unique
 
-  campos       DocumentoPersonalizadoCampo[]
-  publicacoes  TenantDocumentoPersonalizadoPublicacao[]
   construtorTipos ConstrutorTipoDocumento[]
-  portalDocumento PortalDocumento? @relation(fields: [portalDocumentoId], references: [id], onDelete: SetNull)
+  portalDocumento PortalDocumento?          @relation(fields: [portalDocumentoId], references: [id], onDelete: SetNull)
 
   @@map("documentos_personalizados")
-}
-
-model DocumentoPersonalizadoCampo {
-  id          String @id @default(cuid())
-  documentoId String
-  campoId     String // slug do campo dentro do documento, ex.: "competencia"
-  descricao   String @db.Text // label mostrado ao usuário no formulário
-  obrigatorio Boolean @default(false)
-  sortOrder   Int    @default(0)
-
-  documento DocumentoPersonalizado              @relation(fields: [documentoId], references: [id], onDelete: Cascade)
-  valores   TenantDocumentoPersonalizadoValor[]
-
-  @@unique([documentoId, campoId])
-  @@map("documento_personalizado_campos")
-}
-
-// Append-only, mesmo padrão de TenantProGestaoCampoValor — nunca sobrescreve, a linha mais
-// recente por (tenantId, campoId) é o valor vigente.
-model TenantDocumentoPersonalizadoValor {
-  id              String   @id @default(cuid())
-  tenantId        String
-  campoId         String
-  valor           String   @db.Text
-  criadoPorUserId String
-  createdAt       DateTime @default(now())
-
-  tenant    Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  campo     DocumentoPersonalizadoCampo @relation(fields: [campoId], references: [id], onDelete: Cascade)
-  criadoPor User                        @relation(fields: [criadoPorUserId], references: [id])
-
-  @@index([tenantId, campoId, createdAt])
-  @@map("tenant_documento_personalizado_valores")
-}
-
-model TenantDocumentoPersonalizadoPublicacao {
-  id                String      @id @default(cuid())
-  tenantId          String
-  documentoId       String
-  status            DraftStatus @default(RASCUNHO)
-  conteudo          String      @db.Text // JSON: [{ campoId, descricao, valor }]
-  geradoEm          DateTime    @default(now())
-  aprovadoEm        DateTime?
-  aprovadoPorUserId String?
-
-  tenant    Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  documento DocumentoPersonalizado @relation(fields: [documentoId], references: [id], onDelete: Cascade)
-
-  @@unique([tenantId, documentoId])
-  @@map("tenant_documento_personalizado_publicacoes")
 }
 
 // ---------------------------------------------------------------------------
@@ -598,8 +561,8 @@ model PortalDocumento {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  indicadores PortalIndicador[]
-  construtorTipos ConstrutorTipoDocumento[]
+  indicadores            PortalIndicador[]
+  construtorTipos        ConstrutorTipoDocumento[]
   documentoPersonalizado DocumentoPersonalizado?
 
   @@map("portal_documentos")
@@ -614,12 +577,37 @@ model PortalIndicador {
   unidade     String? // ex.: "R$", "%", "pessoas" — só exibição, não afeta o tipo
   sortOrder   Int                 @default(0)
 
-  documento PortalDocumento             @relation(fields: [documentoId], references: [id], onDelete: Cascade)
-  valores   TenantPortalIndicadorValor[]
+  documento           PortalDocumento                  @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  valores             TenantPortalIndicadorValor[]
   construtorSugestoes ConstrutorIndicadorSugestao[]
+  // Sem subcampo nenhum: indicador escalar, funciona 100% como hoje (TenantPortalIndicadorValor,
+  // um valor vigente por competência). Com 1+ subcampos: vira um "grupo" que pode ter várias
+  // ocorrências por competência (ex.: "Membro do Comitê" → nome/cargo/portaria, uma ocorrência
+  // por pessoa) — ver TenantPortalIndicadorInstancia. Essa é a única coisa que decide o
+  // comportamento; nada no código verifica nome/tipo documental.
+  subcampos           PortalIndicadorSubcampo[]
+  instancias          TenantPortalIndicadorInstancia[]
 
   @@unique([documentoId, indicadorId])
   @@map("portal_indicadores")
+}
+
+// Define a estrutura interna de um PortalIndicador "grupo" (ver comentário acima) — cadastrado
+// pelo admin em Parametrizações junto do checklist de campos, nunca pela IA.
+model PortalIndicadorSubcampo {
+  id          String              @id @default(cuid())
+  indicadorId String
+  subcampoId  String // slug dentro do indicador pai, ex.: "cargo"
+  nome        String
+  tipo        PortalIndicadorTipo @default(TEXTO)
+  unidade     String?
+  sortOrder   Int                 @default(0)
+
+  indicador PortalIndicador                      @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  valores   TenantPortalIndicadorSubcampoValor[]
+
+  @@unique([indicadorId, subcampoId])
+  @@map("portal_indicador_subcampos")
 }
 
 // Append-only, mesmo padrão de TenantProGestaoCampoValor — nunca sobrescreve; o valor vigente de
@@ -629,7 +617,7 @@ model TenantPortalIndicadorValor {
   tenantId          String
   indicadorId       String
   documentoUploadId String? // PDF de origem, quando o valor veio do Construtor de Documentos — permite
-                             // ao cidadão abrir o documento original no Portal Previdenciário público.
+  // ao cidadão abrir o documento original no Portal Previdenciário público.
   competencia       DateTime // normalizado pro primeiro dia do mês/trimestre de referência
   valor             String      @db.Text
   origem            FieldOrigin @default(MANUAL)
@@ -644,6 +632,48 @@ model TenantPortalIndicadorValor {
 
   @@index([tenantId, indicadorId, competencia, createdAt])
   @@map("tenant_portal_indicador_valores")
+}
+
+// Uma ocorrência de um PortalIndicador "grupo" (com subcampos) numa competência — ex.: uma linha
+// por membro de comitê. `ativo=false` remove a ocorrência da exibição pública sem apagar o
+// histórico (ex.: um membro que saiu), mesmo espírito do resto do sistema (nunca DELETE físico
+// de dado que já foi publicado).
+model TenantPortalIndicadorInstancia {
+  id                String      @id @default(cuid())
+  tenantId          String
+  indicadorId       String
+  competencia       DateTime
+  documentoUploadId String?
+  origem            FieldOrigin @default(MANUAL)
+  ativo             Boolean     @default(true)
+  criadoPorUserId   String
+  createdAt         DateTime    @default(now())
+
+  tenant          Tenant                               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  indicador       PortalIndicador                      @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+  documentoUpload DocumentoUpload?                     @relation(fields: [documentoUploadId], references: [id], onDelete: SetNull)
+  criadoPor       User                                 @relation(fields: [criadoPorUserId], references: [id])
+  valores         TenantPortalIndicadorSubcampoValor[]
+
+  @@index([tenantId, indicadorId, competencia])
+  @@map("tenant_portal_indicador_instancias")
+}
+
+// Append-only, mesmo padrão de TenantPortalIndicadorValor — o valor vigente de um subcampo dentro
+// de uma instância é a linha mais recente (maior createdAt).
+model TenantPortalIndicadorSubcampoValor {
+  id            String   @id @default(cuid())
+  instanciaId   String
+  subcampoId    String
+  valor         String   @db.Text
+  origemDetalhe String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  instancia TenantPortalIndicadorInstancia @relation(fields: [instanciaId], references: [id], onDelete: Cascade)
+  subcampo  PortalIndicadorSubcampo        @relation(fields: [subcampoId], references: [id], onDelete: Cascade)
+
+  @@index([instanciaId, subcampoId, createdAt])
+  @@map("tenant_portal_indicador_subcampo_valores")
 }
 
 // ---------------------------------------------------------------------------

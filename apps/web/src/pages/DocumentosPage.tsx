@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, FileStack, FileText, Sparkles } from "lucide-react";
-import { api, type DocumentoPersonalizadoTenant, type ProGestaoAcao, type Upload } from "../lib/api";
+import { ChevronRight, FileText, Sparkles } from "lucide-react";
+import { api, type ProGestaoAcao, type Upload } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -11,28 +11,22 @@ const DIMENSOES = ["Controles Internos", "Governança Corporativa", "Educação 
 // Biblioteca central dos documentos do Pró-Gestão RPPS — deliberadamente separada dos
 // documentos/evidências do CRP (ver Central de Compliance CRP), que é um fluxo independente.
 // Mostra as 24 ações; cada uma abre em página própria (upload por IA, preenchimento manual,
-// lista de documentos e link para o Portal público).
+// lista de documentos e link para o Portal público). Documentos fora do catálogo oficial (ex.:
+// DPIN, DAIR) vivem no Construtor de Documentos + Portal Previdenciário, não aqui.
 export function DocumentosPage() {
-  const { tenant, hasFeature } = useAuth();
-  const personalizadosHabilitado = hasFeature("documentos_personalizados");
+  const { tenant } = useAuth();
   const [acoes, setAcoes] = useState<ProGestaoAcao[]>([]);
   const [uploads, setUploads] = useState<(Upload & { acaoCodigo: string })[]>([]);
-  const [personalizados, setPersonalizados] = useState<DocumentoPersonalizadoTenant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      api.listProGestaoAcoes(),
-      api.listUploadsProGestaoTodos(),
-      personalizadosHabilitado ? api.listDocumentosPersonalizados() : Promise.resolve({ documentos: [] }),
-    ])
-      .then(([a, u, p]) => {
+    Promise.all([api.listProGestaoAcoes(), api.listUploadsProGestaoTodos()])
+      .then(([a, u]) => {
         setAcoes(a.acoes);
         setUploads(u.uploads);
-        setPersonalizados(p.documentos);
       })
       .finally(() => setLoading(false));
-  }, [personalizadosHabilitado]);
+  }, []);
 
   const fontesDaTransparencia = useMemo(() => {
     const transparencia = acoes.find((a) => a.codigo === "transparencia");
@@ -121,39 +115,6 @@ export function DocumentosPage() {
           </section>
         );
       })}
-
-      {personalizadosHabilitado && (
-        <section className="mb-8">
-          <h2 className="mb-3 font-display text-lg font-bold text-ink">Personalizados</h2>
-          <div className="flex flex-col gap-2">
-            {personalizados.map((d) => (
-              <Link
-                key={d.id}
-                to={`/documentos/personalizados/${d.codigo}`}
-                className="block rounded-xl border border-border bg-surface p-4 shadow-soft transition-colors hover:bg-ink/5"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <FileStack size={14} className="shrink-0 text-ink-muted" />
-                    <span className="truncate text-sm font-medium text-ink">{d.nome}</span>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    {d.publicacao?.status === "APROVADO" ? (
-                      <Badge tone="ok">publicado</Badge>
-                    ) : (
-                      <Badge tone="neutral">não publicado</Badge>
-                    )}
-                    <ChevronRight size={16} className="text-ink-muted" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-            {personalizados.length === 0 && (
-              <p className="text-sm text-ink-muted">Nenhum documento personalizado disponível ainda.</p>
-            )}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

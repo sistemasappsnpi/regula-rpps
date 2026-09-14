@@ -190,13 +190,6 @@ const FEATURES: FeatureSeed[] = [
     planos: { ESSENCIAL: false, GESTAO: false, PERFORMANCE: true },
   },
   {
-    key: "documentos_personalizados",
-    nome: "Documentos Personalizados",
-    descricao: "Tipos de documento fora do catálogo oficial, criados pelo Admin Global com campos livres.",
-    grupo: "Documentos Personalizados",
-    planos: { ESSENCIAL: false, GESTAO: true, PERFORMANCE: true },
-  },
-  {
     key: "construtor_documentos",
     nome: "Construtor de Documentos por IA",
     descricao:

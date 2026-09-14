@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import {
   Prisma,
+  type ModoExtracaoIA,
   type NivelAderencia,
   type Plan,
   type PortalIndicadorTipo,
@@ -743,14 +744,19 @@ export const adminRepository = {
 
   // ---------------------------------------------------------------------------------------
   // Documentos Personalizados: tipo de documento fora do catálogo oficial do Pró-Gestão/CRP —
-  // o Super Admin cria do zero (nome + campos livres) pra cobrir algo específico (ex.: DIPR)
-  // que os dois programas oficiais não cobrem. Preenchimento e publicação ficam do lado do
-  // tenant (ver documentos-personalizados.repository.ts).
+  // o Super Admin cria do zero (nome + comentário de apoio pra IA + checklist opcional de
+  // campos) pra cobrir algo específico (ex.: DPIN, DAIR). Tudo passa pelo Construtor de
+  // Documentos (extração por IA) — não existe mais preenchimento manual sem IA. O checklist
+  // (PortalIndicador/PortalIndicadorSubcampo) mora no PortalDocumento espelhado, não neste model.
   // ---------------------------------------------------------------------------------------
   async listDocumentosPersonalizados() {
     return prisma.documentoPersonalizado.findMany({
       orderBy: { sortOrder: "asc" },
-      include: { campos: { orderBy: { sortOrder: "asc" } } },
+      include: {
+        portalDocumento: {
+          include: { indicadores: { orderBy: { sortOrder: "asc" }, include: { subcampos: { orderBy: { sortOrder: "asc" } } } } },
+        },
+      },
     });
   },
 
@@ -825,7 +831,7 @@ export const adminRepository = {
     nome: string;
     descricao: string | null;
     promptInstrucoes: string | null;
-    campos: { descricao: string; obrigatorio: boolean }[];
+    modoExtracaoIA: ModoExtracaoIA;
   }) {
     const baseSlug = slugify(input.nome);
     let codigo = baseSlug;
@@ -836,48 +842,52 @@ export const adminRepository = {
 
     const totalExistente = await prisma.documentoPersonalizado.count();
 
-    const usados = new Set<string>();
-    const camposData = input.campos.map((c, i) => {
-      const base = slugify(c.descricao) || `campo-${i + 1}`;
-      let campoId = base;
-      let n = 1;
-      while (usados.has(campoId)) campoId = `${base}-${++n}`;
-      usados.add(campoId);
-      return { campoId, descricao: c.descricao, obrigatorio: c.obrigatorio, sortOrder: i };
-    });
-
     const documento = await prisma.documentoPersonalizado.create({
       data: {
         codigo,
         nome: input.nome,
         descricao: input.descricao,
         promptInstrucoes: input.promptInstrucoes,
+        modoExtracaoIA: input.modoExtracaoIA,
         sortOrder: totalExistente,
-        campos: { create: camposData },
       },
-      include: { campos: { orderBy: { sortOrder: "asc" } } },
     });
 
     await adminRepository.syncConstrutorTipoParaPersonalizado(documento);
     await adminRepository.syncPortalDocumentoParaDocumentoPersonalizado(documento);
-    return documento;
+    return adminRepository.getDocumentoPersonalizado(documento.id);
   },
 
   async updateDocumentoPersonalizado(
     id: string,
-    input: Partial<{ nome: string; descricao: string | null; promptInstrucoes: string | null; ativo: boolean }>,
+    input: Partial<{
+      nome: string;
+      descricao: string | null;
+      promptInstrucoes: string | null;
+      modoExtracaoIA: ModoExtracaoIA;
+      ativo: boolean;
+    }>,
   ) {
     const doc = await prisma.documentoPersonalizado.findUnique({ where: { id } });
     if (!doc) throw new HttpError(404, "Documento personalizado não encontrado.");
-    const atualizado = await prisma.documentoPersonalizado.update({
-      where: { id },
-      data: input,
-      include: { campos: { orderBy: { sortOrder: "asc" } } },
-    });
+    const atualizado = await prisma.documentoPersonalizado.update({ where: { id }, data: input });
 
     await adminRepository.syncConstrutorTipoParaPersonalizado(atualizado);
     await adminRepository.syncPortalDocumentoParaDocumentoPersonalizado(atualizado);
-    return atualizado;
+    return adminRepository.getDocumentoPersonalizado(atualizado.id);
+  },
+
+  async getDocumentoPersonalizado(id: string) {
+    const doc = await prisma.documentoPersonalizado.findUnique({
+      where: { id },
+      include: {
+        portalDocumento: {
+          include: { indicadores: { orderBy: { sortOrder: "asc" }, include: { subcampos: { orderBy: { sortOrder: "asc" } } } } },
+        },
+      },
+    });
+    if (!doc) throw new HttpError(404, "Documento personalizado não encontrado.");
+    return doc;
   },
 
   async deleteDocumentoPersonalizado(id: string) {
@@ -893,31 +903,82 @@ export const adminRepository = {
     await prisma.documentoPersonalizado.delete({ where: { id } });
   },
 
-  async addCampoDocumentoPersonalizado(documentoId: string, input: { descricao: string; obrigatorio: boolean }) {
-    const doc = await prisma.documentoPersonalizado.findUnique({ where: { id: documentoId }, include: { campos: true } });
+  // ---------------------------------------------------------------------------------------
+  // Checklist de campos pra IA (ver PortalIndicador/PortalIndicadorSubcampo) — cadastrado pelo
+  // admin no PortalDocumento espelhado do documento personalizado. Sem subcampo nenhum, um campo
+  // é escalar (comportamento de sempre); com 1+ subcampos, vira um "grupo" repetível (ex.:
+  // "Membro do Comitê" → nome/cargo/portaria, várias ocorrências por competência).
+  // ATENÇÃO: excluir um campo (ou subcampo) já usado apaga em cascata os valores publicados
+  // dele — mesmo risco que excluir um campo de qualquer catálogo do sistema.
+  // ---------------------------------------------------------------------------------------
+  async addCampoChecklist(documentoPersonalizadoId: string, input: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null }) {
+    const doc = await prisma.documentoPersonalizado.findUnique({ where: { id: documentoPersonalizadoId } });
     if (!doc) throw new HttpError(404, "Documento personalizado não encontrado.");
+    if (!doc.portalDocumentoId) throw new HttpError(409, "Este documento ainda não tem um espelho do Portal Previdenciário configurado.");
 
-    const usados = new Set(doc.campos.map((c) => c.campoId));
-    const base = slugify(input.descricao) || `campo-${doc.campos.length + 1}`;
-    let campoId = base;
+    const indicadores = await prisma.portalIndicador.findMany({ where: { documentoId: doc.portalDocumentoId } });
+    const usados = new Set(indicadores.map((i) => i.indicadorId));
+    const base = slugify(input.nome) || `campo-${indicadores.length + 1}`;
+    let indicadorId = base;
     let n = 1;
-    while (usados.has(campoId)) campoId = `${base}-${++n}`;
+    while (usados.has(indicadorId)) indicadorId = `${base}-${++n}`;
 
-    return prisma.documentoPersonalizadoCampo.create({
-      data: { documentoId, campoId, descricao: input.descricao, obrigatorio: input.obrigatorio, sortOrder: doc.campos.length },
+    return prisma.portalIndicador.create({
+      data: {
+        documentoId: doc.portalDocumentoId,
+        indicadorId,
+        nome: input.nome,
+        tipo: input.tipo,
+        unidade: input.unidade,
+        sortOrder: indicadores.length,
+      },
     });
   },
 
-  async updateCampoDocumentoPersonalizado(campoDbId: string, input: Partial<{ descricao: string; obrigatorio: boolean }>) {
-    const campo = await prisma.documentoPersonalizadoCampo.findUnique({ where: { id: campoDbId } });
-    if (!campo) throw new HttpError(404, "Campo não encontrado.");
-    return prisma.documentoPersonalizadoCampo.update({ where: { id: campoDbId }, data: input });
+  async updateCampoChecklist(indicadorDbId: string, input: Partial<{ nome: string; tipo: PortalIndicadorTipo; unidade: string | null }>) {
+    const indicador = await prisma.portalIndicador.findUnique({ where: { id: indicadorDbId } });
+    if (!indicador) throw new HttpError(404, "Campo não encontrado.");
+    return prisma.portalIndicador.update({ where: { id: indicadorDbId }, data: input });
   },
 
-  async deleteCampoDocumentoPersonalizado(campoDbId: string) {
-    const campo = await prisma.documentoPersonalizadoCampo.findUnique({ where: { id: campoDbId } });
-    if (!campo) throw new HttpError(404, "Campo não encontrado.");
-    await prisma.documentoPersonalizadoCampo.delete({ where: { id: campoDbId } });
+  async deleteCampoChecklist(indicadorDbId: string) {
+    const indicador = await prisma.portalIndicador.findUnique({ where: { id: indicadorDbId } });
+    if (!indicador) throw new HttpError(404, "Campo não encontrado.");
+    await prisma.portalIndicador.delete({ where: { id: indicadorDbId } });
+  },
+
+  async addSubcampoChecklist(indicadorDbId: string, input: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null }) {
+    const indicador = await prisma.portalIndicador.findUnique({ where: { id: indicadorDbId }, include: { subcampos: true } });
+    if (!indicador) throw new HttpError(404, "Campo não encontrado.");
+
+    const usados = new Set(indicador.subcampos.map((s) => s.subcampoId));
+    const base = slugify(input.nome) || `subcampo-${indicador.subcampos.length + 1}`;
+    let subcampoId = base;
+    let n = 1;
+    while (usados.has(subcampoId)) subcampoId = `${base}-${++n}`;
+
+    return prisma.portalIndicadorSubcampo.create({
+      data: {
+        indicadorId: indicadorDbId,
+        subcampoId,
+        nome: input.nome,
+        tipo: input.tipo,
+        unidade: input.unidade,
+        sortOrder: indicador.subcampos.length,
+      },
+    });
+  },
+
+  async updateSubcampoChecklist(subcampoDbId: string, input: Partial<{ nome: string; tipo: PortalIndicadorTipo; unidade: string | null }>) {
+    const subcampo = await prisma.portalIndicadorSubcampo.findUnique({ where: { id: subcampoDbId } });
+    if (!subcampo) throw new HttpError(404, "Subcampo não encontrado.");
+    return prisma.portalIndicadorSubcampo.update({ where: { id: subcampoDbId }, data: input });
+  },
+
+  async deleteSubcampoChecklist(subcampoDbId: string) {
+    const subcampo = await prisma.portalIndicadorSubcampo.findUnique({ where: { id: subcampoDbId } });
+    if (!subcampo) throw new HttpError(404, "Subcampo não encontrado.");
+    await prisma.portalIndicadorSubcampo.delete({ where: { id: subcampoDbId } });
   },
 
   // ---------------------------------------------------------------------------------------

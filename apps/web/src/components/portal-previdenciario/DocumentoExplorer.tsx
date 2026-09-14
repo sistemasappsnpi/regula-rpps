@@ -4,7 +4,6 @@ import {
   BarChart3,
   CalendarDays,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   Download,
   FileJson,
@@ -51,20 +50,31 @@ import { baixarCsv, baixarJson, baixarTxt, formatarCompetencia, formatarCompeten
 const CORES_GRAFICO = ["petrol", "gold", "ok", "warn"] as const;
 type CorGrafico = (typeof CORES_GRAFICO)[number];
 
+function useMediaQuery(consulta: string): boolean {
+  const [combina, setCombina] = useState(() => typeof window !== "undefined" && window.matchMedia(consulta).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(consulta);
+    const listener = () => setCombina(mq.matches);
+    setCombina(mq.matches);
+    mq.addEventListener("change", listener);
+    return () => mq.removeEventListener("change", listener);
+  }, [consulta]);
+  return combina;
+}
+
 // Usado pra encolher a largura fixa do eixo de categorias dos gráficos horizontais (nomes de
 // ativos/indicadores) em telas estreitas — sem isso, o eixo sozinho toma a maior parte do espaço
 // disponível num celular, espremendo as barras a quase nada.
 function useEhMobile(): boolean {
-  const [ehMobile, setEhMobile] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 640px)");
-    const listener = () => setEhMobile(mq.matches);
-    mq.addEventListener("change", listener);
-    return () => mq.removeEventListener("change", listener);
-  }, []);
-  return ehMobile;
+  return useMediaQuery("(max-width: 640px)");
+}
+
+// Mesma ideia da linha acima, mas pro caso oposto: no desktop os gráficos ficam lado a lado em duas
+// colunas, então cada cartão tem cerca de metade da largura da página. `compacto` é o que cada
+// gráfico recebe pra se ajustar a isso (eixo mais estreito, nome truncado antes, altura menor) —
+// nunca é o tamanho da tela sozinho que decide, é a largura real que sobrou pro cartão.
+function useEhDuasColunas(): boolean {
+  return useMediaQuery("(min-width: 1024px)");
 }
 
 // Faixa colorida na lateral de cada cartão de gráfico, alternando conforme desce a página — dá
@@ -220,6 +230,58 @@ function nomeCurto(nome: string, limite = 22): string {
   return nome.length > limite ? `${nome.slice(0, limite - 1)}…` : nome;
 }
 
+// Quebra o nome de categoria em até duas linhas pro eixo dos gráficos horizontais. Só truncar não
+// serve na coluna estreita do desktop: indicadores que começam igual ("Operação - Nova Aplicação
+// em ...") viravam três rótulos idênticos, e o que diferencia um do outro fica justamente no fim
+// do nome. Em duas linhas cabe o dobro, e o corte (quando ainda é preciso) cai bem mais tarde.
+function quebrarEmLinhas(texto: string, porLinha: number, maxLinhas: number): string[] {
+  const palavras = texto.split(/\s+/).map((p) => nomeCurto(p, porLinha));
+  const linhas: string[] = [];
+  let atual = "";
+  for (const palavra of palavras) {
+    const tentativa = atual ? `${atual} ${palavra}` : palavra;
+    if (tentativa.length <= porLinha) {
+      atual = tentativa;
+      continue;
+    }
+    linhas.push(atual);
+    atual = palavra;
+    if (linhas.length === maxLinhas) break;
+  }
+  if (linhas.length < maxLinhas && atual) linhas.push(atual);
+  const cortadas = linhas.slice(0, maxLinhas);
+  // Sobrou nome que não coube: a reticência na última linha avisa que o rótulo continua (o nome
+  // inteiro sempre aparece no tooltip).
+  if (cortadas.join(" ").length < texto.replace(/\s+/g, " ").trim().length) {
+    const ultima = cortadas[cortadas.length - 1] ?? "";
+    cortadas[cortadas.length - 1] = `${ultima.slice(0, Math.max(1, porLinha - 1))}…`;
+  }
+  return cortadas;
+}
+
+interface TickCategoriaProps {
+  x?: number;
+  y?: number;
+  payload?: { value?: string | number };
+  fonte: number;
+  porLinha: number;
+}
+
+function TickCategoria({ x = 0, y = 0, payload, fonte, porLinha }: TickCategoriaProps) {
+  const linhas = quebrarEmLinhas(String(payload?.value ?? ""), porLinha, 2);
+  const alturaLinha = fonte + 2;
+  const inicio = -((linhas.length - 1) * alturaLinha) / 2 + fonte / 3;
+  return (
+    <text x={x} y={y} textAnchor="end" fill="rgb(var(--color-ink-muted))" fontSize={fonte}>
+      {linhas.map((linha, i) => (
+        <tspan key={linha + i} x={x} dy={i === 0 ? inicio : alturaLinha}>
+          {linha}
+        </tspan>
+      ))}
+    </text>
+  );
+}
+
 // Quase todo ativo começa com "Fundo/Classe de Investimento (em)" — boilerplate repetido que só
 // atrapalha a leitura do eixo. Tira esse prefixo antes de truncar, sobrando só o que diferencia.
 function resumirAtivo(nome: string): string {
@@ -259,12 +321,22 @@ interface ClusterAlocacao {
 // pra mesma métrica, em todos os clusters) — a cor aqui identifica a métrica, nunca é decorativa.
 // Horizontal (não vertical rotacionado): nomes de ativo são longos demais pra caber legível
 // embaixo de uma barra em pé, mesmo truncados — na horizontal, o nome fica inteiro na lateral.
-function GraficoAlocacao({ clusters, cor }: { clusters: ClusterAlocacao[]; cor: CorGrafico }) {
-  const altura = Math.max(320, clusters.length * 52);
+function GraficoAlocacao({
+  clusters,
+  cor,
+  compacto = false,
+  atraso = 0,
+}: {
+  clusters: ClusterAlocacao[];
+  cor: CorGrafico;
+  compacto?: boolean;
+  atraso?: number;
+}) {
+  const altura = compacto ? Math.max(280, clusters.length * 50) : Math.max(320, clusters.length * 52);
   const ehMobile = useEhMobile();
 
   return (
-    <div className="rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor)}>
+    <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor, atraso)}>
       <div className="mb-1 flex items-center gap-2">
         <BarChart3 size={15} className="text-petrol" />
         <p className="text-sm font-semibold text-ink">Estratégia de alocação por ativo (%)</p>
@@ -299,7 +371,8 @@ function GraficoAlocacao({ clusters, cor }: { clusters: ClusterAlocacao[]; cor: 
               stroke="rgb(var(--color-ink-muted))"
               tickLine={false}
               axisLine={false}
-              width={ehMobile ? 96 : 190}
+              width={ehMobile ? 96 : compacto ? 132 : 190}
+              tick={compacto && !ehMobile ? <TickCategoria fonte={10} porLinha={23} /> : undefined}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -363,11 +436,15 @@ function GraficoComparativo({
   unidade,
   indicadores,
   cor,
+  compacto = false,
+  atraso = 0,
 }: {
   titulo: string;
   unidade: string | null;
   indicadores: PortalIndicadorPublico[];
   cor: CorGrafico;
+  compacto?: boolean;
+  atraso?: number;
 }) {
   const dados = useMemo<BarraComparativa[]>(
     () =>
@@ -378,11 +455,11 @@ function GraficoComparativo({
       }),
     [indicadores],
   );
-  const altura = Math.max(220, dados.length * 48);
+  const altura = compacto ? Math.max(200, dados.length * 48) : Math.max(220, dados.length * 48);
   const ehMobile = useEhMobile();
 
   return (
-    <div className="rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor)}>
+    <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor, atraso)}>
       <div className="mb-1 flex items-center gap-2">
         <BarChart3 size={15} className="text-petrol" />
         <p className="text-sm font-semibold text-ink">{titulo}</p>
@@ -393,7 +470,7 @@ function GraficoComparativo({
       </p>
       <div className="mt-2 w-full" style={{ height: altura }}>
         <ResponsiveContainer>
-          <BarChart data={dados} layout="vertical" margin={{ top: 4, right: 56, left: 8, bottom: 4 }} barCategoryGap="24%">
+          <BarChart data={dados} layout="vertical" margin={{ top: 4, right: compacto ? 92 : 56, left: 8, bottom: 4 }} barCategoryGap="24%">
             <defs>
               {CORES_GRAFICO.map((c) => (
                 <linearGradient key={c} id={`grad-comp-${c}`} x1="0" y1="0" x2="1" y2="0">
@@ -406,12 +483,13 @@ function GraficoComparativo({
             <XAxis type="number" hide domain={[0, "auto"]} />
             <YAxis
               type="category"
-              dataKey="nomeCurto"
+              dataKey={compacto && !ehMobile ? "nome" : "nomeCurto"}
               fontSize={ehMobile ? 10 : 12}
               stroke="rgb(var(--color-ink-muted))"
               tickLine={false}
               axisLine={false}
-              width={ehMobile ? 104 : 210}
+              width={ehMobile ? 104 : compacto ? 148 : 210}
+              tick={compacto && !ehMobile ? <TickCategoria fonte={10} porLinha={26} /> : undefined}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -436,7 +514,7 @@ function GraficoComparativo({
               <LabelList
                 dataKey="valor"
                 position="right"
-                fontSize={11}
+                fontSize={compacto ? 10 : 11}
                 fontWeight={700}
                 fill="rgb(var(--color-ink))"
                 formatter={(v: unknown) => `${Number(v).toLocaleString("pt-BR")}${unidade ? ` ${unidade}` : ""}`}
@@ -471,7 +549,21 @@ function formatarNumeroCompacto(valor: number): string {
   return new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(valor);
 }
 
-function GraficoTendencia({ titulo, unidade, indicadores, cor }: { titulo: string; unidade: string | null; indicadores: PortalIndicadorPublico[]; cor: CorGrafico }) {
+function GraficoTendencia({
+  titulo,
+  unidade,
+  indicadores,
+  cor,
+  compacto = false,
+  atraso = 0,
+}: {
+  titulo: string;
+  unidade: string | null;
+  indicadores: PortalIndicadorPublico[];
+  cor: CorGrafico;
+  compacto?: boolean;
+  atraso?: number;
+}) {
   const dados = useMemo<PontoTendencia[]>(() => {
     const porCompetencia = new Map<string, PontoTendencia>();
     for (const ind of indicadores) {
@@ -489,7 +581,7 @@ function GraficoTendencia({ titulo, unidade, indicadores, cor }: { titulo: strin
   const ultimoPonto = dados[dados.length - 1];
 
   return (
-    <div className="rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor)}>
+    <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor, atraso)}>
       <div className="mb-1 flex items-center gap-2">
         <TrendingUp size={15} className="text-petrol" />
         <p className="text-sm font-semibold text-ink">{titulo}</p>
@@ -528,7 +620,7 @@ function GraficoTendencia({ titulo, unidade, indicadores, cor }: { titulo: strin
         </div>
       )}
 
-      <div className="mt-2 h-72 w-full">
+      <div className={`mt-2 w-full ${compacto ? "h-60" : "h-72"}`}>
         <ResponsiveContainer>
           <LineChart data={dados} margin={{ top: 20, right: 16, left: 0, bottom: 4 }}>
             <CartesianGrid vertical={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
@@ -558,7 +650,9 @@ function GraficoTendencia({ titulo, unidade, indicadores, cor }: { titulo: strin
                 );
               }}
             />
-            {indicadores.length > 1 && <Legend formatter={(_, entry) => <span className="text-xs text-ink-muted">{indicadores.find((i) => i.id === entry.dataKey)?.nome}</span>} iconType="circle" iconSize={8} />}
+            {/* Sem <Legend> aqui de propósito: os chips de "valor mais recente" acima do gráfico já
+                são a legenda (mesma cor, nome completo, valor) — e a legenda do recharts, com 13
+                nomes longos, cresce sem limite e acaba desenhada por cima da própria linha. */}
             {indicadores.map((ind, i) => (
               <Line
                 key={ind.id}
@@ -587,15 +681,19 @@ function GraficoComposicao({
   competencia,
   fatias,
   corDestaque,
+  compacto = false,
+  atraso = 0,
 }: {
   competencia: string;
   fatias: FatiaComposicao[];
   corDestaque: CorGrafico;
+  compacto?: boolean;
+  atraso?: number;
 }) {
   const dados = fatias.map((f, i) => ({ ...f, cor: CORES_GRAFICO[i % CORES_GRAFICO.length] }));
 
   return (
-    <div className="rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(corDestaque)}>
+    <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(corDestaque, atraso)}>
       <div className="mb-1 flex items-center gap-2">
         <PieChartIcon size={14} className="text-gold" />
         <p className="text-sm font-medium text-ink">Composição da carteira</p>
@@ -605,7 +703,7 @@ function GraficoComposicao({
         ou seja, são de fato partes de um todo, não valores soltos.
       </p>
       <div className="flex flex-col items-center gap-4 sm:flex-row">
-        <div className="h-56 w-56 shrink-0">
+        <div className={`shrink-0 ${compacto ? "h-44 w-44" : "h-56 w-56"}`}>
           <ResponsiveContainer>
             <PieChart>
               <Pie
@@ -641,7 +739,7 @@ function GraficoComposicao({
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="grid min-w-0 flex-1 grid-cols-1 gap-1.5 sm:grid-cols-2">
+        <div className={`grid min-w-0 flex-1 grid-cols-1 gap-1.5 ${compacto ? "" : "sm:grid-cols-2"}`}>
           {dados.map((f) => (
             <div key={f.nome} className="flex items-center gap-2 text-xs">
               <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: `rgb(var(--color-${f.cor}))` }} />
@@ -657,69 +755,36 @@ function GraficoComposicao({
   );
 }
 
-interface SlideGrafico {
+interface PainelGrafico {
   key: string;
   titulo: string;
-  node: ReactNode;
+  // "larga" é o gráfico que não cabe legível em meia página (muitas barras, nomes longos): ocupa a
+  // linha inteira mesmo no desktop, em vez de espremer as barras pra caber na coluna.
+  largura: "normal" | "larga";
+  render: (compacto: boolean, atraso: number) => ReactNode;
 }
 
-// Um gráfico por vez, trocando sozinho a cada 10s — cada slide é sobre um tipo de dado específico
-// (composição, alocação, cada grupo de unidade). Pausa ao passar o mouse (senão ninguém consegue
-// ler antes de trocar) e sempre dá pra navegar na mão (bolinhas + setas), nunca só automático.
-function CarrosselGraficos({ slides }: { slides: SlideGrafico[] }) {
-  const [indice, setIndice] = useState(0);
-  const [pausado, setPausado] = useState(false);
+// Todos os gráficos de uma vez, lado a lado no desktop (duas colunas) e empilhados no celular —
+// nada de carrossel trocando sozinho: comparar composição com alocação exigia esperar a rotação,
+// e quem lê um relatório precisa dos números juntos na mesma tela. Cada cartão já traz seu próprio
+// título e legenda, então a grade não precisa rotular nada por fora.
+function PainelGraficos({ paineis }: { paineis: PainelGrafico[] }) {
+  const duasColunas = useEhDuasColunas();
+  if (paineis.length === 0) return null;
 
-  useEffect(() => {
-    setIndice(0);
-  }, [slides.length]);
-
-  useEffect(() => {
-    if (slides.length <= 1 || pausado) return;
-    const intervalo = setInterval(() => setIndice((i) => (i + 1) % slides.length), 10000);
-    return () => clearInterval(intervalo);
-  }, [slides.length, pausado]);
-
-  if (slides.length === 0) return null;
-  const atual = slides[Math.min(indice, slides.length - 1)];
+  // Cartão sozinho sempre ocupa a largura toda — não faz sentido deixar metade da página vazia.
+  const emGrade = duasColunas && paineis.length > 1;
 
   return (
-    <div onMouseEnter={() => setPausado(true)} onMouseLeave={() => setPausado(false)}>
-      <div key={atual.key} style={{ animation: "fade-up .4s ease-out both" }}>
-        {atual.node}
-      </div>
-      {slides.length > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIndice((i) => (i - 1 + slides.length) % slides.length)}
-            className="text-ink-muted transition-colors hover:text-petrol"
-            aria-label="Gráfico anterior"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <div className="flex items-center gap-1.5">
-            {slides.map((s, i) => (
-              <button
-                key={s.key}
-                type="button"
-                onClick={() => setIndice(i)}
-                aria-label={`Ver gráfico: ${s.titulo}`}
-                title={s.titulo}
-                className={`h-2 rounded-full transition-all ${i === indice ? "w-6 bg-petrol" : "w-2 bg-border hover:bg-ink-muted"}`}
-              />
-            ))}
+    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+      {paineis.map((p, i) => {
+        const compacto = emGrade && p.largura === "normal";
+        return (
+          <div key={p.key} className={compacto ? "min-w-0" : "min-w-0 lg:col-span-2"}>
+            {p.render(compacto, i * 70)}
           </div>
-          <button
-            type="button"
-            onClick={() => setIndice((i) => (i + 1) % slides.length)}
-            className="text-ink-muted transition-colors hover:text-petrol"
-            aria-label="Próximo gráfico"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      )}
+        );
+      })}
     </div>
   );
 }
@@ -732,6 +797,7 @@ function LinhaLancamento({
   documentoBase,
   competencia,
   campos,
+  grupos,
   aberto,
   onToggle,
   slug,
@@ -740,6 +806,7 @@ function LinhaLancamento({
   documentoBase: PortalDocumentoPublico;
   competencia: string;
   campos: CampoLinha[];
+  grupos: PortalIndicadorPublico[];
   aberto: boolean;
   onToggle: () => void;
   slug: string;
@@ -752,6 +819,17 @@ function LinhaLancamento({
   const camposFiltrados = buscaLocalNormalizada
     ? campos.filter((c) => `${c.indicadorNome} ${c.valor} ${c.unidade ?? ""}`.toLowerCase().includes(buscaLocalNormalizada))
     : campos;
+
+  // Indicadores-grupo (com subcampos) que têm pelo menos uma ocorrência nesta competência —
+  // cada um vira uma mini-tabela própria abaixo dos campos escalares.
+  const gruposDesteLancamento = useMemo(
+    () =>
+      grupos
+        .map((g) => ({ ...g, instancias: (g.instancias ?? []).filter((inst) => inst.competencia === competencia) }))
+        .filter((g) => g.instancias.length > 0),
+    [grupos, competencia],
+  );
+  const totalOcorrenciasGrupo = gruposDesteLancamento.reduce((soma, g) => soma + g.instancias.length, 0);
 
   // Documentos-fonte reais deste lançamento (normalmente um só PDF, mas nada impede duas
   // competências terem sido montadas a partir de fontes diferentes) — o "PDF original" é sempre
@@ -784,6 +862,11 @@ function LinhaLancamento({
               <span className="rounded-full bg-ink/5 px-2 py-0.5 font-medium text-ink">
                 {campos.length} campo{campos.length === 1 ? "" : "s"}
               </span>
+              {totalOcorrenciasGrupo > 0 && (
+                <span className="rounded-full bg-ink/5 px-2 py-0.5 font-medium text-ink">
+                  {totalOcorrenciasGrupo} ocorrência{totalOcorrenciasGrupo === 1 ? "" : "s"} em grupo
+                </span>
+              )}
               {origemTexto}
             </p>
           </div>
@@ -826,20 +909,69 @@ function LinhaLancamento({
             </div>
           ))}
 
-          {arquivosOrigem.length > 0 && (
-            <div className="col-span-full mt-2 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
-              <span className="text-xs text-ink-muted">Documento original:</span>
-              {arquivosOrigem.map(([uploadId, nome]) => (
-                <a
-                  key={uploadId}
-                  href={`/api/public/portal-previdenciario/${slug}/documentos/${codigo}/arquivos/${uploadId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 rounded-full border border-border bg-bg px-3 py-1 text-xs font-medium text-petrol transition-colors hover:border-petrol hover:bg-petrol/5"
-                >
-                  <FileText size={13} /> {nome}
-                </a>
+          {gruposDesteLancamento.length > 0 && (
+            <div className="col-span-full mt-2 flex flex-col gap-4 border-t border-border/60 pt-4">
+              {gruposDesteLancamento.map((g) => (
+                <div key={g.id}>
+                  <p className="mb-1.5 text-xs font-semibold text-ink">
+                    {g.nome} <span className="font-normal text-ink-muted">({g.instancias.length})</span>
+                  </p>
+                  <div className="overflow-x-auto rounded-lg border border-border/60">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/60 bg-ink/5 text-left text-ink-muted">
+                          {(g.subcampos ?? []).map((sc) => (
+                            <th key={sc.subcampoId} className="whitespace-nowrap px-2.5 py-1.5 font-medium">
+                              {sc.nome}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {g.instancias.map((inst) => (
+                          <tr key={inst.id} className="border-b border-border/40 last:border-0">
+                            {(g.subcampos ?? []).map((sc) => (
+                              <td key={sc.subcampoId} className="px-2.5 py-1.5 text-ink">
+                                {inst.subcampoValores.find((v) => v.subcampoId === sc.subcampoId)?.valor ?? "—"}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               ))}
+            </div>
+          )}
+
+          {arquivosOrigem.length > 0 && (
+            <div className="col-span-full mt-3 flex flex-col items-center gap-3 border-t border-border/60 pt-5">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">Documento original</p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {arquivosOrigem.map(([uploadId, nome]) => (
+                  <a
+                    key={uploadId}
+                    href={`/api/public/portal-previdenciario/${slug}/documentos/${codigo}/arquivos/${uploadId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-2.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-petrol hover:shadow-lift"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-petrol to-gold text-white shadow-soft">
+                      <FileText size={17} />
+                    </span>
+                    <span className="text-left">
+                      <span className="block max-w-[220px] truncate text-sm font-semibold text-ink group-hover:text-petrol">
+                        {nome}
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] text-ink-muted">
+                        Ver PDF original
+                        <Download size={11} className="transition-transform group-hover:translate-y-0.5" />
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -1092,43 +1224,89 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
     return { gruposComparativos: grupos, indicadoresSoltos: soltos };
   }, [indicadoresRestantes]);
 
-  // Cada slide do carrossel é sobre um tipo de dado específico — composição, alocação, e um por
-  // grupo de unidade — nunca misturando tipos diferentes num slide só.
-  const slidesGraficos = useMemo<SlideGrafico[]>(() => {
-    const lista: SlideGrafico[] = [];
+  // Cada painel é sobre um tipo de dado específico — composição, alocação, e um por grupo de
+  // unidade — nunca misturando tipos diferentes num painel só. Gráficos com muitas barras ganham a
+  // linha inteira: numa coluna de meia página os nomes de ativo/indicador ficariam ilegíveis.
+  const paineisGraficos = useMemo<PainelGrafico[]>(() => {
+    const lista: PainelGrafico[] = [];
     let indiceCor = 0;
     const proximaCor = () => CORES_GRAFICO[indiceCor++ % CORES_GRAFICO.length];
 
     if (composicao) {
+      const cor = proximaCor();
       lista.push({
         key: "composicao",
         titulo: "Composição da carteira",
-        node: <GraficoComposicao competencia={composicao.competencia} fatias={composicao.fatias} corDestaque={proximaCor()} />,
+        largura: "normal",
+        render: (compacto, atraso) => (
+          <GraficoComposicao
+            competencia={composicao.competencia}
+            fatias={composicao.fatias}
+            corDestaque={cor}
+            compacto={compacto}
+            atraso={atraso}
+          />
+        ),
       });
     }
     if (clustersAlocacao.length > 0) {
+      const cor = proximaCor();
       lista.push({
         key: "alocacao",
         titulo: "Estratégia de alocação por ativo",
-        node: <GraficoAlocacao clusters={clustersAlocacao} cor={proximaCor()} />,
+        largura: clustersAlocacao.length > 4 ? "larga" : "normal",
+        render: (compacto, atraso) => (
+          <GraficoAlocacao clusters={clustersAlocacao} cor={cor} compacto={compacto} atraso={atraso} />
+        ),
       });
     }
     for (const grupo of gruposTendencia) {
+      const cor = proximaCor();
       lista.push({
         key: `tendencia-${grupo.titulo}`,
         titulo: grupo.titulo,
-        node: <GraficoTendencia titulo={grupo.titulo} unidade={grupo.unidade} indicadores={grupo.indicadores} cor={proximaCor()} />,
+        largura: "normal",
+        render: (compacto, atraso) => (
+          <GraficoTendencia
+            titulo={grupo.titulo}
+            unidade={grupo.unidade}
+            indicadores={grupo.indicadores}
+            cor={cor}
+            compacto={compacto}
+            atraso={atraso}
+          />
+        ),
       });
     }
     for (const grupo of gruposComparativos) {
+      const cor = proximaCor();
       lista.push({
         key: grupo.titulo,
         titulo: grupo.titulo,
-        node: <GraficoComparativo titulo={grupo.titulo} unidade={grupo.unidade} indicadores={grupo.indicadores} cor={proximaCor()} />,
+        largura: grupo.indicadores.length > 6 ? "larga" : "normal",
+        render: (compacto, atraso) => (
+          <GraficoComparativo
+            titulo={grupo.titulo}
+            unidade={grupo.unidade}
+            indicadores={grupo.indicadores}
+            cor={cor}
+            compacto={compacto}
+            atraso={atraso}
+          />
+        ),
       });
     }
     return lista;
   }, [composicao, clustersAlocacao, gruposTendencia, gruposComparativos]);
+
+  // Indicador com subcampos (ex.: "Membro do Comitê") — sem `valores` (fica vazio de propósito,
+  // ver portal-previdenciario.routes.ts), então nunca entra em indicadoresFiltrados/gráficos por
+  // conta própria (essas contas já ignoram indicador sem valor). Aparece dentro de cada
+  // lançamento como uma mini-tabela por ocorrência, ver LinhaLancamento.
+  const gruposIndicadores = useMemo(
+    () => documento.indicadores.filter((i) => (i.subcampos?.length ?? 0) > 0 && (i.instancias?.length ?? 0) > 0),
+    [documento.indicadores],
+  );
 
   const lancamentos = useMemo(() => {
     const porCompetencia = new Map<string, CampoLinha[]>();
@@ -1149,8 +1327,15 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
         porCompetencia.set(v.competencia, lista);
       }
     }
+    // Uma competência que só tem dado de indicador-grupo (nenhum campo escalar) ainda precisa
+    // virar uma linha de lançamento — senão esses dados ficariam invisíveis na tabela.
+    for (const g of gruposIndicadores) {
+      for (const inst of g.instancias ?? []) {
+        if (!porCompetencia.has(inst.competencia)) porCompetencia.set(inst.competencia, []);
+      }
+    }
     return [...porCompetencia.entries()].sort((a, b) => b[0].localeCompare(a[0]));
-  }, [indicadoresFiltrados]);
+  }, [indicadoresFiltrados, gruposIndicadores]);
 
   return (
     <div className="mt-8">
@@ -1311,12 +1496,12 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
           );
         })}
       </div>
-      {slidesGraficos.length === 0 ? (
+      {paineisGraficos.length === 0 ? (
         <Card className="p-6">
           <p className="text-sm text-ink-muted">Nenhum indicador numérico encontrado com esse filtro.</p>
         </Card>
       ) : (
-        <CarrosselGraficos slides={slidesGraficos} />
+        <PainelGraficos paineis={paineisGraficos} />
       )}
 
       <div className="mb-3 mt-8 flex items-center gap-2">
@@ -1334,6 +1519,7 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
               documentoBase={documento}
               competencia={competencia}
               campos={campos}
+              grupos={gruposIndicadores}
               aberto={lancamentoAberto === competencia}
               onToggle={() => setLancamentoAberto((atual) => (atual === competencia ? null : competencia))}
               slug={slug}
