@@ -100,9 +100,22 @@ export function PortalPrevidenciarioDocumentoPage() {
           />
           <div className="relative rounded-2xl border border-border bg-surface/80 px-5 py-6 shadow-lift backdrop-blur sm:px-8 sm:py-8">
             <div className="flex items-start gap-4">
-              <div className="hidden shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-petrol to-gold p-3 shadow-lift sm:flex">
-                <ScrollText size={26} className="text-white" strokeWidth={2} />
-              </div>
+              {dados?.tenant.logoUrl ? (
+                <div className="hidden h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lift sm:flex">
+                  {/* A logo do cliente é larga (ícone + nome escrito do lado, em branco — some no
+                      nosso fundo branco). object-cover + object-left preenche a caixa inteira
+                      ancorado à esquerda, cortando a parte com texto e mostrando só o ícone. */}
+                  <img
+                    src={dados.tenant.logoUrl}
+                    alt={dados.tenant.name}
+                    className="h-full w-full object-cover object-left"
+                  />
+                </div>
+              ) : (
+                <div className="hidden h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-petrol to-gold shadow-lift sm:flex">
+                  <ScrollText size={34} className="text-white" strokeWidth={2} />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-petrol">Documento oficial</p>
                 <h1

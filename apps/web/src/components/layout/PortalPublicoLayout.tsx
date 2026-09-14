@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import type { PortalMenuSecao, PortalTenantInfo } from "../../lib/api";
+import { AcessibilidadeWidgets } from "./AcessibilidadeWidgets";
 
 const ESCALA_MIN = 0.85;
 const ESCALA_MAX = 1.3;
@@ -106,6 +107,8 @@ export function PortalPublicoLayout({
           Transparência Ativa — dados publicados via API pública do Regula RPPS.
         </p>
       </footer>
+
+      <AcessibilidadeWidgets mostrarFonte={false} />
     </div>
   );
 }

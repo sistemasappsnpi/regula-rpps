@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { ArrowUp, ChevronDown, Clock, Mail, MapPin, Phone } from "lucide-react";
 import type { PortalPrevidenciarioMenuItem, PortalPrevidenciarioRodape } from "../../lib/api";
+import { AcessibilidadeWidgets } from "./AcessibilidadeWidgets";
 
 // Cor padrão quando o tenant não configurou Tenant.portalCorPrimaria — mesma cor de
 // --nav-active/--footer-bg do modelo de referência (ver acessoainformacao.html).
@@ -193,6 +194,8 @@ export function PortalPrevidenciarioLayout({
       >
         <ArrowUp size={18} />
       </button>
+
+      <AcessibilidadeWidgets />
     </div>
   );
 }

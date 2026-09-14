@@ -51,6 +51,22 @@ import { baixarCsv, baixarJson, baixarTxt, formatarCompetencia, formatarCompeten
 const CORES_GRAFICO = ["petrol", "gold", "ok", "warn"] as const;
 type CorGrafico = (typeof CORES_GRAFICO)[number];
 
+// Usado pra encolher a largura fixa do eixo de categorias dos gráficos horizontais (nomes de
+// ativos/indicadores) em telas estreitas — sem isso, o eixo sozinho toma a maior parte do espaço
+// disponível num celular, espremendo as barras a quase nada.
+function useEhMobile(): boolean {
+  const [ehMobile, setEhMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const listener = () => setEhMobile(mq.matches);
+    mq.addEventListener("change", listener);
+    return () => mq.removeEventListener("change", listener);
+  }, []);
+  return ehMobile;
+}
+
 // Faixa colorida na lateral de cada cartão de gráfico, alternando conforme desce a página — dá
 // ritmo visual sem mexer no tipo de gráfico ou no que os dados significam (nunca troco pizza por
 // barra só por variedade: o formato do gráfico continua sendo escolhido pelo que o dado É).
@@ -245,6 +261,7 @@ interface ClusterAlocacao {
 // embaixo de uma barra em pé, mesmo truncados — na horizontal, o nome fica inteiro na lateral.
 function GraficoAlocacao({ clusters, cor }: { clusters: ClusterAlocacao[]; cor: CorGrafico }) {
   const altura = Math.max(320, clusters.length * 52);
+  const ehMobile = useEhMobile();
 
   return (
     <div className="rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor)}>
@@ -278,11 +295,11 @@ function GraficoAlocacao({ clusters, cor }: { clusters: ClusterAlocacao[]; cor: 
             <YAxis
               type="category"
               dataKey="ativoCurto"
-              fontSize={12}
+              fontSize={ehMobile ? 10 : 12}
               stroke="rgb(var(--color-ink-muted))"
               tickLine={false}
               axisLine={false}
-              width={190}
+              width={ehMobile ? 96 : 190}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -362,6 +379,7 @@ function GraficoComparativo({
     [indicadores],
   );
   const altura = Math.max(220, dados.length * 48);
+  const ehMobile = useEhMobile();
 
   return (
     <div className="rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor)}>
@@ -389,11 +407,11 @@ function GraficoComparativo({
             <YAxis
               type="category"
               dataKey="nomeCurto"
-              fontSize={12}
+              fontSize={ehMobile ? 10 : 12}
               stroke="rgb(var(--color-ink-muted))"
               tickLine={false}
               axisLine={false}
-              width={210}
+              width={ehMobile ? 104 : 210}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -477,31 +495,34 @@ function GraficoTendencia({ titulo, unidade, indicadores, cor }: { titulo: strin
         <p className="text-sm font-semibold text-ink">{titulo}</p>
       </div>
       <p className="mb-2 text-xs text-ink-muted">
-        Indicadores em "{unidade ?? "sem unidade"}" presentes em todos os lançamentos — evolução real ao longo do
-        tempo, não só a foto do momento.
+        {indicadores.length === 1 ? "Este indicador aparece" : `Estes ${indicadores.length} indicadores aparecem`} em
+        todos os {dados.length} lançamentos deste documento (de {dados[0]?.competencia} até{" "}
+        {dados[dados.length - 1]?.competencia}) — a linha mostra como o valor mudou de um lançamento pro outro, não
+        só o retrato do mais recente.
       </p>
 
-      {/* Valor mais recente de cada linha, por extenso — o próprio gráfico (eixo compacto + linha
-          subindo) não deixa claro QUANTO cada indicador vale hoje, só a tendência. */}
+      {/* Valor mais recente de cada linha, por extenso, com o nome completo (nunca truncado: é o
+          principal jeito do leitor entender do que esse gráfico está falando) — o próprio gráfico
+          (eixo compacto + linha subindo) não deixa claro QUANTO cada indicador vale hoje nem O QUE
+          exatamente ele é, só a tendência. */}
       {ultimoPonto && (
-        <div className="mb-3 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-col gap-1.5">
           {indicadores.map((ind, i) => {
             const valor = ultimoPonto[ind.id];
             if (typeof valor !== "number") return null;
             const corLinha = CORES_GRAFICO[i % CORES_GRAFICO.length];
             return (
-              <span
-                key={ind.id}
-                className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs"
-                title={ind.nome}
-              >
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: `rgb(var(--color-${corLinha}))` }} />
-                <span className="max-w-[160px] truncate text-ink-muted">{ind.nome}:</span>
-                <span className="tabular font-semibold text-ink">
+              <div key={ind.id} className="flex items-start gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs">
+                <span
+                  className="mt-1 h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: `rgb(var(--color-${corLinha}))` }}
+                />
+                <span className="min-w-0 flex-1 text-ink-muted">{ind.nome}</span>
+                <span className="shrink-0 tabular font-semibold text-ink">
                   {valor.toLocaleString("pt-BR")}
                   {unidade ? ` ${unidade}` : ""}
                 </span>
-              </span>
+              </div>
             );
           })}
         </div>
@@ -842,15 +863,17 @@ function FiltroCampo({
   icone: Icone,
   rotulo,
   ativo,
+  className,
   children,
 }: {
   icone: typeof Tag;
   rotulo: string;
   ativo?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <label className="block">
+    <label className={`block ${className ?? ""}`}>
       <span className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
         <Icone size={12} className={ativo ? "text-petrol" : "text-ink-muted"} />
         {rotulo}
@@ -1221,7 +1244,12 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
             <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-muted" />
           </FiltroCampo>
 
-          <FiltroCampo icone={ArrowRight} rotulo="Período" ativo={periodoInicio !== "" || periodoFim !== ""}>
+          <FiltroCampo
+            icone={ArrowRight}
+            rotulo="Período"
+            ativo={periodoInicio !== "" || periodoFim !== ""}
+            className="col-span-2 sm:col-span-1"
+          >
             <div className="flex items-center gap-1.5">
               <input
                 type="month"

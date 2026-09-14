@@ -64,6 +64,27 @@
   color-scheme: light;
 }
 
+/* Alto contraste (barra de acessibilidade dos portais públicos, ver AcessibilidadeWidgets.tsx) —
+   preto sobre branco, sem meio-tom nenhum. O segundo seletor (com .portal-publico-claro junto)
+   existe porque, sem ele, a especificidade menor perderia pras variáveis fixas que esse portal já
+   redeclara acima (variável CSS vale pela regra mais específica pro elemento, não pela ordem no
+   arquivo) — sem isso o alto contraste simplesmente não apareceria no Portal de Transparência
+   nem no Portal Previdenciário. */
+:root[data-contrast="high"],
+:root[data-contrast="high"] .portal-publico-claro {
+  --color-bg: 255 255 255;
+  --color-surface: 255 255 255;
+  --color-ink: 0 0 0;
+  --color-ink-muted: 0 0 0;
+  --color-border: 0 0 0;
+
+  --color-petrol: 0 51 153;
+  --color-gold: 102 0 153;
+  --color-ok: 0 92 0;
+  --color-warn: 140 80 0;
+  --color-crit: 170 0 0;
+}
+
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-ink));
