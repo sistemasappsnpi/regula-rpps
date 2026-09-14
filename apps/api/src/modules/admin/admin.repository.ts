@@ -139,7 +139,23 @@ export const adminRepository = {
       }
     }
 
-    return prisma.tenant.update({ where: { id }, data });
+    // A URL pública (Portal de Transparência / Portal Previdenciário) usa o slug — se o nome do
+    // cliente mudar, a URL segue junto, mesma regra de geração/desempate usada na criação (ver
+    // createTenant acima), pra nunca deixar a URL presa a um nome antigo (ex.: um nome de teste
+    // digitado na criação, corrigido depois pro nome real do cliente).
+    let slug: string | undefined;
+    if (data.name && data.name !== tenant.name) {
+      const baseSlug = slugify(data.name);
+      slug = baseSlug;
+      let attempt = 1;
+      while (true) {
+        const conflito = await prisma.tenant.findUnique({ where: { slug } });
+        if (!conflito || conflito.id === id) break;
+        slug = `${baseSlug}-${++attempt}`;
+      }
+    }
+
+    return prisma.tenant.update({ where: { id }, data: { ...data, ...(slug ? { slug } : {}) } });
   },
 
   /**
