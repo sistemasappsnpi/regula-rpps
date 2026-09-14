@@ -97,11 +97,11 @@ const TIPO_LABEL: Record<PortalIndicadorPublico["tipo"], string> = {
   DATA: "Data",
 };
 
-const TIPO_DOT: Record<PortalIndicadorPublico["tipo"], string> = {
-  NUMERICO: "bg-petrol",
-  MOEDA: "bg-gold",
-  TEXTO: "bg-ok",
-  DATA: "bg-warn",
+const TIPO_DOT_CLASSE: Record<CorGrafico, string> = {
+  petrol: "bg-petrol",
+  gold: "bg-gold",
+  ok: "bg-ok",
+  warn: "bg-warn",
 };
 
 // Portal público — nunca expõe como o dado foi processado internamente (manual/IA/etc.), só que é
@@ -604,7 +604,7 @@ function GraficoTendencia({
   // com vários cartões pequenos — o mesmo cartão pro grupo inteiro, tenha ele 1 ou 50 indicadores,
   // é o que garante os painéis sempre do mesmo tamanho um do outro. Com mais indicadores do que
   // cabe numa "página" de cartões, pagina em vez de esticar a altura do painel.
-  const POR_PAGINA = 4;
+  const POR_PAGINA = 2;
   const [pagina, setPagina] = useState(0);
   const totalPaginas = Math.max(1, Math.ceil(indicadores.length / POR_PAGINA));
   const paginaValida = Math.min(pagina, totalPaginas - 1);
@@ -816,7 +816,7 @@ function PainelGraficos({ paineis }: { paineis: PainelGrafico[] }) {
   const emGrade = duasColunas && paineis.length > 1;
 
   return (
-    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
       {paineis.map((p, i) => {
         const compacto = emGrade && p.largura === "normal";
         return (
@@ -940,7 +940,9 @@ function LinhaLancamento({
               className="min-w-0 border-b border-border/50 py-1.5 text-xs leading-relaxed"
               title={`${TIPO_LABEL[c.tipo]} · ${ORIGEM_LABEL[c.origem]}`}
             >
-              <span className={`mr-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${TIPO_DOT[c.tipo]}`} />
+              <span
+                className={`mr-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${TIPO_DOT_CLASSE[CORES_GRAFICO[i % CORES_GRAFICO.length]]}`}
+              />
               <span className="text-ink-muted">{c.indicadorNome}: </span>
               <span className="tabular font-medium text-ink">
                 {c.valor}
@@ -1237,10 +1239,10 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
     return { clustersAlocacao: [...porAtivo.values()], indicadoresRestantes: restantes };
   }, [indicadoresParaGrafico]);
 
-  // Do que sobrou: se um grupo (por unidade) tiver 2+ itens, vira gráfico de barras comparativo;
-  // se tiver só 1, um gráfico inteiro pra um valor solto é ilegível/desperdiçado — vira uma
-  // etiqueta de contexto ao lado do título (ex.: "Ano de vigência: 2026").
-  const { gruposComparativos, indicadoresSoltos } = useMemo(() => {
+  // Do que sobrou: só vira gráfico de barras comparativo quando o grupo (por unidade) tem 2+
+  // itens — um gráfico inteiro pra 1 valor solto é ilegível/desperdiçado. Esse valor continua
+  // disponível no lançamento expandido, em "Lançamentos" logo abaixo.
+  const gruposComparativos = useMemo(() => {
     const porUnidade = new Map<string, PortalIndicadorPublico[]>();
     for (const ind of indicadoresRestantes) {
       const chave = ind.unidade?.trim() || "__sem_unidade__";
@@ -1249,19 +1251,15 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
       porUnidade.set(chave, lista);
     }
     const grupos: { unidade: string | null; titulo: string; indicadores: PortalIndicadorPublico[] }[] = [];
-    const soltos: PortalIndicadorPublico[] = [];
     for (const [chave, indicadores] of porUnidade) {
-      if (indicadores.length < 2) {
-        soltos.push(...indicadores);
-        continue;
-      }
+      if (indicadores.length < 2) continue;
       grupos.push({
         unidade: chave === "__sem_unidade__" ? null : chave,
         titulo: chave === "__sem_unidade__" ? "Outros números" : `Indicadores em ${chave}`,
         indicadores,
       });
     }
-    return { gruposComparativos: grupos, indicadoresSoltos: soltos };
+    return grupos;
   }, [indicadoresRestantes]);
 
   // Cada painel é sobre um tipo de dado específico — composição, alocação, e um por grupo de
@@ -1509,33 +1507,6 @@ export function DocumentoExplorer({ documento, slug }: { documento: PortalDocume
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <BarChart3 size={17} className="text-petrol" />
-        <h2 className="font-display text-lg font-bold text-ink">Gráficos gerais</h2>
-        <span className="text-xs text-ink-muted">
-          {buscaNormalizada
-            ? "— resultado da busca, todos os períodos"
-            : competenciaMaisRecente
-              ? `— lançamento vigente (${formatarCompetencia(competenciaMaisRecente)})`
-              : ""}
-        </span>
-        {indicadoresSoltos.map((ind) => {
-          const ultimo = [...ind.valores].sort((a, b) => a.competencia.localeCompare(b.competencia)).slice(-1)[0];
-          return (
-            <span
-              key={ind.id}
-              className="ml-1 flex items-center gap-1.5 rounded-full border border-border bg-ink/5 px-3 py-1 text-xs font-medium text-ink"
-              title={ind.nome}
-            >
-              {ind.nome}:
-              <span className="tabular font-semibold text-petrol">
-                {ultimo.valor}
-                {ind.unidade ? ` ${ind.unidade}` : ""}
-              </span>
-            </span>
-          );
-        })}
-      </div>
       {paineisGraficos.length === 0 ? (
         <Card className="p-6">
           <p className="text-sm text-ink-muted">Nenhum indicador numérico encontrado com esse filtro.</p>
