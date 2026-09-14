@@ -20,6 +20,21 @@ export function isAiConfigured(): boolean {
   return Boolean(env.anthropicApiKey);
 }
 
+/**
+ * Toda chamada à API da Anthropic passa por aqui — sem isso, um erro do SDK (rate limit,
+ * indisponibilidade, prompt rejeitado etc.) propagava como Error comum, e o error handler global
+ * troca qualquer Error comum por "Erro interno inesperado.", sem pista nenhuma do que houve de
+ * verdade. Converte pra HttpError sempre, citando a mensagem original da Anthropic quando tem.
+ */
+async function criarMensagem(anthropic: Anthropic, params: Anthropic.MessageCreateParamsNonStreaming) {
+  try {
+    return await anthropic.messages.create(params);
+  } catch (err) {
+    const detalhe = err instanceof Error ? err.message : String(err);
+    throw new HttpError(502, `Erro ao chamar a IA: ${detalhe}`);
+  }
+}
+
 export interface CampoParaExtrair {
   campoId: string;
   descricao: string;
@@ -74,7 +89,7 @@ export async function extrairCamposDoPdf(
 
   const listaCampos = campos.map((c) => `- ${c.campoId}: ${c.descricao}`).join("\n");
 
-  const message = await anthropic.messages.create({
+  const message = await criarMensagem(anthropic, {
     model: MODEL,
     max_tokens: 16000,
     output_config: { effort: "medium" },
@@ -171,7 +186,7 @@ export async function extrairIndicadoresDoPdf(
     .map((i) => `- ${i.indicadorId}: ${i.nome} (tipo: ${i.tipo}${i.unidade ? `, unidade: ${i.unidade}` : ""})`)
     .join("\n");
 
-  const message = await anthropic.messages.create({
+  const message = await criarMensagem(anthropic, {
     model: MODEL,
     max_tokens: 16000,
     output_config: { effort: "medium" },
@@ -428,7 +443,7 @@ export async function extrairIndicadoresAutonomamente(
     },
   };
 
-  const message = await anthropic.messages.create({
+  const message = await criarMensagem(anthropic, {
     model: MODEL,
     // Checklists grandes (ex.: documentos com 80+ campos, alguns com dezenas de ocorrências de
     // subcampos) geram uma resposta estruturada MUITO maior do que os outros usos de IA deste
@@ -545,7 +560,7 @@ export async function sugerirChecklistDePdf(
     },
   };
 
-  const message = await anthropic.messages.create({
+  const message = await criarMensagem(anthropic, {
     model: MODEL,
     max_tokens: 8000,
     output_config: { effort: "medium" },
@@ -647,7 +662,7 @@ export async function comporRascunho(
     )
     .join("\n\n");
 
-  const message = await anthropic.messages.create({
+  const message = await criarMensagem(anthropic, {
     model: MODEL,
     max_tokens: 16000,
     output_config: { effort: "medium" },
@@ -745,7 +760,7 @@ export async function montarDocumentoConstrutor(input: {
     )
     .join("\n\n");
 
-  const message = await anthropic.messages.create({
+  const message = await criarMensagem(anthropic, {
     model: MODEL,
     max_tokens: 8192,
     tools: [tool],
