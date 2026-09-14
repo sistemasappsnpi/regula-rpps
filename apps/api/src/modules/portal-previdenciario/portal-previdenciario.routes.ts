@@ -310,12 +310,23 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo/arquivos/:upload
     const upload = await prisma.documentoUpload.findUnique({ where: { id: req.params.uploadId } });
     if (!upload || upload.tenantId !== tenant.id) throw new HttpError(404, "Arquivo não encontrado.");
 
-    const caminhoAbsoluto = path.resolve(upload.caminhoArquivo);
-    if (!fs.existsSync(caminhoAbsoluto)) throw new HttpError(404, "Arquivo não encontrado.");
-
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${upload.nomeArquivo.replace(/["\\]/g, "")}"`);
-    res.sendFile(caminhoAbsoluto);
+
+    const caminhoAbsoluto = path.resolve(upload.caminhoArquivo);
+    if (fs.existsSync(caminhoAbsoluto)) {
+      res.sendFile(caminhoAbsoluto);
+      return;
+    }
+
+    // Arquivo não está em disco neste ambiente (ex.: upload que "viajou" de outro ambiente só via
+    // SQL) — cai pra cópia guardada no banco, se houver (ver DocumentoUpload.conteudoArquivo).
+    if (upload.conteudoArquivo) {
+      res.send(Buffer.from(upload.conteudoArquivo));
+      return;
+    }
+
+    throw new HttpError(404, "Arquivo não encontrado.");
   } catch (err) {
     next(err);
   }

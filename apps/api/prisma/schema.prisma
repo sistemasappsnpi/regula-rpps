@@ -319,6 +319,12 @@ model DocumentoUpload {
   descricao        String?      @db.Text // nota livre sobre o documento (ex.: "DAIR de março/2026")
   nomeArquivo      String
   caminhoArquivo   String
+  // Cópia opcional do PDF dentro do próprio banco — normalmente NULL (o arquivo mora em disco, em
+  // caminhoArquivo). Só é preenchido quando um upload precisa "viajar" entre ambientes por SQL puro
+  // (ex.: local -> produção, quando quem aplica só tem acesso de Importar/Exportar no phpMyAdmin,
+  // sem SSH pro disco do servidor). A rota que serve o PDF cai pra cá se o arquivo não existir em
+  // disco (ver portal-previdenciario.routes.ts).
+  conteudoArquivo  Bytes?       @db.LongBlob
   paginasTexto     String       @db.LongText // JSON: [{ "pagina": 1, "texto": "..." }, ...] — LongText pq documentos
                                               // grandes (muitas páginas) passam fácil do limite de 64KB do Text puro.
   status           UploadStatus @default(PENDENTE)
