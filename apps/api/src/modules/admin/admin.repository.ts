@@ -981,6 +981,30 @@ export const adminRepository = {
     await prisma.portalIndicadorSubcampo.delete({ where: { id: subcampoDbId } });
   },
 
+  // Aplica a proposta de checklist que a IA gerou a partir de um PDF de exemplo (ver
+  // sugerirChecklistDePdf) — cria cada campo (e seus subcampos) direto no catálogo, reaproveitando
+  // o mesmo add*Checklist de sempre pra herdar a geração/desempate de slug. Sem etapa extra de
+  // aprovação: é config de admin (não dado de tenant), e cada campo pode ser editado/apagado na
+  // hora pela mesma tela — igual ao padrão já usado quando o admin adiciona um campo manualmente.
+  async aplicarChecklistSugerido(
+    documentoPersonalizadoId: string,
+    sugeridos: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null; subcampos: { nome: string; tipo: PortalIndicadorTipo; unidade: string | null }[] }[],
+  ) {
+    for (const campo of sugeridos) {
+      if (!campo.nome.trim()) continue;
+      const criado = await adminRepository.addCampoChecklist(documentoPersonalizadoId, {
+        nome: campo.nome,
+        tipo: campo.tipo,
+        unidade: campo.unidade,
+      });
+      for (const sub of campo.subcampos) {
+        if (!sub.nome.trim()) continue;
+        await adminRepository.addSubcampoChecklist(criado.id, { nome: sub.nome, tipo: sub.tipo, unidade: sub.unidade });
+      }
+    }
+    return adminRepository.getDocumentoPersonalizado(documentoPersonalizadoId);
+  },
+
   // ---------------------------------------------------------------------------------------
   // Portal Previdenciário — catálogo de indicadores (ver schema.prisma, PortalDocumento):
   // cada "documento" (ex.: DIPR) agrupa indicadores tipados; o RPPS lança valores por

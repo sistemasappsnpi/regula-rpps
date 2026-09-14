@@ -335,6 +335,18 @@ function GraficoAlocacao({
   const altura = compacto ? Math.max(280, clusters.length * 50) : Math.max(320, clusters.length * 52);
   const ehMobile = useEhMobile();
 
+  // Escala do eixo precisa se ADAPTAR à dispersão real dos dados: numa política de investimentos
+  // é comum um ativo permitir até 100% (ex.: títulos públicos) enquanto outros ficam na casa de
+  // 1-25% — numa escala linear comum, esses poucos de até 100% esmagam visualmente todo o resto
+  // (vira um gráfico "torto", ilegível pros ativos pequenos). Só troca pra raiz quadrada (comprime
+  // os valores grandes, preserva a ordem, nunca mente sobre qual é maior) quando a dispersão real
+  // dos dados justifica — um conjunto de valores parecidos entre si continua linear, mais preciso.
+  const valoresAlocacao = clusters
+    .flatMap((c) => [c.alvo, c.inferior, c.superior])
+    .filter((v): v is number => typeof v === "number" && v > 0);
+  const maxAlocacao = valoresAlocacao.length ? Math.max(...valoresAlocacao) : 0;
+  const escalaAdaptativa: "sqrt" | "linear" = valoresAlocacao.some((v) => v < maxAlocacao / 8) ? "sqrt" : "linear";
+
   return (
     <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor, atraso)}>
       <div className="mb-1 flex items-center gap-2">
@@ -363,7 +375,7 @@ function GraficoAlocacao({
               ))}
             </defs>
             <CartesianGrid horizontal={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
-            <XAxis type="number" hide domain={[0, "auto"]} />
+            <XAxis type="number" hide scale={escalaAdaptativa} domain={[0, "auto"]} allowDataOverflow={false} />
             <YAxis
               type="category"
               dataKey="ativoCurto"
@@ -458,6 +470,12 @@ function GraficoComparativo({
   const altura = compacto ? Math.max(200, dados.length * 48) : Math.max(220, dados.length * 48);
   const ehMobile = useEhMobile();
 
+  // Mesma ideia adaptativa do gráfico de alocação: só comprime (raiz quadrada) quando a dispersão
+  // real dos valores justifica — nunca deixa um outlier grande esmagar visualmente o resto.
+  const valoresComparativo = dados.map((d) => Math.abs(d.valor)).filter((v) => v > 0);
+  const maxComparativo = valoresComparativo.length ? Math.max(...valoresComparativo) : 0;
+  const escalaAdaptativa: "sqrt" | "linear" = valoresComparativo.some((v) => v < maxComparativo / 8) ? "sqrt" : "linear";
+
   return (
     <div className="h-full rounded-xl border border-border p-5 transition-all hover:shadow-lift" style={estiloCartaoGrafico(cor, atraso)}>
       <div className="mb-1 flex items-center gap-2">
@@ -480,7 +498,7 @@ function GraficoComparativo({
               ))}
             </defs>
             <CartesianGrid horizontal={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
-            <XAxis type="number" hide domain={[0, "auto"]} />
+            <XAxis type="number" hide scale={escalaAdaptativa} domain={[0, "auto"]} allowDataOverflow={false} />
             <YAxis
               type="category"
               dataKey={compacto && !ehMobile ? "nome" : "nomeCurto"}

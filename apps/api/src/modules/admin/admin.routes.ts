@@ -1,9 +1,18 @@
 import { Router } from "express";
+import multer from "multer";
 import { z } from "zod";
 import { requireAuth, requireSuperAdmin, type AuthenticatedRequest } from "../../middleware/auth";
 import { requireAdminFeature } from "../../middleware/features";
 import { HttpError } from "../../middleware/errorHandler";
 import { adminRepository } from "./admin.repository";
+import { extrairTextoPorPagina } from "../uploads/pdf-extraction";
+import { isAiConfigured, sugerirChecklistDePdf } from "../ai/anthropic.client";
+
+// PDF de exemplo pro checklist (ver rota /campos/sugerir-de-pdf abaixo): nunca precisa ficar
+// salvo em disco nem virar um DocumentoUpload — é só texto extraído na hora e descartado depois,
+// então memória basta (evita o problema de escopo por tenant que o multer de /uploads tem, já
+// que rotas do Admin Global não têm tenantId nenhum).
+const uploadChecklistPdf = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // Todo o módulo é restrito ao Super Admin da plataforma — nunca escopado a um tenantId
 // (ver /docs/modelo-de-dados.md e ROADMAP #7). Dentro disso, cada seção (RPPS clientes,
@@ -564,6 +573,28 @@ adminRouter.post("/documentos-personalizados/:id/campos", async (req, res, next)
     if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
     const campo = await adminRepository.addCampoChecklist(req.params.id, { ...parsed.data, unidade: parsed.data.unidade ?? null });
     res.status(201).json(campo);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// A partir de um PDF de exemplo, a IA propõe os campos do checklist (com subcampos quando
+// detectar um padrão que se repete no documento) e eles já entram criados no catálogo — o admin
+// revisa/edita/apaga pela mesma lista de sempre depois. Nunca extrai valores deste PDF específico,
+// só a ESTRUTURA de campos (ver sugerirChecklistDePdf).
+adminRouter.post("/documentos-personalizados/:id/campos/sugerir-de-pdf", uploadChecklistPdf.single("file"), async (req, res, next) => {
+  try {
+    if (!isAiConfigured()) throw new HttpError(503, "IA não configurada neste servidor.");
+    if (!req.file) throw new HttpError(400, "Nenhum arquivo enviado.");
+    if (req.file.mimetype !== "application/pdf") throw new HttpError(400, "Apenas arquivos PDF são aceitos.");
+
+    const documento = await adminRepository.getDocumentoPersonalizado(req.params.id);
+    const paginas = await extrairTextoPorPagina(req.file.buffer);
+    const sugeridos = await sugerirChecklistDePdf(documento.nome, documento.promptInstrucoes, paginas);
+    if (sugeridos.length === 0) throw new HttpError(422, "A IA não conseguiu identificar nenhum campo neste PDF.");
+
+    const atualizado = await adminRepository.aplicarChecklistSugerido(req.params.id, sugeridos);
+    res.status(201).json(atualizado);
   } catch (err) {
     next(err);
   }

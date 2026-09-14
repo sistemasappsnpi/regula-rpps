@@ -461,6 +461,120 @@ export async function extrairIndicadoresAutonomamente(
   };
 }
 
+export interface SubcampoSugerido {
+  nome: string;
+  tipo: "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
+  unidade: string | null;
+}
+
+export interface CampoChecklistSugerido {
+  nome: string;
+  tipo: "NUMERICO" | "MOEDA" | "TEXTO" | "DATA";
+  unidade: string | null;
+  subcampos: SubcampoSugerido[];
+}
+
+/**
+ * Propõe a ESTRUTURA de um checklist de campos (não os valores) a partir de um PDF de exemplo —
+ * usado em Parametrizações → Personalizados pra montar o checklist sem o admin ter que digitar
+ * cada campo de cabeça. Diferente de extrairIndicadoresAutonomamente (que extrai valores de UM
+ * documento pontual), aqui o pedido é generalizar: um campo que se repete no exemplo (ex.: vários
+ * membros de comitê) precisa virar UM campo com subcampos, nunca um campo por pessoa/instituição.
+ */
+export async function sugerirChecklistDePdf(
+  documentoNome: string,
+  comentarioAdmin: string | null,
+  paginas: { pagina: number; texto: string }[],
+): Promise<CampoChecklistSugerido[]> {
+  const anthropic = getClient();
+
+  const documentoComPaginas = paginas.map((p) => `--- PÁGINA ${p.pagina} ---\n${p.texto}`).join("\n\n");
+
+  const tool: Anthropic.Tool = {
+    name: "propor_checklist",
+    description: "Propõe os campos que um checklist de extração pra este tipo de documento deveria ter.",
+    input_schema: {
+      type: "object",
+      properties: {
+        campos: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              nome: {
+                type: "string",
+                description: "Nome curto e GENÉRICO do campo (nunca o nome de uma pessoa/instituição específica).",
+              },
+              tipo: { type: "string", enum: ["NUMERICO", "MOEDA", "TEXTO", "DATA"] },
+              unidade: { type: ["string", "null"], description: "Ex.: \"R$\", \"%\", \"pessoas\", ou null." },
+              subcampos: {
+                type: "array",
+                description: "Só quando este campo se repete várias vezes no documento com a mesma estrutura interna.",
+                items: {
+                  type: "object",
+                  properties: {
+                    nome: { type: "string" },
+                    tipo: { type: "string", enum: ["NUMERICO", "MOEDA", "TEXTO", "DATA"] },
+                    unidade: { type: ["string", "null"] },
+                  },
+                  required: ["nome", "tipo", "unidade"],
+                },
+              },
+            },
+            required: ["nome", "tipo", "unidade", "subcampos"],
+          },
+        },
+      },
+      required: ["campos"],
+    },
+  };
+
+  const message = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 8000,
+    output_config: { effort: "medium" },
+    tools: [tool],
+    tool_choice: { type: "tool", name: "propor_checklist" },
+    messages: [
+      {
+        role: "user",
+        content:
+          "Você está analisando um documento de exemplo de um Regime Próprio de Previdência Social (RPPS) " +
+          "brasileiro pra propor o CHECKLIST de campos que a extração automática por IA deste TIPO de " +
+          "documento deveria sempre tentar preencher — não são os valores deste documento específico, são os " +
+          "nomes/tipos dos campos, reutilizáveis pra qualquer outro PDF do mesmo tipo (ex.: todo mês um RPPS " +
+          "diferente vai mandar um documento parecido com este).\n\n" +
+          "Pra cada informação relevante que aparecer no documento:\n" +
+          "- Se ela aparece UMA vez (ex.: \"Ano de vigência da política\", \"Índice de referência\"), proponha " +
+          "um campo simples: nome curto, tipo, e unidade quando fizer sentido.\n" +
+          "- Se ela é um tipo de registro que SE REPETE várias vezes com a MESMA estrutura interna (ex.: vários " +
+          "membros de um comitê/conselho, cada um com nome e cargo; várias instituições credenciadas, cada uma " +
+          "com razão social e CNPJ), proponha **UM ÚNICO campo** (ex.: \"Membro do Comitê\", \"Instituição " +
+          "Credenciada\") com subcampos descrevendo cada pedaço dessa estrutura (ex.: subcampos \"Nome\", " +
+          "\"Cargo\"). **NUNCA** proponha um campo separado por pessoa/instituição/ocorrência — o nome de uma " +
+          "pessoa ou instituição específica NUNCA pode aparecer no nome de um campo, porque o checklist precisa " +
+          "servir pra qualquer documento desse tipo, não só este exemplo.\n" +
+          "Ignore números de página, cabeçalhos/rodapés e metadados irrelevantes pro conteúdo em si.\n\n" +
+          (comentarioAdmin?.trim()
+            ? `Orientação adicional definida pelo administrador da plataforma para este documento:\n${comentarioAdmin.trim()}\n\n`
+            : "") +
+          `Documento: "${documentoNome}"\n\n` +
+          `Documento de exemplo (marcado por página):\n\n${documentoComPaginas}`,
+      },
+    ],
+  });
+
+  const toolUse = message.content.find(
+    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+  );
+  if (!toolUse) {
+    throw new Error("A IA não retornou uma proposta estruturada de checklist.");
+  }
+
+  const parsed = toolUse.input as { campos?: CampoChecklistSugerido[] };
+  return Array.isArray(parsed.campos) ? parsed.campos : [];
+}
+
 export interface FonteParaComposicao {
   acaoNome: string;
   acaoCodigo: string;

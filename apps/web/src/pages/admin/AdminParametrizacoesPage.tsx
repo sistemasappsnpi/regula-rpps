@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, FileStack, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, FileStack, Plus, Sparkles, Trash2 } from "lucide-react";
 import { api, type AdminDocumentoPersonalizado, type AdminPortalIndicador, type ModoExtracaoIA, type PortalIndicadorTipo } from "../../lib/api";
 import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
@@ -198,17 +198,22 @@ function DocumentosPersonalizadosSection() {
         title={editando ? "Editar documento personalizado" : "Novo documento personalizado"}
         icon={<FileStack size={16} />}
         footer={
-          <>
-            <Button variant="ghost" onClick={() => setMostrarModal(false)}>
-              Fechar
-            </Button>
-            <Button onClick={salvar} disabled={salvando}>
-              {salvando ? "Salvando…" : "Salvar"}
-            </Button>
-          </>
+          <div className="flex w-full items-center justify-between gap-3">
+            {/* Modal fica bem comprido com o checklist cheio — erro só no topo passava
+                despercebido se a rolagem já tivesse descido. Aqui, junto do botão, é sempre
+                visível não importa onde o usuário esteja rolado. */}
+            <p className="text-sm text-crit">{erro}</p>
+            <div className="flex shrink-0 gap-2">
+              <Button variant="ghost" onClick={() => setMostrarModal(false)}>
+                Fechar
+              </Button>
+              <Button onClick={salvar} disabled={salvando}>
+                {salvando ? "Salvando…" : "Salvar"}
+              </Button>
+            </div>
+          </div>
         }
       >
-        {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
         <div className="flex flex-col gap-3">
           <Campo label="Nome do documento" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
           <label className="block text-sm">
@@ -293,6 +298,20 @@ function ChecklistEditor({
   });
   const [expandido, setExpandido] = useState<Set<string>>(new Set());
   const [erro, setErro] = useState<string | null>(null);
+  const [analisando, setAnalisando] = useState(false);
+
+  async function analisarPdf(file: File) {
+    setErro(null);
+    setAnalisando(true);
+    try {
+      await api.adminSugerirChecklistDePdf(documentoId, file);
+      onChange();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao analisar o PDF.");
+    } finally {
+      setAnalisando(false);
+    }
+  }
 
   function alternarExpandido(id: string) {
     setExpandido((atual) => {
@@ -333,6 +352,34 @@ function ChecklistEditor({
         manual. Campo sem subcampo é simples; adicione subcampos (ex.: nome/cargo/portaria) quando o campo se
         repete várias vezes no documento (ex.: "Membro do Comitê").
       </p>
+
+      <label
+        className={`mb-3 flex cursor-pointer items-center gap-2.5 rounded-lg border border-dashed border-petrol/40 bg-petrol/5 p-3 text-sm transition-colors hover:border-petrol ${
+          analisando ? "pointer-events-none opacity-60" : ""
+        }`}
+      >
+        <Sparkles size={16} className="shrink-0 text-petrol" />
+        <span>
+          <span className="block font-medium text-ink">
+            {analisando ? "Analisando o PDF…" : "Montar checklist a partir de um PDF de exemplo"}
+          </span>
+          <span className="block text-xs text-ink-muted">
+            A IA lê o documento e já cria os campos (com subcampos quando detectar algo que se repete) — revise e
+            ajuste depois, se precisar.
+          </span>
+        </span>
+        <input
+          type="file"
+          accept="application/pdf"
+          disabled={analisando}
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) analisarPdf(file);
+            e.target.value = "";
+          }}
+        />
+      </label>
 
       {erro && <p className="mb-2 text-xs text-crit">{erro}</p>}
 

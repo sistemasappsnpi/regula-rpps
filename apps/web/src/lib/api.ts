@@ -229,6 +229,23 @@ export const api = {
   adminRemoveSubcampoChecklist: (documentoId: string, campoId: string, subcampoId: string) =>
     request<unknown>(`/admin/documentos-personalizados/${documentoId}/campos/${campoId}/subcampos/${subcampoId}`, { method: "DELETE" }),
 
+  // A partir de um PDF de exemplo, a IA propõe os campos (e subcampos) do checklist — já entram
+  // criados no catálogo, prontos pra revisar/editar/apagar na mesma lista de sempre.
+  async adminSugerirChecklistDePdf(documentoId: string, file: File): Promise<AdminDocumentoPersonalizado> {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`/api/admin/documentos-personalizados/${documentoId}/campos/sugerir-de-pdf`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Erro ao analisar o PDF de exemplo.");
+    return data;
+  },
+
   // --- Admin Global: Portal Previdenciário (catálogo de indicadores) ----------------------
 
   adminListPortalDocumentos: () => request<{ documentos: AdminPortalDocumento[] }>("/admin/portal-documentos"),
