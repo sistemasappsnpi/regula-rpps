@@ -25,10 +25,15 @@ export function isAiConfigured(): boolean {
  * indisponibilidade, prompt rejeitado etc.) propagava como Error comum, e o error handler global
  * troca qualquer Error comum por "Erro interno inesperado.", sem pista nenhuma do que houve de
  * verdade. Converte pra HttpError sempre, citando a mensagem original da Anthropic quando tem.
+ *
+ * timeout explícito e generoso (20min): o SDK recusa chamadas sem streaming quando estima, a
+ * partir do max_tokens pedido, que a geração pode passar de 10 minutos — checklists grandes (ex.:
+ * DPIN com max_tokens=32000) batem nesse teto. Isso só define um limite de espera, nunca força a
+ * chamada a demorar mais.
  */
 async function criarMensagem(anthropic: Anthropic, params: Anthropic.MessageCreateParamsNonStreaming) {
   try {
-    return await anthropic.messages.create(params);
+    return await anthropic.messages.create(params, { timeout: 20 * 60 * 1000 });
   } catch (err) {
     const detalhe = err instanceof Error ? err.message : String(err);
     throw new HttpError(502, `Erro ao chamar a IA: ${detalhe}`);
