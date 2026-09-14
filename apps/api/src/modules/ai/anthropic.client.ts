@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../../config/env";
+import { HttpError } from "../../middleware/errorHandler";
 
 const MODEL = "claude-sonnet-5";
 
@@ -7,7 +8,7 @@ let client: Anthropic | null = null;
 
 function getClient(): Anthropic {
   if (!env.anthropicApiKey) {
-    throw new Error("ANTHROPIC_API_KEY não configurada.");
+    throw new HttpError(500, "ANTHROPIC_API_KEY não configurada.");
   }
   if (!client) {
     client = new Anthropic({ apiKey: env.anthropicApiKey });
@@ -98,7 +99,7 @@ export async function extrairCamposDoPdf(
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
   );
   if (!toolUse) {
-    throw new Error("A IA não retornou um resultado estruturado de extração.");
+    throw new HttpError(502, "A IA não retornou um resultado estruturado de extração.");
   }
 
   const parsed = toolUse.input as { resultados?: CampoExtraidoResultado[] };
@@ -200,7 +201,7 @@ export async function extrairIndicadoresDoPdf(
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
   );
   if (!toolUse) {
-    throw new Error("A IA não retornou um resultado estruturado de extração de indicadores.");
+    throw new HttpError(502, "A IA não retornou um resultado estruturado de extração de indicadores.");
   }
 
   const parsed = toolUse.input as { resultados?: IndicadorExtraidoResultado[] };
@@ -429,7 +430,12 @@ export async function extrairIndicadoresAutonomamente(
 
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 16000,
+    // Checklists grandes (ex.: documentos com 80+ campos, alguns com dezenas de ocorrências de
+    // subcampos) geram uma resposta estruturada MUITO maior do que os outros usos de IA deste
+    // arquivo — 16000 truncava no meio do JSON pra esses casos, derrubando a extração inteira com
+    // um erro genérico. O teto aqui precisa acompanhar o tamanho do checklist, não um documento
+    // específico (nunca hardcoded por tipo documental).
+    max_tokens: 32000,
     output_config: { effort: "medium" },
     tools: [tool],
     tool_choice: { type: "tool", name: "registrar_extracao_autonoma" },
@@ -444,11 +450,21 @@ export async function extrairIndicadoresAutonomamente(
     ],
   });
 
+  if (message.stop_reason === "max_tokens") {
+    throw new HttpError(
+      502,
+      "A IA não conseguiu terminar a extração porque a resposta ficou grande demais pra esse documento " +
+        "(checklist com muitos campos e/ou muitas ocorrências de subcampos). Tente novamente — se persistir, " +
+        "considere revisar o checklist deste tipo documental em Parametrizações, dividindo campos muito " +
+        "repetitivos em grupos menores.",
+    );
+  }
+
   const toolUse = message.content.find(
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
   );
   if (!toolUse) {
-    throw new Error("A IA não retornou um resultado estruturado de extração.");
+    throw new HttpError(502, "A IA não retornou um resultado estruturado de extração.");
   }
 
   const parsed = toolUse.input as {
@@ -568,7 +584,7 @@ export async function sugerirChecklistDePdf(
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
   );
   if (!toolUse) {
-    throw new Error("A IA não retornou uma proposta estruturada de checklist.");
+    throw new HttpError(502, "A IA não retornou uma proposta estruturada de checklist.");
   }
 
   const parsed = toolUse.input as { campos?: CampoChecklistSugerido[] };
@@ -653,7 +669,7 @@ export async function comporRascunho(
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
   );
   if (!toolUse) {
-    throw new Error("A IA não retornou um rascunho estruturado.");
+    throw new HttpError(502, "A IA não retornou um rascunho estruturado.");
   }
 
   const parsed = toolUse.input as { itens?: ItemComposto[] };
@@ -758,7 +774,7 @@ export async function montarDocumentoConstrutor(input: {
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
   );
   if (!toolUse) {
-    throw new Error("A IA não retornou um documento estruturado.");
+    throw new HttpError(502, "A IA não retornou um documento estruturado.");
   }
 
   const parsed = toolUse.input as Partial<DocumentoConstruido>;

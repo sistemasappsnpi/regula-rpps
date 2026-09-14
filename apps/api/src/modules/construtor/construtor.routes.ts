@@ -171,16 +171,12 @@ construtorRouter.post("/execucoes/:id/aprovar-todos-indicadores", async (req: Au
   }
 });
 
-// Exclui uma execução (ex.: rascunho de teste) — apaga a execução e suas sugestões (cascade), sem
-// mexer em valores já publicados no Portal Previdenciário (TenantPortalIndicadorValor é uma
-// entidade separada, não é revertida por esta exclusão).
+// Exclui uma execução (ex.: rascunho de teste, ou uma extração que deu errado e foi aprovada
+// mesmo incompleta) — apaga a execução, suas sugestões, E desfaz o que ela publicou no Portal
+// Previdenciário (ver construtorRepository.excluirExecucao).
 construtorRouter.delete("/execucoes/:id", async (req: AuthenticatedRequest, res, next) => {
   try {
-    const execucao = await prisma.tenantConstrutorExecucao.findUnique({ where: { id: req.params.id } });
-    if (!execucao || execucao.tenantId !== req.auth!.tenantId!) {
-      throw new HttpError(404, "Execução não encontrada.");
-    }
-    await prisma.tenantConstrutorExecucao.delete({ where: { id: execucao.id } });
+    await construtorRepository.excluirExecucao(req.auth!.tenantId!, req.params.id);
     res.status(204).send();
   } catch (err) {
     next(err);

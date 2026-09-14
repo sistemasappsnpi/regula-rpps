@@ -394,6 +394,31 @@ export const construtorRepository = {
     return execucao;
   },
 
+  /**
+   * Exclui uma execução E desfaz tudo que ela publicou no Portal Previdenciário (valores
+   * escalares e ocorrências de grupo) — escopado só aos uploads DESTA execução
+   * (TenantPortalIndicadorValor/Instancia guardam documentoUploadId), nunca a outros lançamentos
+   * do mesmo indicador/competência vindos de outra execução ou lançamento manual. Existe porque
+   * uma extração que deu errado no meio (ex.: resposta da IA truncada por checklist grande — ver
+   * max_tokens em extrairIndicadoresAutonomamente) podia ter sido aprovada em lote mesmo assim,
+   * deixando um lançamento incompleto público — sem isto, excluir a execução só limpava o
+   * Histórico, o dado errado continuava visível pro cidadão.
+   */
+  async excluirExecucao(tenantId: string, id: string) {
+    const execucao = await prisma.tenantConstrutorExecucao.findUnique({ where: { id } });
+    if (!execucao || execucao.tenantId !== tenantId) throw new HttpError(404, "Execução não encontrada.");
+
+    await prisma.$transaction([
+      prisma.tenantPortalIndicadorValor.deleteMany({
+        where: { tenantId, documentoUpload: { construtorExecucaoId: id } },
+      }),
+      prisma.tenantPortalIndicadorInstancia.deleteMany({
+        where: { tenantId, documentoUpload: { construtorExecucaoId: id } },
+      }),
+      prisma.tenantConstrutorExecucao.delete({ where: { id } }),
+    ]);
+  },
+
   async aprovarExecucao(tenantId: string, id: string, userId: string) {
     const execucao = await prisma.tenantConstrutorExecucao.findUnique({ where: { id } });
     if (!execucao || execucao.tenantId !== tenantId) throw new HttpError(404, "Execução não encontrada.");
