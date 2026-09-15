@@ -303,6 +303,12 @@ export function ConstrutorPage() {
             </div>
           </div>
 
+          {/* Mesma mensagem de erro do formulário lá em cima, repetida aqui — com uma lista de
+              70+ campos pra revisar, "Aprovar todos" fica muito longe do erro que aparece só no
+              topo da página, e passava despercebido (mesmo problema já corrigido no modal de
+              Parametrizações). */}
+          {erro && <p className="mb-3 text-sm text-crit">{erro}</p>}
+
           {resultado.tipoDocumento.referenciaTipo === "PERSONALIZADO" ? (
             resultado.indicadorSugestoes.length === 0 ? (
               <p className="text-sm text-ink-muted">Nenhum indicador foi encontrado nos documentos enviados.</p>
