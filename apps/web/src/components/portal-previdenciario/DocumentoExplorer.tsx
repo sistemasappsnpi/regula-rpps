@@ -418,7 +418,7 @@ function GraficoAlocacao({
                 radius={[0, 4, 4, 0]}
                 maxBarSize={16}
                 minPointSize={8}
-                animationDuration={1800}
+                animationDuration={3000}
                 animationEasing="ease-out"
                 animationBegin={200 + i * 180}
               >
@@ -526,7 +526,7 @@ function GraficoComparativo({
               }}
               cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }}
             />
-            <Bar dataKey="valor" radius={[0, 6, 6, 0]} maxBarSize={26} minPointSize={8} animationDuration={1800} animationEasing="ease-out" animationBegin={200}>
+            <Bar dataKey="valor" radius={[0, 6, 6, 0]} maxBarSize={26} minPointSize={8} animationDuration={3000} animationEasing="ease-out" animationBegin={200}>
               {dados.map((d, i) => (
                 <Cell key={d.id} fill={`url(#grad-comp-${CORES_GRAFICO[i % CORES_GRAFICO.length]})`} />
               ))}
@@ -700,7 +700,7 @@ function GraficoTendencia({
                       strokeWidth={2}
                       dot={{ r: 3, strokeWidth: 0 }}
                       activeDot={{ r: 5, strokeWidth: 0 }}
-                      animationDuration={1400}
+                      animationDuration={3000}
                       animationEasing="ease-out"
                     />
                   </LineChart>
@@ -756,7 +756,7 @@ function GraficoComposicao({
                 cornerRadius={4}
                 stroke="rgb(var(--color-surface))"
                 strokeWidth={2}
-                animationDuration={1800}
+                animationDuration={3000}
                 animationEasing="ease-out"
                 animationBegin={200}
               >
