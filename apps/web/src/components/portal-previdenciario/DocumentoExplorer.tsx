@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -808,6 +808,31 @@ interface PainelGrafico {
 // nada de carrossel trocando sozinho: comparar composição com alocação exigia esperar a rotação,
 // e quem lê um relatório precisa dos números juntos na mesma tela. Cada cartão já traz seu próprio
 // título e legenda, então a grade não precisa rotular nada por fora.
+// Só monta o conteúdo (e portanto só dispara a animação de entrada do gráfico — barras crescendo,
+// linhas desenhando etc.) quando o cartão entra na tela pela primeira vez. Sem isso, todo gráfico
+// da página monta junto no carregamento e anima de uma vez só; quem rola a página só vê os de
+// baixo já "prontos", sem nunca ver a entrada deles. Uma vez visível, fica visível — não reanima
+// toda vez que a pessoa rola pra cima e desce de novo.
+function AoEntrarNaTela({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visivel, setVisivel] = useState(false);
+
+  useEffect(() => {
+    if (visivel || !ref.current) return;
+    const elemento = ref.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisivel(true);
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.15 },
+    );
+    observer.observe(elemento);
+    return () => observer.disconnect();
+  }, [visivel]);
+
+  return <div ref={ref}>{visivel ? children : null}</div>;
+}
+
 function PainelGraficos({ paineis }: { paineis: PainelGrafico[] }) {
   const duasColunas = useEhDuasColunas();
   if (paineis.length === 0) return null;
@@ -821,7 +846,7 @@ function PainelGraficos({ paineis }: { paineis: PainelGrafico[] }) {
         const compacto = emGrade && p.largura === "normal";
         return (
           <div key={p.key} className={compacto ? "min-w-0" : "min-w-0 lg:col-span-2"}>
-            {p.render(compacto, i * 70)}
+            <AoEntrarNaTela>{p.render(compacto, i * 70)}</AoEntrarNaTela>
           </div>
         );
       })}
