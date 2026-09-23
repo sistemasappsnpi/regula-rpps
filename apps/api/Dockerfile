@@ -41,8 +41,7 @@ EXPOSE 3333
 
 # Aplica migrations pendentes e garante o catálogo normativo (CRP/Pró-Gestão) + o Super Admin
 # antes de subir — sempre idempotente (upsert), seguro rodar em todo restart do container. Usa
-# o seed já compilado (dist/prisma/seed.js), não o .ts via tsx — a imagem final só carrega
-# dist/, não src/, e o seed.ts importa de "../src/utils/password" por caminho relativo (só
-# resolve contra o dist espelhado, não contra o .ts puro sem o src/ do lado). SEED_DEMO_DATA=true
-# (não definida por padrão aqui) também criaria um tenant fictício — nunca ligar em produção real.
+# o seed já compilado (dist/prisma/seed.js), não o .ts via tsx — a imagem final só carrega dist/,
+# não src/ nem o tsx necessário pra rodar .ts direto. SEED_DEMO_DATA=true (não definida por
+# padrão aqui) também criaria um tenant fictício — nunca ligar em produção real.
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/server.js"]

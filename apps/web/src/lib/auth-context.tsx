@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, clearToken, getToken, setToken, type Tenant } from "./api";
+import { api, clearToken, getToken, type Tenant } from "./api";
 
 interface AuthUser {
   id: string;
@@ -14,8 +14,6 @@ interface AuthContextValue {
   features: string[];
   hasFeature: (key: string) => boolean;
   loading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -27,7 +25,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [features, setFeatures] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const bootstrap = useCallback(async () => {
     if (!getToken()) {
@@ -51,21 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bootstrap();
   }, [bootstrap]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    setError(null);
-    try {
-      const result = await api.login(email, password);
-      setToken(result.token);
-      setUser(result.user);
-      setTenant(result.tenant);
-      setIsSuperAdmin(result.isSuperAdmin);
-      setFeatures(result.features);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível entrar.");
-      throw err;
-    }
-  }, []);
-
   const logout = useCallback(() => {
     clearToken();
     setUser(null);
@@ -77,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasFeature = useCallback((key: string) => features.includes(key), [features]);
 
   const value = useMemo(
-    () => ({ user, tenant, isSuperAdmin, features, hasFeature, loading, error, login, logout }),
-    [user, tenant, isSuperAdmin, features, hasFeature, loading, error, login, logout],
+    () => ({ user, tenant, isSuperAdmin, features, hasFeature, loading, logout }),
+    [user, tenant, isSuperAdmin, features, hasFeature, loading, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

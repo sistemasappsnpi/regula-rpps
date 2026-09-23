@@ -1,13 +1,12 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Building2, Users, SlidersHorizontal, History, FileBarChart2, Lock } from "lucide-react";
+import { LayoutDashboard, Building2, SlidersHorizontal, History, FileBarChart2, Lock } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
 import { SessionMenu } from "./SessionMenu";
 
 const NAV_ITEMS = [
   { to: "/admin", label: "Painel", icon: LayoutDashboard, feature: "admin_painel" },
   { to: "/admin/tenants", label: "RPPS clientes", icon: Building2, feature: "admin_rpps_clientes" },
-  { to: "/admin/usuarios", label: "Usuários", icon: Users, feature: "admin_usuarios" },
   { to: "/admin/auditoria", label: "Auditoria", icon: History, feature: "admin_auditoria" },
   { to: "/admin/relatorios", label: "Relatórios", icon: FileBarChart2, feature: "admin_relatorios" },
 ];

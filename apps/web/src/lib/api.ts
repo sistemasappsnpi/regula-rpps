@@ -23,6 +23,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   const res = await fetch(`/api${path}`, { ...options, headers });
+
+  // Refresh rotativo do access_token do APP CENTRAL numa ação sensível (ver
+  // requireFreshPermissions.ts, no backend) — o JWT local reemitido substitui o salvo, senão a
+  // PRÓXIMA ação sensível falharia com refresh_token já consumido.
+  const refreshedToken = res.headers.get("X-Refreshed-Token");
+  if (refreshedToken) setToken(refreshedToken);
+
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -33,25 +40,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  login: (email: string, password: string) =>
-    request<{
-      token: string;
-      tenant: Tenant | null;
-      user: { id: string; name: string; email: string };
-      isSuperAdmin: boolean;
-      features: string[];
-    }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
-
-  ssoProviders: () => request<{ microsoft: boolean; govbr: boolean }>("/auth/providers"),
-
-  changePassword: (currentPassword: string, newPassword: string) =>
-    request<void>("/auth/change-password", {
-      method: "POST",
-      body: JSON.stringify({ currentPassword, newPassword }),
-    }),
+  ssoProviders: () => request<{ central: boolean; microsoft: boolean; govbr: boolean }>("/auth/providers"),
 
   me: () =>
     request<{
@@ -333,15 +322,8 @@ export const api = {
 
   adminListTenants: () => request<{ tenants: AdminTenant[] }>("/admin/tenants"),
 
-  adminCreateTenant: (input: {
-    tenantName: string;
-    federatedEntity: string;
-    seguradosCount: number;
-    plan: Tenant["plan"];
-    adminName: string;
-    adminEmail: string;
-    adminPassword: string;
-  }) => request<Tenant>("/admin/tenants", { method: "POST", body: JSON.stringify(input) }),
+  adminCreateTenant: (input: { tenantName: string; federatedEntity: string; seguradosCount: number; plan: Tenant["plan"] }) =>
+    request<Tenant>("/admin/tenants", { method: "POST", body: JSON.stringify(input) }),
 
   adminUpdateTenant: (
     id: string,
@@ -366,12 +348,6 @@ export const api = {
 
   adminDeleteTenant: (id: string) => request<unknown>(`/admin/tenants/${id}`, { method: "DELETE" }),
 
-  adminGetPrimeiroAcessoLink: (tenantId: string) =>
-    request<{ token: string }>(`/admin/tenants/${tenantId}/primeiro-acesso`),
-
-  adminRegenerarPrimeiroAcessoLink: (tenantId: string) =>
-    request<{ token: string }>(`/admin/tenants/${tenantId}/primeiro-acesso/regenerar`, { method: "POST" }),
-
   adminGetTenantPermissoes: (tenantId: string) =>
     request<{ permissoes: TenantPermissao[] }>(`/admin/tenants/${tenantId}/permissoes`),
 
@@ -381,74 +357,17 @@ export const api = {
       body: JSON.stringify({ enabled }),
     }),
 
-  adminListUsuarios: () => request<{ usuarios: AdminUsuario[] }>("/admin/usuarios"),
+  // Vínculos (Membership) de um RPPS — só pra Microsoft/gov.br (login central auto-vincula pelo
+  // client_code, nunca passa por aqui, ver central-sso.routes.ts). Não cria usuário: a conta
+  // precisa já existir (algum login SSO anterior).
+  adminCreateMembership: (tenantId: string, email: string) =>
+    request<unknown>(`/admin/tenants/${tenantId}/membros`, { method: "POST", body: JSON.stringify({ email }) }),
 
-  adminCreateSuperAdmin: (input: { name: string; email: string; password: string }) =>
-    request<unknown>("/admin/usuarios/super-admin", { method: "POST", body: JSON.stringify(input) }),
+  adminRemoveMembership: (tenantId: string, membershipId: string) =>
+    request<unknown>(`/admin/tenants/${tenantId}/membros/${membershipId}`, { method: "DELETE" }),
 
-  adminSetSuperAdmin: (userId: string, isSuperAdmin: boolean) =>
-    request<unknown>(`/admin/usuarios/${userId}/super-admin`, {
-      method: "PATCH",
-      body: JSON.stringify({ isSuperAdmin }),
-    }),
-
-  adminUpdateUsuario: (
-    userId: string,
-    patch: {
-      name?: string;
-      email?: string;
-      password?: string;
-      telefone?: string | null;
-      cpf?: string | null;
-      ativo?: boolean;
-    },
-  ) => request<AdminUsuario>(`/admin/usuarios/${userId}`, { method: "PATCH", body: JSON.stringify(patch) }),
-
-  adminDeleteUsuario: (userId: string) => request<unknown>(`/admin/usuarios/${userId}`, { method: "DELETE" }),
-
-  adminGetUserPermissoes: (userId: string) =>
-    request<{ permissoes: UserPermissao[] }>(`/admin/usuarios/${userId}/permissoes`),
-
-  adminSetUserPermissao: (userId: string, featureKey: string, enabled: boolean | null) =>
-    request<{ permissoes: UserPermissao[] }>(`/admin/usuarios/${userId}/permissoes/${featureKey}`, {
-      method: "PATCH",
-      body: JSON.stringify({ enabled }),
-    }),
-
-  adminCreateMembership: (input: {
-    tenantId: string;
-    userId?: string;
-    name?: string;
-    email?: string;
-    telefone?: string;
-    password?: string;
-  }) => request<unknown>("/admin/usuarios/membership", { method: "POST", body: JSON.stringify(input) }),
-
-  adminRemoveMembership: (membershipId: string) =>
-    request<unknown>(`/admin/usuarios/membership/${membershipId}`, { method: "DELETE" }),
-
-  // --- Primeiro acesso (público, sem autenticação) --------------------------------------
-
-  primeiroAcessoInfo: async (token: string): Promise<{ tenantName: string }> => {
-    const res = await fetch(`/api/public/primeiro-acesso/${token}`);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error ?? "Link de primeiro acesso inválido ou expirado.");
-    return data;
-  },
-
-  primeiroAcessoCompletar: async (
-    token: string,
-    input: { email: string; telefone: string; password: string },
-  ): Promise<{ ok: true }> => {
-    const res = await fetch(`/api/public/primeiro-acesso/${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error ?? "Não foi possível completar o cadastro.");
-    return data;
-  },
+  adminSetUsuarioAtivo: (tenantId: string, userId: string, ativo: boolean) =>
+    request<unknown>(`/admin/tenants/${tenantId}/membros/${userId}/ativo`, { method: "PATCH", body: JSON.stringify({ ativo }) }),
 
   adminListEntidades: () => request<{ entidades: EntidadeCertificadora[] }>("/admin/entidades-certificadoras"),
 
@@ -593,16 +512,6 @@ export interface TenantPermissao {
   efetivo: boolean;
 }
 
-export interface UserPermissao {
-  key: string;
-  nome: string;
-  descricao: string;
-  grupo: string;
-  herdado: boolean;
-  override: boolean | null;
-  efetivo: boolean;
-}
-
 export interface AdminTenant {
   id: string;
   name: string;
@@ -633,19 +542,6 @@ export interface AdminTenant {
   }[];
   crpRegular: number;
   crpTotal: number;
-}
-
-export interface AdminUsuario {
-  id: string;
-  name: string;
-  email: string;
-  telefone: string | null;
-  cpf: string | null;
-  ativo: boolean;
-  lastLoginAt: string | null;
-  isSuperAdmin: boolean;
-  createdAt: string;
-  memberships: { id: string; tenant: { id: string; name: string; slug: string } }[];
 }
 
 export interface EntidadeCertificadora {

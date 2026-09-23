@@ -2,9 +2,7 @@ import { Router, type Response } from "express";
 import { env, isGovbrSsoConfigured } from "../../config/env";
 import { createOAuthState, verifyOAuthState } from "../../utils/oauthState";
 import { prisma } from "../../db/prisma";
-import { hashPassword } from "../../utils/password";
 import { issueTokenForUser } from "./auth.service";
-import crypto from "node:crypto";
 
 /**
  * Login com gov.br — OIDC padrão via discovery document. Diferente do Microsoft SSO, aqui pode
@@ -118,14 +116,10 @@ govbrSsoRouter.get("/callback", async (req, res) => {
         redirectComErro(res, "Não existe conta cadastrada para este e-mail no Regula RPPS.");
         return;
       }
-      // Senha aleatória e descartada na hora — este usuário só consegue entrar via gov.br até
-      // um admin definir uma senha local pra ele (ou nunca, se preferir manter só SSO).
-      const passwordHash = await hashPassword(crypto.randomBytes(32).toString("hex"));
       const created = await prisma.user.create({
         data: {
           name: userinfo.name ?? userinfo.email,
           email: userinfo.email,
-          passwordHash,
           ativo: env.govbr.provisionActive,
         },
       });
@@ -138,7 +132,7 @@ govbrSsoRouter.get("/callback", async (req, res) => {
     }
 
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    const token = issueTokenForUser(user, user.memberships);
+    const token = issueTokenForUser(user, user.memberships, { source: "legacy" });
     res.redirect(`${env.webUrl}/sso-callback#token=${token}`);
   } catch {
     redirectComErro(res, "Erro inesperado ao entrar com o gov.br.");

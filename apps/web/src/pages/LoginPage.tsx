@@ -1,45 +1,21 @@
-import { FormEvent, useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ShieldCheck, LogIn } from "lucide-react";
 import { api } from "../lib/api";
-import { useAuth } from "../lib/auth-context";
-import { Button } from "../components/ui/Button";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
 
-// Split-screen: coluna esquerda é o "cartão de identidade" (mesmo gradiente da sidebar,
-// sempre igual nos dois temas — ver DashboardShell.tsx), coluna direita é o formulário. Login
-// local nunca some; os botões de SSO abaixo dele só aparecem se o backend confirmar que aquele
-// provedor tem credencial configurada (GET /auth/providers) — nunca um botão morto.
+// Login 100% via SSO — não existe mais senha local (login e permissionamento vêm do APP
+// CENTRAL, com Microsoft/gov.br mantidos em paralelo, ver central-sso.routes.ts). Os botões só
+// aparecem se o backend confirmar que aquele provedor tem credencial configurada (GET
+// /auth/providers) — nunca um botão morto.
 export function LoginPage() {
-  const { login, error: erroLocal } = useAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const erroSso = searchParams.get("erro");
-
-  const [email, setEmail] = useState("admin@valeverde.rpps.gov.br");
-  const [password, setPassword] = useState("demo1234");
-  const [submitting, setSubmitting] = useState(false);
-  const [providers, setProviders] = useState<{ microsoft: boolean; govbr: boolean } | null>(null);
+  const erro = searchParams.get("erro");
+  const [providers, setProviders] = useState<{ central: boolean; microsoft: boolean; govbr: boolean } | null>(null);
 
   useEffect(() => {
-    api.ssoProviders().then(setProviders).catch(() => setProviders({ microsoft: false, govbr: false }));
+    api.ssoProviders().then(setProviders).catch(() => setProviders({ central: false, microsoft: false, govbr: false }));
   }, []);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      await login(email, password);
-      navigate("/");
-    } catch {
-      // erro já exposto via contexto
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  const temSso = providers?.microsoft || providers?.govbr;
-  const erro = erroLocal ?? erroSso;
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -67,7 +43,7 @@ export function LoginPage() {
         <p className="text-xs text-slate-300">© {new Date().getFullYear()} NPI Brasil</p>
       </div>
 
-      {/* Coluna do formulário */}
+      {/* Coluna de login */}
       <div className="relative flex items-center justify-center bg-bg px-4 py-12">
         <div className="absolute right-5 top-5 rounded-full bg-sidebar p-1">
           <ThemeToggle />
@@ -80,74 +56,45 @@ export function LoginPage() {
             <p className="mt-1 text-sm text-ink-muted">Controle de compliance e transparência ativa</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
             <p className="mb-5 font-display text-lg font-bold text-ink">Acesse sua conta</p>
 
-            <label className="block text-sm font-medium text-ink">
-              E-mail
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
-                required
-              />
-            </label>
-
-            <label className="mt-4 block text-sm font-medium text-ink">
-              Senha
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
-                required
-              />
-            </label>
-
             {erro && (
-              <p className="mt-3 rounded-lg border border-crit/30 bg-crit/10 px-3 py-2 text-xs font-medium text-crit">
+              <p className="mb-4 rounded-lg border border-crit/30 bg-crit/10 px-3 py-2 text-xs font-medium text-crit">
                 {erro}
               </p>
             )}
 
-            <Button type="submit" className="mt-6 w-full" disabled={submitting}>
-              {submitting ? "Entrando…" : "Entrar"}
-            </Button>
-
-            <p className="mt-4 text-center text-xs text-ink-muted">
-              Demo: admin@valeverde.rpps.gov.br / demo1234
-            </p>
-
-            {temSso && (
-              <>
-                <div className="my-5 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">ou</span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {providers?.microsoft && (
-                    <a
-                      href="/api/auth/microsoft/login"
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
-                    >
-                      <MicrosoftIcon /> Entrar com Microsoft
-                    </a>
-                  )}
-                  {providers?.govbr && (
-                    <a
-                      href="/api/auth/govbr/login"
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
-                    >
-                      <ShieldCheck size={15} className="text-ok" /> Entrar com gov.br
-                    </a>
-                  )}
-                </div>
-              </>
-            )}
-          </form>
+            <div className="flex flex-col gap-2">
+              {providers?.central && (
+                <a
+                  href="/api/auth/central/login"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-petrol py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
+                >
+                  <LogIn size={15} /> Entrar com APP CENTRAL
+                </a>
+              )}
+              {providers?.microsoft && (
+                <a
+                  href="/api/auth/microsoft/login"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+                >
+                  <MicrosoftIcon /> Entrar com Microsoft
+                </a>
+              )}
+              {providers?.govbr && (
+                <a
+                  href="/api/auth/govbr/login"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+                >
+                  <ShieldCheck size={15} className="text-ok" /> Entrar com gov.br
+                </a>
+              )}
+              {providers && !providers.central && !providers.microsoft && !providers.govbr && (
+                <p className="text-center text-sm text-ink-muted">Nenhum provedor de login configurado neste ambiente.</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

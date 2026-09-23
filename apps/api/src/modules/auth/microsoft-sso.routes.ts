@@ -92,7 +92,7 @@ microsoftSsoRouter.get("/callback", async (req, res) => {
     }
 
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    const token = issueTokenForUser(user, user.memberships);
+    const token = issueTokenForUser(user, user.memberships, { source: "legacy" });
     res.redirect(`${env.webUrl}/sso-callback#token=${token}`);
   } catch {
     redirectComErro(res, "Erro inesperado ao entrar com a Microsoft.");

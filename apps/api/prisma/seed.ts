@@ -1,7 +1,6 @@
 import { PrismaClient, type NivelAderencia } from "@prisma/client";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { hashPassword } from "../src/utils/password";
 
 const prisma = new PrismaClient();
 
@@ -301,20 +300,19 @@ async function seedFeatureGating(): Promise<void> {
 
 /**
  * Sempre roda, inclusive em produção — sem um Super Admin não dá pra logar em lugar nenhum do
- * sistema. Credenciais configuráveis via env (SUPER_ADMIN_EMAIL/SUPER_ADMIN_PASSWORD); sem elas,
- * cai nas credenciais de demonstração (uso local/dev). Só define a senha na CRIAÇÃO — reseed
- * nunca sobrescreve a senha de um Super Admin que já existe (mesmo se a env mudou depois).
+ * sistema. Não define mais senha nenhuma (login é 100% via SSO — Microsoft/gov.br/APP CENTRAL,
+ * ver auth/*-sso.routes.ts): só marca este e-mail como Super Admin de antemão, pra a primeira vez
+ * que essa conta entrar por qualquer um dos provedores já nascer com o papel certo. Configurável
+ * via SUPER_ADMIN_EMAIL; sem ela, cai no e-mail de demonstração (uso local/dev).
  */
 async function seedSuperAdmin(): Promise<void> {
   console.log("Seeding Super Admin da plataforma...");
   const email = process.env.SUPER_ADMIN_EMAIL?.trim() || "superadmin@regularpps.com.br";
-  const password = process.env.SUPER_ADMIN_PASSWORD?.trim() || "superadmin123";
-  const passwordHash = await hashPassword(password);
 
   await prisma.user.upsert({
     where: { email },
     update: { isSuperAdmin: true },
-    create: { name: "Admin da Plataforma", email, passwordHash, isSuperAdmin: true },
+    create: { name: "Admin da Plataforma", email, isSuperAdmin: true },
   });
 }
 
@@ -324,7 +322,6 @@ async function seedSuperAdmin(): Promise<void> {
  */
 async function seedDemoData(): Promise<void> {
   console.log("Seeding tenant de demonstração...");
-  const passwordHash = await hashPassword("demo1234");
 
   const tenant = await prisma.tenant.upsert({
     where: { slug: "prefeitura-de-vale-verde" },
@@ -346,7 +343,6 @@ async function seedDemoData(): Promise<void> {
               create: {
                 name: "Ana Beatriz Souza",
                 email: "admin@valeverde.rpps.gov.br",
-                passwordHash,
               },
             },
           },
@@ -456,7 +452,7 @@ async function seedDemoData(): Promise<void> {
     });
   }
 
-  console.log("Login de demonstração (tenant): admin@valeverde.rpps.gov.br / demo1234");
+  console.log("Tenant de demonstração vinculado a admin@valeverde.rpps.gov.br — entre por Microsoft, gov.br ou APP CENTRAL com este e-mail.");
 }
 
 async function main() {
@@ -472,11 +468,8 @@ async function main() {
   }
 
   const superAdminEmail = process.env.SUPER_ADMIN_EMAIL?.trim() || "superadmin@regularpps.com.br";
-  const senhaDefinidaPorEnv = !!process.env.SUPER_ADMIN_PASSWORD?.trim();
   console.log("Seed concluído.");
-  console.log(
-    `Login do Super Admin: ${superAdminEmail} / ${senhaDefinidaPorEnv ? "(senha definida via SUPER_ADMIN_PASSWORD)" : "superadmin123 (padrão de dev — defina SUPER_ADMIN_PASSWORD em produção)"}`,
-  );
+  console.log(`Super Admin marcado para ${superAdminEmail} — entre por Microsoft, gov.br ou APP CENTRAL com este e-mail.`);
 }
 
 main()

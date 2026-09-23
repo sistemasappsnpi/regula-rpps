@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { requireAuth, requireTenant, type AuthenticatedRequest } from "../../middleware/auth";
 import { requireFeature } from "../../middleware/features";
+import { requireFreshPermissions } from "../../middleware/requireFreshPermissions";
 import { HttpError } from "../../middleware/errorHandler";
 import { prisma } from "../../db/prisma";
 import { construtorRepository } from "./construtor.repository";
@@ -174,7 +175,7 @@ construtorRouter.post("/execucoes/:id/aprovar-todos-indicadores", async (req: Au
 // Exclui uma execução (ex.: rascunho de teste, ou uma extração que deu errado e foi aprovada
 // mesmo incompleta) — apaga a execução, suas sugestões, E desfaz o que ela publicou no Portal
 // Previdenciário (ver construtorRepository.excluirExecucao).
-construtorRouter.delete("/execucoes/:id", async (req: AuthenticatedRequest, res, next) => {
+construtorRouter.delete("/execucoes/:id", requireFreshPermissions(), async (req: AuthenticatedRequest, res, next) => {
   try {
     await construtorRepository.excluirExecucao(req.auth!.tenantId!, req.params.id);
     res.status(204).send();

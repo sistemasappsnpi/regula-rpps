@@ -15,10 +15,9 @@ import { PortalIndicadoresLancamentoPage } from "./pages/PortalIndicadoresLancam
 import { TransparenciaPublicaPage } from "./pages/TransparenciaPublicaPage";
 import { PortalPrevidenciarioPage } from "./pages/PortalPrevidenciarioPage";
 import { PortalPrevidenciarioDocumentoPage } from "./pages/PortalPrevidenciarioDocumentoPage";
-import { PrimeiroAcessoPage } from "./pages/PrimeiroAcessoPage";
+import { ContaNaoVinculadaPage } from "./pages/ContaNaoVinculadaPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminTenantsPage } from "./pages/admin/AdminTenantsPage";
-import { AdminUsuariosPage } from "./pages/admin/AdminUsuariosPage";
 import { AdminParametrizacoesPage } from "./pages/admin/AdminParametrizacoesPage";
 import { AdminAuditoriaPage } from "./pages/admin/AdminAuditoriaPage";
 import { AdminRelatoriosPage } from "./pages/admin/AdminRelatoriosPage";
@@ -29,12 +28,17 @@ function Carregando() {
 
 // Um usuário de tenant nunca vê as telas do Admin Global, e vice-versa — o Super Admin da
 // plataforma não está vinculado a nenhum tenantId (ver /apps/api/src/middleware/auth.ts).
+//
+// "logado, mas sem tenant e sem ser Super Admin" é um estado válido pra login central (usuário
+// existe no APP CENTRAL mas ainda sem client_code vinculado lá, ver central-sso.routes.ts) — só
+// manda pro /login quem de fato não está autenticado (user null), nunca esse caso (evita loop de
+// redirect, já que o token continua válido).
 function RequireTenantAuth({ children }: { children: JSX.Element }) {
-  const { tenant, isSuperAdmin, loading } = useAuth();
+  const { user, tenant, isSuperAdmin, loading } = useAuth();
 
   if (loading) return <Carregando />;
   if (isSuperAdmin) return <Navigate to="/admin" replace />;
-  if (!tenant) return <Navigate to="/login" replace />;
+  if (!tenant) return user ? <ContaNaoVinculadaPage /> : <Navigate to="/login" replace />;
   return children;
 }
 
@@ -79,7 +83,6 @@ export default function App() {
       <Route path="/transparencia/:slug" element={<TransparenciaPublicaPage />} />
       <Route path="/portal-previdenciario/:slug" element={<PortalPrevidenciarioPage />} />
       <Route path="/portal-previdenciario/:slug/:codigo" element={<PortalPrevidenciarioDocumentoPage />} />
-      <Route path="/primeiro-acesso/:token" element={<PrimeiroAcessoPage />} />
 
       <Route
         path="/"
@@ -180,16 +183,6 @@ export default function App() {
           <RequireAdminFeature feature="admin_rpps_clientes">
             <GlobalAdminShell>
               <AdminTenantsPage />
-            </GlobalAdminShell>
-          </RequireAdminFeature>
-        }
-      />
-      <Route
-        path="/admin/usuarios"
-        element={
-          <RequireAdminFeature feature="admin_usuarios">
-            <GlobalAdminShell>
-              <AdminUsuariosPage />
             </GlobalAdminShell>
           </RequireAdminFeature>
         }

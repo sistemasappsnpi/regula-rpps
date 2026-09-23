@@ -39,6 +39,19 @@ export const env = {
     autoProvision: process.env.GOVBR_AUTO_PROVISION !== "false",
     provisionActive: process.env.GOVBR_PROVISION_ACTIVE === "true",
   },
+
+  // APP CENTRAL — provedor único de login/permissionamento (OIDC + PKCE). Diferente de
+  // Microsoft/gov.br, aqui token/introspect/issuer são fixos (não vêm só do discovery), por isso
+  // ficam em env vars explícitas em vez de derivadas na hora.
+  central: {
+    issuer: process.env.CENTRAL_ISSUER ?? "",
+    clientId: process.env.CENTRAL_CLIENT_ID ?? "",
+    clientSecret: process.env.CENTRAL_CLIENT_SECRET ?? "",
+    redirectUri: process.env.CENTRAL_REDIRECT_URI ?? "",
+    tokenUrl: process.env.CENTRAL_TOKEN_URL ?? "",
+    introspectUrl: process.env.CENTRAL_INTROSPECT_URL ?? "",
+    scopes: process.env.CENTRAL_SCOPES ?? "openid profile email",
+  },
 };
 
 export function isMicrosoftSsoConfigured(): boolean {
@@ -47,6 +60,17 @@ export function isMicrosoftSsoConfigured(): boolean {
 
 export function isGovbrSsoConfigured(): boolean {
   return env.govbr.enabled && !!(env.govbr.issuer && env.govbr.clientId && env.govbr.clientSecret && env.govbr.redirectUri);
+}
+
+export function isCentralSsoConfigured(): boolean {
+  return !!(
+    env.central.issuer &&
+    env.central.clientId &&
+    env.central.clientSecret &&
+    env.central.redirectUri &&
+    env.central.tokenUrl &&
+    env.central.introspectUrl
+  );
 }
 
 export function assertProductionEnv(): void {

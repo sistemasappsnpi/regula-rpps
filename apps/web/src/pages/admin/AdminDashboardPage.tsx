@@ -1,25 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, Users, AlertTriangle, UserSquare2 } from "lucide-react";
-import { api, type AdminTenant, type AdminUsuario } from "../../lib/api";
+import { Building2, AlertTriangle, UserSquare2 } from "lucide-react";
+import { api, type AdminTenant } from "../../lib/api";
 import { Card, StatTile } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 
 export function AdminDashboardPage() {
   const [tenants, setTenants] = useState<AdminTenant[]>([]);
-  const [usuarios, setUsuarios] = useState<AdminUsuario[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.adminListTenants(), api.adminListUsuarios()])
-      .then(([t, u]) => {
-        setTenants(t.tenants);
-        setUsuarios(u.usuarios);
-      })
+    api
+      .adminListTenants()
+      .then((t) => setTenants(t.tenants))
       .finally(() => setLoading(false));
   }, []);
 
-  const superAdmins = usuarios.filter((u) => u.isSuperAdmin).length;
   const rppsComPendencia = tenants.filter((t) => t.crpRegular < t.crpTotal).length;
 
   return (
@@ -31,15 +27,8 @@ export function AdminDashboardPage() {
 
       {loading && <p className="text-sm text-ink-muted">Carregando…</p>}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile label="RPPS clientes" value={tenants.length} icon={<Building2 size={18} />} tone="petrol" />
-        <StatTile
-          label="Usuários cadastrados"
-          value={usuarios.length}
-          hint={`${superAdmins} super admin(s)`}
-          icon={<Users size={18} />}
-          tone="gold"
-        />
         <StatTile
           label="RPPS com pendência no CRP"
           value={rppsComPendencia}

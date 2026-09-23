@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/Button";
 import { Modal, ModalTab } from "../../components/ui/Modal";
 import { PermissoesEditor, type PermissaoItem } from "../../components/admin/PermissoesEditor";
 import { useConfirm } from "../../components/ui/confirm-context";
-import { Building2, Copy, RefreshCw, Check } from "lucide-react";
+import { Building2 } from "lucide-react";
 
 const PLANOS: Tenant["plan"][] = ["ESSENCIAL", "GESTAO", "PERFORMANCE"];
 const NIVEIS_PRO_GESTAO: Nivel[] = ["I", "II", "III", "IV"];
@@ -24,9 +24,6 @@ export function AdminTenantsPage() {
     federatedEntity: "",
     seguradosCount: 0,
     plan: "ESSENCIAL" as Tenant["plan"],
-    adminName: "",
-    adminEmail: "",
-    adminPassword: "",
   });
 
   const [editandoId, setEditandoId] = useState<string | null>(null);
@@ -62,7 +59,7 @@ export function AdminTenantsPage() {
     setSalvando(true);
     try {
       await api.adminCreateTenant(form);
-      setForm({ tenantName: "", federatedEntity: "", seguradosCount: 0, plan: "ESSENCIAL", adminName: "", adminEmail: "", adminPassword: "" });
+      setForm({ tenantName: "", federatedEntity: "", seguradosCount: 0, plan: "ESSENCIAL" });
       setMostrarForm(false);
       await carregar();
     } catch (err) {
@@ -183,15 +180,11 @@ export function AdminTenantsPage() {
                 ))}
               </select>
             </label>
-            <Campo label="Nome do admin do RPPS" value={form.adminName} onChange={(v) => setForm({ ...form, adminName: v })} />
-            <Campo label="E-mail do admin" type="email" value={form.adminEmail} onChange={(v) => setForm({ ...form, adminEmail: v })} />
-            <Campo
-              label="Senha inicial"
-              type="password"
-              value={form.adminPassword}
-              onChange={(v) => setForm({ ...form, adminPassword: v })}
-            />
           </div>
+          <p className="mt-3 text-xs text-ink-muted">
+            Sem usuário admin aqui — o vínculo com uma conta acontece automaticamente no primeiro login pelo APP CENTRAL
+            (via client_code) ou manualmente na aba "Vínculos" pra Microsoft/gov.br.
+          </p>
           <div className="mt-4 flex justify-end">
             <Button onClick={criar} disabled={salvando}>
               {salvando ? "Salvando…" : "Criar RPPS"}
@@ -249,7 +242,7 @@ export function AdminTenantsPage() {
         tabs={
           <>
             <ModalTab label="Dados Básicos" active={aba === "dados"} onClick={() => setAba("dados")} />
-            <ModalTab label="Usuários" active={aba === "usuarios"} onClick={() => setAba("usuarios")} />
+            <ModalTab label="Vínculos" active={aba === "usuarios"} onClick={() => setAba("usuarios")} />
             <ModalTab label="Permissões" active={aba === "permissoes"} onClick={() => setAba("permissoes")} />
           </>
         }
@@ -432,6 +425,9 @@ export function AdminTenantsPage() {
   );
 }
 
+// Só pra Microsoft/gov.br — login central auto-vincula pelo client_code (ver
+// central-sso.routes.ts), nunca passa por aqui. Sem criação de conta com senha: só vincula um
+// e-mail que já entrou ao menos uma vez pela Microsoft ou gov.br.
 function AbaUsuarios({
   tenant,
   onChange,
@@ -442,93 +438,36 @@ function AbaUsuarios({
   onErro: (msg: string | null) => void;
 }) {
   const confirmar = useConfirm();
-  const [link, setLink] = useState<string | null>(null);
-  const [copiado, setCopiado] = useState(false);
-  const [regenerando, setRegenerando] = useState(false);
-
   const [mostrarNovoForm, setMostrarNovoForm] = useState(false);
-  const [novoForm, setNovoForm] = useState({ name: "", email: "", telefone: "", password: "" });
+  const [emailNovo, setEmailNovo] = useState("");
   const [salvandoNovo, setSalvandoNovo] = useState(false);
+  const [alternandoAtivoId, setAlternandoAtivoId] = useState<string | null>(null);
 
-  const [editandoMembershipId, setEditandoMembershipId] = useState<string | null>(null);
-  const [formEdicaoMembro, setFormEdicaoMembro] = useState({ name: "", email: "", telefone: "", cpf: "", ativo: true, password: "" });
-  const [salvandoMembro, setSalvandoMembro] = useState(false);
-
-  useEffect(() => {
-    setLink(null);
-    api
-      .adminGetPrimeiroAcessoLink(tenant.id)
-      .then((res) => setLink(`${window.location.origin}/primeiro-acesso/${res.token}`))
-      .catch(() => {});
-  }, [tenant.id]);
-
-  function copiarLink() {
-    if (!link) return;
-    navigator.clipboard.writeText(link).then(() => {
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
-    });
-  }
-
-  async function regenerarLink() {
-    setRegenerando(true);
-    onErro(null);
-    try {
-      const res = await api.adminRegenerarPrimeiroAcessoLink(tenant.id);
-      setLink(`${window.location.origin}/primeiro-acesso/${res.token}`);
-    } catch (err) {
-      onErro(err instanceof Error ? err.message : "Erro ao gerar novo link.");
-    } finally {
-      setRegenerando(false);
-    }
-  }
-
-  async function criarUsuario() {
+  async function vincularUsuario() {
     onErro(null);
     setSalvandoNovo(true);
     try {
-      await api.adminCreateMembership({
-        tenantId: tenant.id,
-        name: novoForm.name,
-        email: novoForm.email,
-        telefone: novoForm.telefone || undefined,
-        password: novoForm.password || undefined,
-      });
-      setNovoForm({ name: "", email: "", telefone: "", password: "" });
+      await api.adminCreateMembership(tenant.id, emailNovo);
+      setEmailNovo("");
       setMostrarNovoForm(false);
       await onChange();
     } catch (err) {
-      onErro(err instanceof Error ? err.message : "Erro ao adicionar usuário.");
+      onErro(err instanceof Error ? err.message : "Erro ao vincular usuário.");
     } finally {
       setSalvandoNovo(false);
     }
   }
 
-  function iniciarEdicaoMembro(m: AdminTenant["membros"][number]) {
+  async function alternarAtivo(m: AdminTenant["membros"][number]) {
     onErro(null);
-    setEditandoMembershipId(m.membershipId);
-    setFormEdicaoMembro({ name: m.name, email: m.email, telefone: m.telefone ?? "", cpf: "", ativo: m.ativo, password: "" });
-  }
-
-  async function salvarEdicaoMembro(m: AdminTenant["membros"][number]) {
-    onErro(null);
-    setSalvandoMembro(true);
+    setAlternandoAtivoId(m.membershipId);
     try {
-      const patch: { name?: string; email?: string; password?: string; telefone?: string | null; cpf?: string | null; ativo?: boolean } = {
-        name: formEdicaoMembro.name,
-        email: formEdicaoMembro.email,
-        telefone: formEdicaoMembro.telefone.trim() || null,
-        ativo: formEdicaoMembro.ativo,
-      };
-      if (formEdicaoMembro.cpf.trim()) patch.cpf = formEdicaoMembro.cpf.trim();
-      if (formEdicaoMembro.password) patch.password = formEdicaoMembro.password;
-      await api.adminUpdateUsuario(m.userId, patch);
-      setEditandoMembershipId(null);
+      await api.adminSetUsuarioAtivo(tenant.id, m.userId, !m.ativo);
       await onChange();
     } catch (err) {
-      onErro(err instanceof Error ? err.message : "Erro ao salvar usuário.");
+      onErro(err instanceof Error ? err.message : "Erro ao alterar status do usuário.");
     } finally {
-      setSalvandoMembro(false);
+      setAlternandoAtivoId(null);
     }
   }
 
@@ -542,7 +481,7 @@ function AbaUsuarios({
 
     onErro(null);
     try {
-      await api.adminRemoveMembership(m.membershipId);
+      await api.adminRemoveMembership(tenant.id, m.membershipId);
       await onChange();
     } catch (err) {
       onErro(err instanceof Error ? err.message : "Erro ao remover vínculo.");
@@ -551,123 +490,55 @@ function AbaUsuarios({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-xl border border-border bg-bg p-4">
-        <p className="flex items-center gap-1.5 text-sm font-medium text-ink">🔗 Link de primeiro acesso</p>
-        <p className="mt-1 text-xs text-ink-muted">
-          Mande este link para o cliente. Qualquer usuário já cadastrado abaixo com o e-mail dele consegue completar o
-          próprio cadastro (telefone + senha) por lá.
-        </p>
-        <div className="mt-3 flex gap-2">
-          <input
-            readOnly
-            value={link ?? "Gerando…"}
-            className="flex-1 truncate rounded-lg border border-border bg-surface px-3 py-2 text-xs text-ink-muted"
-          />
-          <Button variant="ghost" onClick={copiarLink} disabled={!link} title="Copiar link">
-            {copiado ? <Check size={15} /> : <Copy size={15} />}
-          </Button>
-          <Button variant="ghost" onClick={regenerarLink} disabled={regenerando}>
-            <RefreshCw size={15} className={regenerando ? "animate-spin" : ""} /> Gerar novo link
-          </Button>
-        </div>
-      </div>
+      <p className="text-xs text-ink-muted">
+        Só pra quem entra por Microsoft ou gov.br — usuários do APP CENTRAL se vinculam automaticamente no primeiro
+        login. Vincular exige que a conta já tenha entrado ao menos uma vez por um desses dois provedores.
+      </p>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
           <p className="text-sm font-medium text-ink">Usuários vinculados</p>
-          <Button onClick={() => setMostrarNovoForm((v) => !v)}>{mostrarNovoForm ? "Cancelar" : "+ Novo Usuário"}</Button>
+          <Button onClick={() => setMostrarNovoForm((v) => !v)}>{mostrarNovoForm ? "Cancelar" : "+ Vincular usuário"}</Button>
         </div>
 
         {mostrarNovoForm && (
           <Card className="mb-3 p-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Campo label="Nome" value={novoForm.name} onChange={(v) => setNovoForm({ ...novoForm, name: v })} />
-              <Campo label="E-mail" type="email" value={novoForm.email} onChange={(v) => setNovoForm({ ...novoForm, email: v })} />
-              <Campo label="Telefone" value={novoForm.telefone} onChange={(v) => setNovoForm({ ...novoForm, telefone: v })} />
-              <Campo
-                label="Senha provisória (opcional)"
-                type="password"
-                value={novoForm.password}
-                onChange={(v) => setNovoForm({ ...novoForm, password: v })}
-              />
-            </div>
-            <p className="mt-2 text-xs text-ink-muted">
-              Sem senha provisória, o usuário completa o próprio cadastro pelo link de primeiro acesso acima.
-            </p>
+            <Campo label="E-mail" type="email" value={emailNovo} onChange={setEmailNovo} />
             <div className="mt-3 flex justify-end">
-              <Button onClick={criarUsuario} disabled={salvandoNovo}>
-                {salvandoNovo ? "Salvando…" : "Salvar Usuário"}
+              <Button onClick={vincularUsuario} disabled={salvandoNovo || !emailNovo}>
+                {salvandoNovo ? "Vinculando…" : "Vincular"}
               </Button>
             </div>
           </Card>
         )}
 
         <div className="flex flex-col gap-2">
-          {tenant.membros.map((m) =>
-            editandoMembershipId === m.membershipId ? (
-              <Card key={m.membershipId} className="p-4">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Campo label="Nome" value={formEdicaoMembro.name} onChange={(v) => setFormEdicaoMembro({ ...formEdicaoMembro, name: v })} />
-                  <Campo
-                    label="E-mail"
-                    type="email"
-                    value={formEdicaoMembro.email}
-                    onChange={(v) => setFormEdicaoMembro({ ...formEdicaoMembro, email: v })}
-                  />
-                  <Campo
-                    label="Telefone"
-                    value={formEdicaoMembro.telefone}
-                    onChange={(v) => setFormEdicaoMembro({ ...formEdicaoMembro, telefone: v })}
-                  />
-                  <Campo label="CPF" value={formEdicaoMembro.cpf} onChange={(v) => setFormEdicaoMembro({ ...formEdicaoMembro, cpf: v })} />
-                  <Campo
-                    label="Nova senha (opcional)"
-                    type="password"
-                    value={formEdicaoMembro.password}
-                    onChange={(v) => setFormEdicaoMembro({ ...formEdicaoMembro, password: v })}
-                  />
-                  <label className="flex items-center gap-2 pt-6 text-sm text-ink">
-                    <input
-                      type="checkbox"
-                      checked={formEdicaoMembro.ativo}
-                      onChange={(e) => setFormEdicaoMembro({ ...formEdicaoMembro, ativo: e.target.checked })}
-                    />
-                    Usuário ativo
-                  </label>
-                </div>
-                <div className="mt-3 flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setEditandoMembershipId(null)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={() => salvarEdicaoMembro(m)} disabled={salvandoMembro}>
-                    {salvandoMembro ? "Salvando…" : "Salvar"}
-                  </Button>
-                </div>
-              </Card>
-            ) : (
-              <div key={m.membershipId} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
-                <div>
-                  <p className="text-sm font-medium text-ink">{m.name}</p>
-                  <p className="text-xs text-ink-muted">
-                    {m.email}
-                    {m.telefone ? ` · ${m.telefone}` : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge tone={m.ativo ? "ok" : "neutral"}>{m.ativo ? "Ativo" : "Inativo"}</Badge>
-                  <span className="text-xs text-ink-muted">
-                    {m.lastLoginAt ? new Date(m.lastLoginAt).toLocaleString("pt-BR") : "Nunca acessou"}
-                  </span>
-                  <Button variant="ghost" onClick={() => iniciarEdicaoMembro(m)}>
-                    Editar
-                  </Button>
-                  <button onClick={() => removerVinculo(m)} className="text-xs font-medium text-crit hover:underline">
-                    remover
-                  </button>
-                </div>
+          {tenant.membros.map((m) => (
+            <div key={m.membershipId} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
+              <div>
+                <p className="text-sm font-medium text-ink">{m.name}</p>
+                <p className="text-xs text-ink-muted">
+                  {m.email}
+                  {m.telefone ? ` · ${m.telefone}` : ""}
+                </p>
               </div>
-            ),
-          )}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-ink-muted">
+                  {m.lastLoginAt ? new Date(m.lastLoginAt).toLocaleString("pt-BR") : "Nunca acessou"}
+                </span>
+                <button
+                  onClick={() => alternarAtivo(m)}
+                  disabled={alternandoAtivoId === m.membershipId}
+                  title="Clique pra alternar"
+                >
+                  <Badge tone={m.ativo ? "ok" : "neutral"}>{m.ativo ? "Ativo" : "Inativo"}</Badge>
+                </button>
+                <button onClick={() => removerVinculo(m)} className="text-xs font-medium text-crit hover:underline">
+                  remover
+                </button>
+              </div>
+            </div>
+          ))}
           {tenant.membros.length === 0 && <p className="text-sm text-ink-muted">Nenhum usuário vinculado ainda.</p>}
         </div>
       </div>
@@ -726,6 +597,10 @@ function AbaPermissoes({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="flex flex-col gap-3">
+      <p className="rounded-lg border border-border bg-bg px-3 py-2 text-xs text-ink-muted">
+        Só vale pra quem entra por Microsoft ou gov.br. Usuários autenticados pelo APP CENTRAL usam exclusivamente as
+        permissões que vêm de lá a cada login — esta tela não tem efeito sobre eles.
+      </p>
       {erroLocal && <p className="text-sm text-crit">{erroLocal}</p>}
       <PermissoesEditor
         permissoes={permissoes}

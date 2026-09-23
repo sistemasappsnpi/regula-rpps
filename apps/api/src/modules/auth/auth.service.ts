@@ -1,154 +1,42 @@
 import type { Membership, Tenant, User } from "@prisma/client";
-import { prisma } from "../../db/prisma";
-import { hashPassword, comparePassword } from "../../utils/password";
-import { signAuthToken } from "../../utils/jwt";
+import { signAuthToken, type CentralTokenBundle } from "../../utils/jwt";
 import { HttpError } from "../../middleware/errorHandler";
-import { crpRepository } from "../crp/crp.repository";
-import { slugify } from "../../utils/slugify";
-import { listEnabledFeaturesForUser, listEnabledAdminFeaturesForUser } from "../../middleware/features";
 
 /**
- * Emite o JWT pra um usuário já resolvido (achado por senha local ou por SSO — ver
- * microsoft-sso.routes.ts/govbr-sso.routes.ts) — mesma regra em todo lugar: Super Admin nunca
+ * Emite o JWT pra um usuário já resolvido por SSO (ver central-sso.routes.ts,
+ * microsoft-sso.routes.ts, govbr-sso.routes.ts) — mesma regra em todo lugar: Super Admin nunca
  * carrega tenantId, usuário de tenant precisa de ao menos um Membership (MVP: usa o primeiro).
+ *
+ * `authSource` decide como o resto do sistema resolve permissão (ver middleware/features.ts):
+ * "central" confia na lista `permissions` do APP CENTRAL, sem nenhuma consulta ao banco; "legacy"
+ * (Microsoft/gov.br) continua consultando as tabelas Feature/PlanFeature/TenantFeature/UserFeature
+ * como sempre. `central` (par access/refresh token do APP CENTRAL) só existe pra authSource
+ * "central" — usado por requireFreshPermissions() pra revalidar em ações sensíveis.
  */
-export function issueTokenForUser(user: Pick<User, "id" | "isSuperAdmin">, memberships: (Membership & { tenant: Tenant })[]): string {
+export function issueTokenForUser(
+  user: Pick<User, "id" | "isSuperAdmin">,
+  memberships: (Membership & { tenant: Tenant })[],
+  auth: { source: "legacy" } | { source: "central"; permissions: string[]; central: CentralTokenBundle },
+): string {
+  const base = {
+    userId: user.id,
+    isSuperAdmin: user.isSuperAdmin,
+    authSource: auth.source,
+    ...(auth.source === "central" ? { permissions: auth.permissions, central: auth.central } : {}),
+  };
+
   if (user.isSuperAdmin) {
-    return signAuthToken({ userId: user.id, tenantId: null, isSuperAdmin: true });
+    return signAuthToken({ ...base, tenantId: null });
   }
   if (memberships.length === 0) {
-    throw new HttpError(401, "Este usuário não está vinculado a nenhum RPPS.");
+    // Pra login "central": isto é um estado válido e esperado (usuário existe no APP CENTRAL
+    // mas ainda sem client_code vinculado lá) — nunca recusamos o login, o frontend mostra uma
+    // tela de "conta não vinculada" em vez de deixar o usuário entrar (ver App.tsx). Pra login
+    // "legacy" (Microsoft/gov.br), mantém o comportamento de sempre: sem Membership não entra.
+    if (auth.source === "legacy") {
+      throw new HttpError(401, "Este usuário não está vinculado a nenhum RPPS.");
+    }
+    return signAuthToken({ ...base, tenantId: null });
   }
-  return signAuthToken({ userId: user.id, tenantId: memberships[0].tenantId, isSuperAdmin: false });
+  return signAuthToken({ ...base, tenantId: memberships[0].tenantId });
 }
-
-export interface RegisterTenantInput {
-  tenantName: string;
-  federatedEntity: string;
-  seguradosCount: number;
-  adminName: string;
-  adminEmail: string;
-  adminPassword: string;
-}
-
-export const authService = {
-  async registerTenant(input: RegisterTenantInput) {
-    const existing = await prisma.user.findUnique({ where: { email: input.adminEmail } });
-    if (existing) {
-      throw new HttpError(409, "Já existe um usuário com este e-mail.");
-    }
-
-    const baseSlug = slugify(input.tenantName);
-    let slug = baseSlug;
-    let attempt = 1;
-    while (await prisma.tenant.findUnique({ where: { slug } })) {
-      slug = `${baseSlug}-${++attempt}`;
-    }
-
-    const passwordHash = await hashPassword(input.adminPassword);
-
-    const tenant = await prisma.tenant.create({
-      data: {
-        name: input.tenantName,
-        slug,
-        federatedEntity: input.federatedEntity,
-        seguradosCount: input.seguradosCount,
-        memberships: {
-          create: {
-            user: {
-              create: {
-                name: input.adminName,
-                email: input.adminEmail,
-                passwordHash,
-              },
-            },
-          },
-        },
-      },
-      include: { memberships: { include: { user: true } } },
-    });
-
-    await crpRepository.ensureTenantRows(tenant.id);
-
-    const membership = tenant.memberships[0];
-    const token = signAuthToken({
-      userId: membership.userId,
-      tenantId: tenant.id,
-      isSuperAdmin: false,
-    });
-    const features = await listEnabledFeaturesForUser(membership.userId, tenant.id, tenant.plan);
-
-    return { token, tenant, user: membership.user, isSuperAdmin: false, features };
-  },
-
-  async login(email: string, password: string) {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: { memberships: { include: { tenant: true } } },
-    });
-
-    if (!user) {
-      throw new HttpError(401, "E-mail ou senha inválidos.");
-    }
-
-    const passwordMatches = await comparePassword(password, user.passwordHash);
-    if (!passwordMatches) {
-      throw new HttpError(401, "E-mail ou senha inválidos.");
-    }
-
-    if (!user.ativo) {
-      throw new HttpError(401, "Usuário inativo. Fale com o administrador do seu RPPS.");
-    }
-
-    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-
-    // Super Admin da plataforma: nunca vinculado a um tenant específico (ver schema.prisma).
-    if (user.isSuperAdmin) {
-      const token = signAuthToken({ userId: user.id, tenantId: null, isSuperAdmin: true });
-      return {
-        token,
-        tenant: null,
-        user: { id: user.id, name: user.name, email: user.email },
-        isSuperAdmin: true,
-        features: await listEnabledAdminFeaturesForUser(user.id),
-      };
-    }
-
-    if (user.memberships.length === 0) {
-      throw new HttpError(401, "E-mail ou senha inválidos.");
-    }
-
-    // MVP: usuário de tenant vinculado a um único tenant. Suporte a múltiplos tenants por
-    // usuário (troca de contexto) fica para uma iteração futura (ver ROADMAP #7).
-    const membership = user.memberships[0];
-    const token = signAuthToken({
-      userId: user.id,
-      tenantId: membership.tenantId,
-      isSuperAdmin: false,
-    });
-    const features = await listEnabledFeaturesForUser(user.id, membership.tenantId, membership.tenant.plan);
-
-    return {
-      token,
-      tenant: membership.tenant,
-      user: { id: user.id, name: user.name, email: user.email },
-      isSuperAdmin: false,
-      features,
-    };
-  },
-
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new HttpError(404, "Usuário não encontrado.");
-    }
-
-    const passwordMatches = await comparePassword(currentPassword, user.passwordHash);
-    if (!passwordMatches) {
-      throw new HttpError(401, "Senha atual incorreta.");
-    }
-
-    const passwordHash = await hashPassword(newPassword);
-    await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
-  },
-};

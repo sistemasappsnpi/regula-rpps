@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
-import { requireAuth, requireSuperAdmin, type AuthenticatedRequest } from "../../middleware/auth";
+import { requireAuth, requireSuperAdmin } from "../../middleware/auth";
 import { requireAdminFeature } from "../../middleware/features";
 import { HttpError } from "../../middleware/errorHandler";
 import { adminRepository } from "./admin.repository";
@@ -16,12 +16,11 @@ const uploadChecklistPdf = multer({ storage: multer.memoryStorage(), limits: { f
 
 // Todo o módulo é restrito ao Super Admin da plataforma — nunca escopado a um tenantId
 // (ver /docs/modelo-de-dados.md e ROADMAP #7). Dentro disso, cada seção (RPPS clientes,
-// Usuários, Parametrizações) ainda passa por requireAdminFeature — por padrão todo Super Admin
-// vê tudo, mas uma conta específica pode ser restrita em Admin → Usuários → Permissões.
+// Parametrizações...) ainda passa por requireAdminFeature — por padrão todo Super Admin vê
+// tudo, a menos que o APP CENTRAL restrinja essa permissão específica pra essa conta.
 export const adminRouter = Router();
 adminRouter.use(requireAuth, requireSuperAdmin);
 adminRouter.use("/tenants", requireAdminFeature("admin_rpps_clientes"));
-adminRouter.use("/usuarios", requireAdminFeature("admin_usuarios"));
 adminRouter.use("/entidades-certificadoras", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/construtor-tipos", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/construtor-catalogo", requireAdminFeature("admin_parametrizacoes"));
@@ -55,9 +54,6 @@ const createTenantSchema = z.object({
   federatedEntity: z.string().min(2),
   seguradosCount: z.number().int().nonnegative().default(0),
   plan: z.enum(["ESSENCIAL", "GESTAO", "PERFORMANCE"]).default("ESSENCIAL"),
-  adminName: z.string().min(2),
-  adminEmail: z.string().email(),
-  adminPassword: z.string().min(8),
 });
 
 adminRouter.post("/tenants", async (req, res, next) => {
@@ -113,24 +109,6 @@ adminRouter.delete("/tenants/:id", async (req, res, next) => {
   }
 });
 
-adminRouter.get("/tenants/:id/primeiro-acesso", async (req, res, next) => {
-  try {
-    const token = await adminRepository.getOrCreateFirstAccessLink(req.params.id);
-    res.json({ token });
-  } catch (err) {
-    next(err);
-  }
-});
-
-adminRouter.post("/tenants/:id/primeiro-acesso/regenerar", async (req, res, next) => {
-  try {
-    const token = await adminRepository.regenerateFirstAccessLink(req.params.id);
-    res.json({ token });
-  } catch (err) {
-    next(err);
-  }
-});
-
 adminRouter.get("/tenants/:id/permissoes", async (req, res, next) => {
   try {
     res.json({ permissoes: await adminRepository.getTenantPermissoes(req.params.id) });
@@ -152,93 +130,19 @@ adminRouter.patch("/tenants/:id/permissoes/:featureKey", async (req, res, next) 
   }
 });
 
-// --- Usuários ----------------------------------------------------------------------------
-
-adminRouter.get("/usuarios", async (_req, res, next) => {
-  try {
-    res.json({ usuarios: await adminRepository.listUsuarios() });
-  } catch (err) {
-    next(err);
-  }
-});
-
-const superAdminSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-adminRouter.post("/usuarios/super-admin", async (req, res, next) => {
-  try {
-    const parsed = superAdminSchema.safeParse(req.body);
-    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
-    const usuario = await adminRepository.createSuperAdmin(parsed.data);
-    res.status(201).json(usuario);
-  } catch (err) {
-    next(err);
-  }
-});
-
-const toggleSuperAdminSchema = z.object({ isSuperAdmin: z.boolean() });
-
-adminRouter.patch("/usuarios/:userId/super-admin", async (req: AuthenticatedRequest, res, next) => {
-  try {
-    const parsed = toggleSuperAdminSchema.safeParse(req.body);
-    if (!parsed.success) throw new HttpError(400, "Payload inválido.");
-    if (req.params.userId === req.auth!.userId && !parsed.data.isSuperAdmin) {
-      throw new HttpError(400, "Você não pode remover seu próprio acesso de Super Admin.");
-    }
-    const usuario = await adminRepository.setSuperAdmin(req.params.userId, parsed.data.isSuperAdmin);
-    res.json(usuario);
-  } catch (err) {
-    next(err);
-  }
-});
-
-const updateUsuarioSchema = z.object({
-  name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
-  password: z.string().min(8).optional(),
-  telefone: z.string().nullable().optional(),
-  cpf: z.string().nullable().optional(),
-  ativo: z.boolean().optional(),
-});
-
-adminRouter.patch("/usuarios/:userId", async (req, res, next) => {
-  try {
-    const parsed = updateUsuarioSchema.safeParse(req.body);
-    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
-    const usuario = await adminRepository.updateUsuario(req.params.userId, parsed.data);
-    res.json(usuario);
-  } catch (err) {
-    next(err);
-  }
-});
-
-adminRouter.delete("/usuarios/:userId", async (req: AuthenticatedRequest, res, next) => {
-  try {
-    if (req.params.userId === req.auth!.userId) {
-      throw new HttpError(400, "Você não pode excluir seu próprio usuário.");
-    }
-    await adminRepository.deleteUsuario(req.params.userId);
-    res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
-});
+// --- Vínculos (Membership) de um RPPS — só pra Microsoft/gov.br, que não auto-vinculam tenant
+// como o login central faz (ver central-sso.routes.ts). Sem criação de usuário com senha: só
+// vincula uma conta que já existe (criada por login SSO em algum momento). Ativar/desativar
+// revoga/concede acesso sem apagar o vínculo (ver User.ativo). ------------------------------
 
 const membershipSchema = z.object({
   tenantId: z.string().min(1),
-  userId: z.string().optional(),
-  name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
-  telefone: z.string().optional(),
-  password: z.string().min(8).optional(),
+  email: z.string().email(),
 });
 
-adminRouter.post("/usuarios/membership", async (req, res, next) => {
+adminRouter.post("/tenants/:id/membros", async (req, res, next) => {
   try {
-    const parsed = membershipSchema.safeParse(req.body);
+    const parsed = membershipSchema.safeParse({ ...req.body, tenantId: req.params.id });
     if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Payload inválido.");
     const membership = await adminRepository.createOrUpdateMembership(parsed.data);
     res.status(201).json(membership);
@@ -247,7 +151,7 @@ adminRouter.post("/usuarios/membership", async (req, res, next) => {
   }
 });
 
-adminRouter.delete("/usuarios/membership/:membershipId", async (req, res, next) => {
+adminRouter.delete("/tenants/:id/membros/:membershipId", async (req, res, next) => {
   try {
     await adminRepository.removeMembership(req.params.membershipId);
     res.status(204).send();
@@ -256,30 +160,14 @@ adminRouter.delete("/usuarios/membership/:membershipId", async (req, res, next) 
   }
 });
 
-adminRouter.get("/usuarios/:userId/permissoes", async (req, res, next) => {
-  try {
-    res.json({ permissoes: await adminRepository.getUserPermissoes(req.params.userId) });
-  } catch (err) {
-    next(err);
-  }
-});
+const membershipUsuarioAtivoSchema = z.object({ ativo: z.boolean() });
 
-const userPermissaoSchema = z.object({ enabled: z.boolean().nullable() });
-
-adminRouter.patch("/usuarios/:userId/permissoes/:featureKey", async (req: AuthenticatedRequest, res, next) => {
+adminRouter.patch("/tenants/:id/membros/:userId/ativo", async (req, res, next) => {
   try {
-    const parsed = userPermissaoSchema.safeParse(req.body);
+    const parsed = membershipUsuarioAtivoSchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, "Payload inválido.");
-
-    // Sem isto, um Super Admin conseguiria se trancar pra fora da própria seção "Usuários" —
-    // que é justamente a única capaz de desfazer esse bloqueio (nenhuma outra rota permite
-    // editar permissão de usuário). Nunca deixamos essa combinação acontecer.
-    if (req.params.userId === req.auth!.userId && req.params.featureKey === "admin_usuarios" && parsed.data.enabled === false) {
-      throw new HttpError(400, "Você não pode bloquear seu próprio acesso à seção Usuários.");
-    }
-
-    const permissoes = await adminRepository.setUserPermissao(req.params.userId, req.params.featureKey, parsed.data.enabled);
-    res.json({ permissoes });
+    const usuario = await adminRepository.setUsuarioAtivo(req.params.userId, parsed.data.ativo);
+    res.json(usuario);
   } catch (err) {
     next(err);
   }

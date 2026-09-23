@@ -68,7 +68,12 @@ export async function listEnabledFeaturesForUser(userId: string, tenantId: strin
   return Array.from(resultado);
 }
 
-/** Usar após requireAuth + requireTenant. Bloqueia com 403 se o usuário não tiver a feature. */
+/**
+ * Usar após requireAuth + requireTenant. Bloqueia com 403 se o usuário não tiver a feature.
+ * Dual-mode (ver migração pro APP CENTRAL): login "central" checa a lista `permissions` do
+ * token, sem tocar banco — mesmos codes já usados aqui de sempre, nunca renomeados. Login
+ * "legacy" (Microsoft/gov.br) mantém o comportamento de sempre, via tabelas Feature no banco.
+ */
 export function requireFeature(featureKey: string) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     const tenantId = req.auth?.tenantId;
@@ -77,7 +82,10 @@ export function requireFeature(featureKey: string) {
       return;
     }
 
-    const enabled = await isFeatureEnabledForUser(req.auth!.userId, tenantId, featureKey);
+    const enabled =
+      req.auth!.authSource === "central"
+        ? (req.auth!.permissions ?? []).includes(featureKey)
+        : await isFeatureEnabledForUser(req.auth!.userId, tenantId, featureKey);
     if (!enabled) {
       res.status(403).json({
         error: "Este recurso não está disponível para o seu usuário neste RPPS.",
@@ -111,10 +119,18 @@ export async function listEnabledAdminFeaturesForUser(userId: string): Promise<s
   return features.map((f) => f.key).filter((key) => overrideByKey.get(key) ?? true);
 }
 
-/** Usar após requireAuth + requireSuperAdmin, por prefixo de rota (ver admin.routes.ts). */
+/**
+ * Usar após requireAuth + requireSuperAdmin, por prefixo de rota (ver admin.routes.ts).
+ * Dual-mode: Super Admin "central" já entrou como tal porque uma permissão `admin_*` estava no
+ * token (ver central-sso.routes.ts) — aqui também checa a lista `permissions` do token pra ver
+ * exatamente qual seção; "legacy" mantém a resolução por UserFeature de sempre.
+ */
 export function requireAdminFeature(featureKey: string) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-    const enabled = await isAdminFeatureEnabledForUser(req.auth!.userId, featureKey);
+    const enabled =
+      req.auth!.authSource === "central"
+        ? (req.auth!.permissions ?? []).includes(featureKey)
+        : await isAdminFeatureEnabledForUser(req.auth!.userId, featureKey);
     if (!enabled) {
       res.status(403).json({ error: "Esta seção do Admin Global não está liberada para o seu usuário.", featureKey });
       return;

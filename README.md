@@ -8,7 +8,7 @@ Ver o descritivo funcional completo do produto em `../Descritivo da Ferramenta -
 
 - **Backend**: Node.js + TypeScript + Express + Prisma ORM, banco **MySQL** (conforme infraestrutura de servidor já existente).
 - **Frontend**: React + Vite + TypeScript + Tailwind CSS.
-- **Autenticação**: JWT próprio (sem dependência de provedor externo), senhas com bcrypt.
+- **Autenticação**: 100% via SSO (APP CENTRAL, Microsoft e gov.br) — sem senha local; JWT próprio emitido depois de validar o login externo.
 - **Testes**: Vitest.
 
 ## Por que MySQL muda a arquitetura de multi-tenant
@@ -56,8 +56,10 @@ npm install
 npm run dev                 # http://localhost:5173
 ```
 
-Login de demonstração (após rodar o seed): `admin@valeverde.rpps.gov.br` / `demo1234`.
-Login do Super Admin (após rodar o seed): `superadmin@regularpps.com.br` / `superadmin123`.
+Não existe mais senha local — login é 100% via SSO. O seed só marca dois e-mails de antemão
+(`admin@valeverde.rpps.gov.br` como usuário do tenant de demonstração, `superadmin@regularpps.com.br`
+como Super Admin); a conta de fato nasce/vira esse papel na primeira vez que entrar por Microsoft,
+gov.br ou APP CENTRAL com esse e-mail (ver `CENTRAL_*`/`MICROSOFT_*`/`GOVBR_*` no `.env`).
 
 ## Deploy em produção (Docker)
 
@@ -67,21 +69,22 @@ Node instalado no servidor, só Docker.
 
 ```bash
 cp .env.production.example .env.production
-# preencha MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, JWT_SECRET e SUPER_ADMIN_PASSWORD —
+# preencha MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD e JWT_SECRET —
 # o compose recusa subir sem eles (ver comentários no próprio arquivo)
 
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 ```
 
 No primeiro boot, o container da API aplica as migrations do Prisma, projeta o catálogo
-normativo (22 critérios do CRP + 24 ações do Pró-Gestão) e cria o Super Admin automaticamente —
-tudo idempotente, seguro rodar de novo em todo redeploy/restart. **`SEED_DEMO_DATA` fica `false`
-por padrão no `.env.production.example`** — nunca ligue em produção com dado real de cliente, ele
-cria um tenant fictício ("Prefeitura de Vale Verde") com CRP/Pró-Gestão preenchidos de exemplo.
+normativo (22 critérios do CRP + 24 ações do Pró-Gestão) e marca `SUPER_ADMIN_EMAIL` como Super
+Admin automaticamente — tudo idempotente, seguro rodar de novo em todo redeploy/restart.
+**`SEED_DEMO_DATA` fica `false` por padrão no `.env.production.example`** — nunca ligue em
+produção com dado real de cliente, ele cria um tenant fictício ("Prefeitura de Vale Verde") com
+CRP/Pró-Gestão preenchidos de exemplo.
 
-Acesse `http://<host>` (ou a porta definida em `WEB_PORT`) e entre com o e-mail/senha do Super
-Admin definidos no `.env.production` — primeiro passo depois de logar é cadastrar o primeiro RPPS
-real em Admin → RPPS clientes.
+Acesse `http://<host>` (ou a porta definida em `WEB_PORT`) e entre pelo APP CENTRAL (ou
+Microsoft/gov.br, se configurados) com o e-mail definido em `SUPER_ADMIN_EMAIL` — primeiro passo
+depois de logar é cadastrar o primeiro RPPS real em Admin → RPPS clientes.
 
 ### Banco de dados: embutido vs. dedicado
 
@@ -147,7 +150,7 @@ stack (extração de PDF, IA, armazenamento).
 
 ## Módulos implementados
 
-- [x] Autenticação (registro/login com JWT) e modelo de tenants/usuários/memberships (papéis: Super Admin, Admin do RPPS, Servidor, Auditor).
+- [x] Autenticação 100% via SSO (APP CENTRAL, Microsoft, gov.br) com JWT próprio, e modelo de tenants/usuários/memberships.
 - [x] Isolamento multi-tenant testado automaticamente.
 - [x] **Central de Compliance CRP**: os 22 critérios oficiais, status por tenant (regular/irregular/pendente) com edição, cascata de dependência entre critérios (ex.: DIPR-Consistência fica irregular automaticamente se DIPR-Encaminhamento não estiver regular, e o sistema bloqueia marcar o dependente como regular nesse caso), forma de verificação e sistema de origem exibidos por critério.
 - [x] **Pró-Gestão RPPS**: as 24 ações / 3 dimensões, com:

@@ -4,13 +4,14 @@
 #
 # Uso:
 #   1. cp .env.production.example .env.production
-#   2. Preencha MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, JWT_SECRET, SUPER_ADMIN_PASSWORD (ver
-#      comentários no .env.production.example) — o compose recusa subir sem eles.
+#   2. Preencha MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, JWT_SECRET (ver comentários no
+#      .env.production.example) — o compose recusa subir sem eles.
 #   3. docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
 #
 # Primeiro boot: a API aplica as migrations do Prisma, projeta o catálogo normativo (22 critérios
-# do CRP + 24 ações do Pró-Gestão) e cria o Super Admin, tudo automaticamente antes de subir (ver
-# apps/api/Dockerfile). Login em https://<seu-dominio>/ com o e-mail/senha definidos no .env.
+# do CRP + 24 ações do Pró-Gestão) e marca SUPER_ADMIN_EMAIL como Super Admin, tudo
+# automaticamente antes de subir (ver apps/api/Dockerfile). Login é 100% via SSO — Microsoft,
+# gov.br ou APP CENTRAL (ver seção abaixo) — não existe senha local.
 
 services:
   # MySQL embutido — OPCIONAL. Só sobe se você ativar o profile "local-db" explicitamente:
@@ -50,14 +51,22 @@ services:
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env.production}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       UPLOADS_DIR: /app/apps/api/uploads
+      # E-mail marcado como Super Admin no primeiro boot — não tem senha própria, login é 100%
+      # via SSO (Microsoft, gov.br ou APP CENTRAL, ver comentário abaixo).
       SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL:-}
-      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:?defina SUPER_ADMIN_PASSWORD no .env.production — sem isso o login do Super Admin fica com a senha padrão de dev}
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
-      # Login com Microsoft/gov.br — opcionais, os botões só aparecem se as credenciais reais
-      # forem preenchidas no .env.production (ver .env.production.example). WEB_URL é pra onde
-      # o backend redireciona o navegador depois do login — tem que ser a URL pública real do
-      # site (com domínio/HTTPS), nunca localhost, uma vez fora do ambiente de dev.
+      # Login via SSO — Microsoft/gov.br opcionais (botões só aparecem se as credenciais reais
+      # forem preenchidas no .env.production, ver .env.production.example); APP CENTRAL é o
+      # provedor principal de login/permissionamento. WEB_URL é pra onde o backend redireciona o
+      # navegador depois do login — tem que ser a URL pública real do site (com domínio/HTTPS),
+      # nunca localhost, uma vez fora do ambiente de dev.
       WEB_URL: ${WEB_URL:-http://localhost}
+      CENTRAL_ISSUER: ${CENTRAL_ISSUER:-}
+      CENTRAL_CLIENT_ID: ${CENTRAL_CLIENT_ID:-}
+      CENTRAL_CLIENT_SECRET: ${CENTRAL_CLIENT_SECRET:-}
+      CENTRAL_REDIRECT_URI: ${CENTRAL_REDIRECT_URI:-}
+      CENTRAL_TOKEN_URL: ${CENTRAL_TOKEN_URL:-}
+      CENTRAL_INTROSPECT_URL: ${CENTRAL_INTROSPECT_URL:-}
       MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
       MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
       MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-}

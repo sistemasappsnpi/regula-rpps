@@ -1,6 +1,4 @@
-import crypto from "node:crypto";
 import {
-  Prisma,
   type ModoExtracaoIA,
   type NivelAderencia,
   type Plan,
@@ -9,7 +7,6 @@ import {
   type StatusEntidadeCertificadora,
 } from "@prisma/client";
 import { prisma } from "../../db/prisma";
-import { hashPassword } from "../../utils/password";
 import { slugify } from "../../utils/slugify";
 import { HttpError } from "../../middleware/errorHandler";
 import { crpRepository } from "../crp/crp.repository";
@@ -66,26 +63,19 @@ export const adminRepository = {
     }));
   },
 
-  async createTenant(input: {
-    tenantName: string;
-    federatedEntity: string;
-    seguradosCount: number;
-    plan: Plan;
-    adminName: string;
-    adminEmail: string;
-    adminPassword: string;
-  }) {
-    const existing = await prisma.user.findUnique({ where: { email: input.adminEmail } });
-    if (existing) throw new HttpError(409, "Já existe um usuário com este e-mail.");
-
+  /**
+   * Cria só o Tenant — não cria mais nenhum usuário admin junto (não existe mais senha local pra
+   * atribuir, ver migração pro APP CENTRAL). O jeito normal de um RPPS nascer agora é o
+   * auto-provisionamento pelo `client_code` no primeiro login central (ver central-sso.routes.ts);
+   * isto aqui serve pra um Super Admin pré-cadastrar um tenant manualmente antes disso acontecer.
+   */
+  async createTenant(input: { tenantName: string; federatedEntity: string; seguradosCount: number; plan: Plan }) {
     const baseSlug = slugify(input.tenantName);
     let slug = baseSlug;
     let attempt = 1;
     while (await prisma.tenant.findUnique({ where: { slug } })) {
       slug = `${baseSlug}-${++attempt}`;
     }
-
-    const passwordHash = await hashPassword(input.adminPassword);
 
     const tenant = await prisma.tenant.create({
       data: {
@@ -94,17 +84,11 @@ export const adminRepository = {
         federatedEntity: input.federatedEntity,
         seguradosCount: input.seguradosCount,
         plan: input.plan,
-        memberships: {
-          create: {
-            user: { create: { name: input.adminName, email: input.adminEmail, passwordHash } },
-          },
-        },
       },
-      include: { memberships: { include: { user: true } } },
     });
 
-    // Mesma rotina usada no auto-registro público — garante que o novo RPPS já nasce com
-    // uma linha de status (PENDENTE) para cada um dos 22 critérios do CRP.
+    // Mesma rotina usada no auto-provisionamento via client_code — garante que o novo RPPS já
+    // nasce com uma linha de status (PENDENTE) para cada um dos 22 critérios do CRP.
     await crpRepository.ensureTenantRows(tenant.id);
 
     return tenant;
@@ -157,31 +141,6 @@ export const adminRepository = {
     }
 
     return prisma.tenant.update({ where: { id }, data: { ...data, ...(slug ? { slug } : {}) } });
-  },
-
-  /**
-   * Link único por tenant (ver schema.prisma, Tenant.firstAccessToken) que qualquer membro já
-   * pré-cadastrado (por e-mail) consegue usar para completar o próprio cadastro sem o admin
-   * precisar conhecer ou distribuir senhas individualmente. Gerado sob demanda: um tenant sem
-   * link ainda (ex.: recém-criado) recebe um na primeira vez que a aba "Usuários" é aberta.
-   */
-  async getOrCreateFirstAccessLink(tenantId: string) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
-    if (tenant.firstAccessToken) return tenant.firstAccessToken;
-
-    const token = crypto.randomBytes(18).toString("base64url");
-    await prisma.tenant.update({ where: { id: tenantId }, data: { firstAccessToken: token } });
-    return token;
-  },
-
-  async regenerateFirstAccessLink(tenantId: string) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
-
-    const token = crypto.randomBytes(18).toString("base64url");
-    await prisma.tenant.update({ where: { id: tenantId }, data: { firstAccessToken: token } });
-    return token;
   },
 
   /**
@@ -250,235 +209,36 @@ export const adminRepository = {
     return adminRepository.getTenantPermissoes(tenantId);
   },
 
-  /**
-   * Permissionamento deste USUÁRIO — terceiro nível da cascata (ver middleware/features.ts):
-   * mostra, pra cada feature, o que valeria pra ele via plano+tenant ("herdado") e o override
-   * pessoal, se houver. Usado tanto pra usuários de RPPS (features TENANT, herdando do tenant
-   * dele) quanto pra Super Admins (features ADMIN, herdando "liberado" por padrão).
-   */
-  async getUserPermissoes(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { memberships: { include: { tenant: { select: { id: true, plan: true } } } } },
-    });
-    if (!user) throw new HttpError(404, "Usuário não encontrado.");
-
-    const overrides = await prisma.userFeature.findMany({ where: { userId } });
-    const overridePorChave = new Map(overrides.map((o) => [o.featureKey, o.enabled]));
-
-    if (user.isSuperAdmin) {
-      const features = await prisma.feature.findMany({ where: { escopo: "ADMIN" }, orderBy: { sortOrder: "asc" } });
-      return features.map((f) => {
-        const override = overridePorChave.has(f.key) ? overridePorChave.get(f.key)! : null;
-        return {
-          key: f.key,
-          nome: f.nome,
-          descricao: f.descricao,
-          grupo: f.grupo,
-          herdado: true, // Super Admin vê tudo por padrão, a menos que alguém restrinja.
-          override,
-          efetivo: override ?? true,
-        };
-      });
-    }
-
-    const membership = user.memberships[0];
-    if (!membership) return [];
-
-    const [features, planFeatures, tenantOverrides] = await Promise.all([
-      prisma.feature.findMany({ where: { escopo: "TENANT" }, orderBy: { sortOrder: "asc" } }),
-      prisma.planFeature.findMany({ where: { plan: membership.tenant.plan } }),
-      prisma.tenantFeature.findMany({ where: { tenantId: membership.tenantId } }),
-    ]);
-
-    const padraoPorChave = new Map(planFeatures.map((p) => [p.featureKey, p.enabled]));
-    const tenantOverridePorChave = new Map(tenantOverrides.map((o) => [o.featureKey, o.enabled]));
-
-    return features.map((f) => {
-      const padraoDoPlano = padraoPorChave.get(f.key) ?? false;
-      const herdado = tenantOverridePorChave.has(f.key) ? tenantOverridePorChave.get(f.key)! : padraoDoPlano;
-      const override = overridePorChave.has(f.key) ? overridePorChave.get(f.key)! : null;
-      return {
-        key: f.key,
-        nome: f.nome,
-        descricao: f.descricao,
-        grupo: f.grupo,
-        herdado,
-        override,
-        efetivo: override ?? herdado,
-      };
-    });
-  },
-
-  /** `enabled: null` remove o override pessoal e volta a valer o que o usuário herdaria. */
-  async setUserPermissao(userId: string, featureKey: string, enabled: boolean | null) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new HttpError(404, "Usuário não encontrado.");
-    const feature = await prisma.feature.findUnique({ where: { key: featureKey } });
-    if (!feature) throw new HttpError(404, "Feature não encontrada.");
-
-    if (enabled === null) {
-      await prisma.userFeature.deleteMany({ where: { userId, featureKey } });
-    } else {
-      await prisma.userFeature.upsert({
-        where: { userId_featureKey: { userId, featureKey } },
-        update: { enabled },
-        create: { userId, featureKey, enabled },
-      });
-    }
-
-    return adminRepository.getUserPermissoes(userId);
-  },
-
   // ---------------------------------------------------------------------------------------
-  // Usuários — cross-tenant. Um usuário pode ser Super Admin da plataforma (sem tenant) e/ou
-  // ter memberships em um ou mais tenants.
+  // Vínculos (Membership) — só pra Microsoft/gov.br (ver admin.routes.ts): login central
+  // auto-vincula pelo client_code, nunca passa por aqui. Sem criação de usuário com senha: a
+  // conta já precisa existir (criada por um login SSO em algum momento).
   // ---------------------------------------------------------------------------------------
-  async listUsuarios() {
-    return prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        telefone: true,
-        cpf: true,
-        ativo: true,
-        lastLoginAt: true,
-        isSuperAdmin: true,
-        createdAt: true,
-        memberships: { include: { tenant: { select: { id: true, name: true, slug: true } } } },
-      },
-    });
-  },
-
-  async createSuperAdmin(input: { name: string; email: string; password: string }) {
-    const existing = await prisma.user.findUnique({ where: { email: input.email } });
-    if (existing) throw new HttpError(409, "Já existe um usuário com este e-mail.");
-    const passwordHash = await hashPassword(input.password);
-    return prisma.user.create({
-      data: { name: input.name, email: input.email, passwordHash, isSuperAdmin: true },
-    });
-  },
-
-  async setSuperAdmin(userId: string, isSuperAdmin: boolean) {
-    return prisma.user.update({ where: { id: userId }, data: { isSuperAdmin } });
-  },
-
-  async updateUsuario(
-    userId: string,
-    data: {
-      name?: string;
-      email?: string;
-      password?: string;
-      telefone?: string | null;
-      cpf?: string | null;
-      ativo?: boolean;
-    },
-  ) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new HttpError(404, "Usuário não encontrado.");
-
-    if (data.email && data.email !== user.email) {
-      const existing = await prisma.user.findUnique({ where: { email: data.email } });
-      if (existing) throw new HttpError(409, "Já existe um usuário com este e-mail.");
-    }
-
-    if (data.cpf) {
-      const existente = await prisma.user.findUnique({ where: { cpf: data.cpf } });
-      if (existente && existente.id !== userId) throw new HttpError(409, "Já existe um usuário com este CPF.");
-    }
-
-    // Inclui memberships (mesmo formato de listUsuarios) para o retorno bater com o tipo
-    // AdminUsuario esperado pelo frontend, mesmo que a tela atual sempre recarregue a lista
-    // inteira depois — evita a resposta desta rota mentir sobre seu próprio formato.
-    return prisma.user.update({
-      where: { id: userId },
-      data: {
-        name: data.name,
-        email: data.email,
-        telefone: data.telefone,
-        cpf: data.cpf,
-        ativo: data.ativo,
-        passwordHash: data.password ? await hashPassword(data.password) : undefined,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        telefone: true,
-        cpf: true,
-        ativo: true,
-        lastLoginAt: true,
-        isSuperAdmin: true,
-        createdAt: true,
-        memberships: { include: { tenant: { select: { id: true, name: true, slug: true } } } },
-      },
-    });
-  },
-
-  /**
-   * Memberships são apagadas em cascata (Membership.userId tem onDelete: Cascade). Registros
-   * que o usuário criou noutras tabelas (uploads, valores do Pró-Gestão) não têm cascade —
-   * a exclusão falha com FK constraint e vira um erro amigável em vez de um 500 genérico.
-   */
-  async deleteUsuario(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new HttpError(404, "Usuário não encontrado.");
-
-    try {
-      await prisma.user.delete({ where: { id: userId } });
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
-        throw new HttpError(
-          409,
-          "Não é possível excluir: este usuário possui registros vinculados (uploads, valores do Pró-Gestão etc.).",
-        );
-      }
-      throw err;
-    }
-  },
-
-  /**
-   * Vincula um usuário (existente por e-mail, ou recém-criado) a um tenant. Senha é opcional na
-   * criação: sem ela, o usuário nasce com uma senha aleatória inutilizável e completa o próprio
-   * cadastro depois pelo link de primeiro acesso do tenant (ver getOrCreateFirstAccessLink) —
-   * mesmo fluxo do "Novo Usuário" com senha em branco.
-   */
-  async createOrUpdateMembership(input: {
-    tenantId: string;
-    userId?: string;
-    name?: string;
-    email?: string;
-    telefone?: string;
-    password?: string;
-  }) {
-    let userId = input.userId;
-
-    if (!userId) {
-      if (!input.email) throw new HttpError(400, "Informe o e-mail do usuário.");
-      const existing = await prisma.user.findUnique({ where: { email: input.email } });
-      if (existing) {
-        userId = existing.id;
-      } else {
-        if (!input.name) throw new HttpError(400, "Para criar um novo usuário, informe o nome.");
-        const passwordHash = await hashPassword(input.password || crypto.randomUUID());
-        const created = await prisma.user.create({
-          data: { name: input.name, email: input.email, telefone: input.telefone, passwordHash },
-        });
-        userId = created.id;
-      }
+  async createOrUpdateMembership(input: { tenantId: string; email: string }) {
+    const user = await prisma.user.findUnique({ where: { email: input.email } });
+    if (!user) {
+      throw new HttpError(
+        404,
+        "Não existe conta com este e-mail. A pessoa precisa entrar ao menos uma vez pela Microsoft ou gov.br antes de ser vinculada a um RPPS.",
+      );
     }
 
     return prisma.membership.upsert({
-      where: { userId_tenantId: { userId, tenantId: input.tenantId } },
+      where: { userId_tenantId: { userId: user.id, tenantId: input.tenantId } },
       update: {},
-      create: { userId, tenantId: input.tenantId },
+      create: { userId: user.id, tenantId: input.tenantId },
     });
   },
 
   async removeMembership(membershipId: string) {
     return prisma.membership.delete({ where: { id: membershipId } });
+  },
+
+  /** Ativar/desativar sem apagar o vínculo — revoga/concede acesso (checado no login SSO). */
+  async setUsuarioAtivo(userId: string, ativo: boolean) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new HttpError(404, "Usuário não encontrado.");
+    return prisma.user.update({ where: { id: userId }, data: { ativo } });
   },
 
   // ---------------------------------------------------------------------------------------

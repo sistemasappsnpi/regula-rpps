@@ -1,11 +1,16 @@
 import type { NextFunction, Request, Response } from "express";
-import { verifyAuthToken } from "../utils/jwt";
+import { verifyAuthToken, type CentralTokenBundle } from "../utils/jwt";
 
 export interface AuthenticatedRequest extends Request {
   auth?: {
     userId: string;
     tenantId: string | null;
     isSuperAdmin: boolean;
+    authSource: "central" | "legacy";
+    // Só presentes quando authSource === "central" (ver middleware/features.ts e
+    // requireFreshPermissions.ts).
+    permissions?: string[];
+    central?: CentralTokenBundle;
   };
 }
 
@@ -28,6 +33,9 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
       userId: payload.userId,
       tenantId: payload.tenantId,
       isSuperAdmin: payload.isSuperAdmin,
+      authSource: payload.authSource,
+      permissions: payload.permissions,
+      central: payload.central,
     };
     next();
   } catch {

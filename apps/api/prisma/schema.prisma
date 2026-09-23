@@ -130,10 +130,10 @@ model Tenant {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 
-  // Link único e rotativo (ver adminRepository.getOrCreateFirstAccessLink) que qualquer membro
-  // já pré-cadastrado deste tenant pode usar para completar o próprio cadastro (telefone + senha)
-  // sem depender do admin conhecer ou distribuir senhas individualmente.
-  firstAccessToken String? @unique
+  // `client_code` do APP CENTRAL (ver central-sso.routes.ts) — resolve automaticamente a qual
+  // tenant local um login central pertence. Null pra tenants que nunca tiveram um login central
+  // (ex.: criados manualmente pelo Super Admin antes de existir vínculo com o APP CENTRAL).
+  centralClientCode String? @unique
 
   memberships Membership[]
   crpStatuses TenantCrpCriterion[]
@@ -153,7 +153,10 @@ model Tenant {
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
-  passwordHash String
+  // `sub` do APP CENTRAL (ver central-sso.routes.ts) — null pra usuários que só entram via
+  // Microsoft/gov.br (que casam por e-mail, sem sub estável). Login e permissionamento não
+  // guardam mais senha local nenhuma — a fonte de verdade é sempre o provedor externo.
+  centralSub   String?   @unique
   name         String
   telefone     String?
   cpf          String?   @unique

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { env } from "../../config/env";
 import { requireAuth, requireTenant, type AuthenticatedRequest } from "../../middleware/auth";
 import { requireFeature } from "../../middleware/features";
+import { requireFreshPermissions } from "../../middleware/requireFreshPermissions";
 import { HttpError } from "../../middleware/errorHandler";
 import { prisma } from "../../db/prisma";
 import { registrarValorDeCampo } from "../pro-gestao/pro-gestao.service";
@@ -232,7 +233,7 @@ uploadsRouter.get("/criterio", requireFeature("crp_compliance"), async (req: Aut
 // tenant antes de apagar o arquivo em disco e o registro no banco.
 // ---------------------------------------------------------------------------------------
 
-uploadsRouter.delete("/:uploadId", async (req: AuthenticatedRequest, res, next) => {
+uploadsRouter.delete("/:uploadId", requireFreshPermissions(), async (req: AuthenticatedRequest, res, next) => {
   try {
     const documento = await prisma.documentoUpload.findUnique({ where: { id: req.params.uploadId } });
     if (!documento || documento.tenantId !== req.auth!.tenantId!) {
