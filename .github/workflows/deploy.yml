@@ -23,6 +23,8 @@ jobs:
           ssh -p 22 "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
             set -e
             cd /app/data/previdencia.npibrasil.com/regula-rpps
+            git checkout -- docker-compose.prod.yml
             git pull origin main
+            sed -i "s/WEB_PORT:-80/WEB_PORT:-9188/" docker-compose.prod.yml
             docker compose --env-file .env.production --profile local-db -f docker-compose.prod.yml up -d --build
           '
