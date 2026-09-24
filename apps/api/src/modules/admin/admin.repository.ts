@@ -10,6 +10,7 @@ import { prisma } from "../../db/prisma";
 import { slugify } from "../../utils/slugify";
 import { HttpError } from "../../middleware/errorHandler";
 import { crpRepository } from "../crp/crp.repository";
+import { listEnabledAdminFeaturesForUser, listEnabledFeaturesForUser } from "../../middleware/features";
 
 export const adminRepository = {
   // ---------------------------------------------------------------------------------------
@@ -48,6 +49,7 @@ export const adminRepository = {
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo,
       seguradosCount: t.seguradosCount,
+      centralClientCode: t.centralClientCode,
       createdAt: t.createdAt,
       membros: t.memberships.map((m) => ({
         membershipId: m.id,
@@ -112,10 +114,18 @@ export const adminRepository = {
       seguradosCount: number;
       plan: Plan;
       nivelProGestaoAlvo: NivelAderencia | null;
+      centralClientCode: string | null;
     }>,
   ) {
     const tenant = await prisma.tenant.findUnique({ where: { id } });
     if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+
+    if (data.centralClientCode) {
+      const outro = await prisma.tenant.findUnique({ where: { centralClientCode: data.centralClientCode } });
+      if (outro && outro.id !== id) {
+        throw new HttpError(409, "Este código do APP CENTRAL já está vinculado a outro RPPS.");
+      }
+    }
 
     if (data.cnpj) {
       const outroComMesmoCnpj = await prisma.tenant.findUnique({ where: { cnpj: data.cnpj } });
@@ -141,6 +151,70 @@ export const adminRepository = {
     }
 
     return prisma.tenant.update({ where: { id }, data: { ...data, ...(slug ? { slug } : {}) } });
+  },
+
+  /**
+   * Gera o arquivo de importação em massa da Central de Comando (clientes + usuários + permissões
+   * efetivas de cada um). Também grava o `centralClientCode` em todo RPPS que ainda não tinha um
+   * (derivado do slug) — assim o código que vai pra Central é exatamente o que o login central
+   * usa depois pra achar o RPPS certo, sem vínculo manual. Idempotente: roda de novo sem mudar
+   * códigos já gravados.
+   */
+  async exportarParaCentral() {
+    const tenants = await prisma.tenant.findMany({
+      orderBy: { createdAt: "asc" },
+      include: { memberships: { include: { user: true } } },
+    });
+
+    const usados = new Set(tenants.map((t) => t.centralClientCode).filter((c): c is string => !!c));
+    for (const t of tenants) {
+      if (t.centralClientCode) continue;
+      const base = t.slug.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 28) || "RPPS";
+      let code = base;
+      let n = 1;
+      while (usados.has(code)) code = `${base}-${++n}`;
+      usados.add(code);
+      t.centralClientCode = code;
+      await prisma.tenant.update({ where: { id: t.id }, data: { centralClientCode: code } });
+    }
+
+    const clients = tenants.map((t) => ({ code: t.centralClientCode!, name: t.name, city: t.federatedEntity }));
+
+    const users: {
+      email: string;
+      full_name: string;
+      client_code: string | null;
+      is_superuser: boolean;
+      permissions: string[];
+    }[] = [];
+    const jaExportados = new Set<string>();
+
+    for (const t of tenants) {
+      for (const m of t.memberships) {
+        if (!m.user.ativo || m.user.isSuperAdmin || jaExportados.has(m.user.id)) continue;
+        jaExportados.add(m.user.id);
+        users.push({
+          email: m.user.email,
+          full_name: m.user.name,
+          client_code: t.centralClientCode!,
+          is_superuser: false,
+          permissions: await listEnabledFeaturesForUser(m.user.id, t.id, t.plan),
+        });
+      }
+    }
+
+    const admins = await prisma.user.findMany({ where: { isSuperAdmin: true, ativo: true } });
+    for (const u of admins) {
+      users.push({
+        email: u.email,
+        full_name: u.name,
+        client_code: null,
+        is_superuser: false,
+        permissions: await listEnabledAdminFeaturesForUser(u.id),
+      });
+    }
+
+    return { app_slug: "regula-rpps", clients, users };
   },
 
   /**

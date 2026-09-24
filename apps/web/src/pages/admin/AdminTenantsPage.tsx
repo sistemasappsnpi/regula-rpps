@@ -18,6 +18,7 @@ export function AdminTenantsPage() {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [exportando, setExportando] = useState(false);
 
   const [form, setForm] = useState({
     tenantName: "",
@@ -44,6 +45,7 @@ export function AdminTenantsPage() {
     plan: "ESSENCIAL" as Tenant["plan"],
     nivelProGestaoAlvo: "" as Nivel | "",
     observacao: "",
+    centralClientCode: "",
   });
 
   const editando = tenants.find((t) => t.id === editandoId) ?? null;
@@ -89,7 +91,28 @@ export function AdminTenantsPage() {
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo ?? "",
       observacao: t.observacao ?? "",
+      centralClientCode: t.centralClientCode ?? "",
     });
+  }
+
+  async function exportarCentral() {
+    setErro(null);
+    setExportando(true);
+    try {
+      const dados = await api.adminExportarCentral();
+      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "regula-rpps-importacao-central.json";
+      a.click();
+      URL.revokeObjectURL(url);
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao exportar para o APP CENTRAL.");
+    } finally {
+      setExportando(false);
+    }
   }
 
   async function salvarEdicao() {
@@ -113,6 +136,7 @@ export function AdminTenantsPage() {
         seguradosCount: formEdicao.seguradosCount,
         plan: formEdicao.plan,
         nivelProGestaoAlvo: formEdicao.nivelProGestaoAlvo || null,
+        centralClientCode: formEdicao.centralClientCode.trim() || null,
       });
       await carregar();
       setEditandoId(null);
@@ -149,7 +173,12 @@ export function AdminTenantsPage() {
           <h1 className="font-display text-2xl font-bold text-ink">RPPS clientes</h1>
           <p className="mt-1 text-sm text-ink-muted">Todos os Regimes Próprios de Previdência Social atendidos pela plataforma.</p>
         </div>
-        <Button onClick={() => setMostrarForm((v) => !v)}>{mostrarForm ? "Cancelar" : "Novo RPPS"}</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={exportarCentral} disabled={exportando}>
+            {exportando ? "Gerando…" : "Exportar para o APP CENTRAL"}
+          </Button>
+          <Button onClick={() => setMostrarForm((v) => !v)}>{mostrarForm ? "Cancelar" : "Novo RPPS"}</Button>
+        </div>
       </header>
 
       {erro && !editando && <p className="mb-4 text-sm text-crit">{erro}</p>}
@@ -271,6 +300,17 @@ export function AdminTenantsPage() {
             />
             <Campo label="CNPJ" value={formEdicao.cnpj} onChange={(v) => setFormEdicao({ ...formEdicao, cnpj: v })} />
             <Campo label="Site" value={formEdicao.site} onChange={(v) => setFormEdicao({ ...formEdicao, site: v })} />
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">Código no APP CENTRAL (client_code)</span>
+              <input
+                value={formEdicao.centralClientCode}
+                onChange={(e) => setFormEdicao({ ...formEdicao, centralClientCode: e.target.value })}
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 font-mono text-sm outline-none focus:border-petrol"
+              />
+              <span className="mt-1 block text-xs text-ink-muted">
+                Tem que ser idêntico ao código do Cliente no APP CENTRAL — é como o login liga o usuário a este RPPS.
+              </span>
+            </label>
             <label className="block text-sm sm:col-span-2">
               <span className="mb-1 block font-medium text-ink">URL do logo</span>
               <div className="flex items-center gap-3">

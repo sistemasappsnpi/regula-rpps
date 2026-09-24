@@ -343,8 +343,12 @@ export const api = {
       seguradosCount: number;
       plan: Tenant["plan"];
       nivelProGestaoAlvo: Nivel | null;
+      centralClientCode: string | null;
     }>,
   ) => request<Tenant>(`/admin/tenants/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+
+  // Gera o JSON de importação em massa da Central (e grava o código dos RPPS que ainda não tinham).
+  adminExportarCentral: () => request<unknown>("/admin/tenants/exportar-central", { method: "POST" }),
 
   adminDeleteTenant: (id: string) => request<unknown>(`/admin/tenants/${id}`, { method: "DELETE" }),
 
@@ -530,6 +534,7 @@ export interface AdminTenant {
   plan: Tenant["plan"];
   nivelProGestaoAlvo: Nivel | null;
   seguradosCount: number;
+  centralClientCode: string | null;
   createdAt: string;
   membros: {
     membershipId: string;

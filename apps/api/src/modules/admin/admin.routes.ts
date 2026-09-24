@@ -87,6 +87,16 @@ const updateTenantSchema = z.object({
   seguradosCount: z.number().int().nonnegative().optional(),
   plan: z.enum(["ESSENCIAL", "GESTAO", "PERFORMANCE"]).optional(),
   nivelProGestaoAlvo: z.enum(["I", "II", "III", "IV"]).nullable().optional(),
+  centralClientCode: z.string().trim().min(1).max(32).nullable().optional(),
+});
+
+// POST (não GET) porque grava o centralClientCode dos RPPS que ainda não tinham um.
+adminRouter.post("/tenants/exportar-central", async (_req, res, next) => {
+  try {
+    res.json(await adminRepository.exportarParaCentral());
+  } catch (err) {
+    next(err);
+  }
 });
 
 adminRouter.patch("/tenants/:id", async (req, res, next) => {
