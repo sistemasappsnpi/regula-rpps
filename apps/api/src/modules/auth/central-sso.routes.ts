@@ -23,18 +23,11 @@ import type { CentralTokenBundle } from "../../utils/jwt";
  */
 export const centralSsoRouter = Router();
 
-interface CentralDiscovery {
-  authorization_endpoint: string;
-}
-
-let discoveryCache: CentralDiscovery | null = null;
-
-async function getDiscovery(): Promise<CentralDiscovery> {
-  if (discoveryCache) return discoveryCache;
-  const resp = await fetch(`${env.central.issuer}/.well-known/openid-configuration`);
-  if (!resp.ok) throw new Error("Não foi possível obter a configuração OIDC do APP CENTRAL.");
-  discoveryCache = (await resp.json()) as CentralDiscovery;
-  return discoveryCache;
+// Não usa o discovery document: o issuer que ele publica depende do BASE_URL configurado na
+// Central (já veio como localhost:8000 em produção, o que mandava o navegador pra um endereço
+// que só existe na máquina de quem clica). CENTRAL_ISSUER, definido aqui, é a fonte confiável.
+function authorizationEndpoint(): string {
+  return `${env.central.issuer.replace(/\/+$/, "")}/oauth/authorize`;
 }
 
 function redirectComErro(res: Response, mensagem: string): void {
@@ -73,12 +66,11 @@ centralSsoRouter.get("/login", async (_req, res) => {
   }
 
   try {
-    const discovery = await getDiscovery();
     const codeVerifier = crypto.randomBytes(32).toString("base64url");
     const codeChallenge = base64UrlSha256(codeVerifier);
     const state = createOAuthState(codeVerifier);
 
-    const authorizeUrl = new URL(discovery.authorization_endpoint);
+    const authorizeUrl = new URL(authorizationEndpoint());
     authorizeUrl.searchParams.set("client_id", env.central.clientId);
     authorizeUrl.searchParams.set("response_type", "code");
     authorizeUrl.searchParams.set("redirect_uri", env.central.redirectUri);
