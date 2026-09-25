@@ -16,7 +16,7 @@ export function ContaNaoVinculadaPage() {
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">
       <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 text-center shadow-soft">
         <ShieldAlert size={32} className="mx-auto mb-3 text-warn" />
-        <p className="font-display text-lg font-bold text-ink">Sua conta ainda não está vinculada a nenhum RPPS</p>
+        <p className="text-lg font-semibold text-ink">Sua conta ainda não está vinculada a nenhum RPPS</p>
         <p className="mt-2 text-sm text-ink-muted">
           {user ? `${user.name} (${user.email})` : "Sua conta"} entrou com sucesso pelo APP CENTRAL, mas ainda não tem um
           cliente vinculado por lá. Fale com o administrador do APP CENTRAL para associar sua conta a um RPPS.

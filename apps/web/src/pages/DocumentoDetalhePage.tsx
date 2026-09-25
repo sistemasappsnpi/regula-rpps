@@ -119,7 +119,7 @@ export function DocumentoDetalhePage() {
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-xs text-ink-muted">{acao.numero}</p>
-          <h1 className="mt-0.5 font-display text-2xl font-bold text-ink">{acao.nome}</h1>
+          <h1 className="mt-0.5 text-2xl font-semibold sm:text-3xl text-ink">{acao.nome}</h1>
           <p className="mt-1 max-w-2xl text-sm text-ink-muted">{acao.objetivo}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -200,7 +200,7 @@ export function DocumentoDetalhePage() {
             {enviandoPdf && <p className="mt-2 text-xs text-ink-muted">Enviando e extraindo texto do PDF…</p>}
             {avisoIa && <p className="mt-2 text-xs text-ink-muted">{avisoIa}</p>}
 
-            <p className="mb-2 mt-4 text-xs font-medium uppercase tracking-wide text-ink-muted">
+            <p className="mb-2 mt-4 text-xs font-medium text-ink-muted">
               Documentos já enviados
             </p>
             <div className="flex flex-col gap-3">

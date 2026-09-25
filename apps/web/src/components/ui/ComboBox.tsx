@@ -69,7 +69,7 @@ export function ComboBox({
           {filtrados.map((o, i) => (
             <div key={o.value}>
               {o.group && o.group !== filtrados[i - 1]?.group && (
-                <p className="px-3 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted first:pt-2">
+                <p className="px-3 pb-1 pt-2.5 text-xs font-bold uppercase tracking-wide text-ink-muted first:pt-2">
                   {o.group}
                 </p>
               )}

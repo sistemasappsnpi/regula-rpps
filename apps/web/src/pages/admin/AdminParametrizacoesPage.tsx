@@ -146,7 +146,7 @@ function DocumentosPersonalizadosSection() {
     <section className="mb-10">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-lg font-bold text-ink">Personalizados</h2>
+          <h2 className="text-lg font-semibold text-ink">Personalizados</h2>
           <p className="text-sm text-ink-muted">
             Nomeie o documento (ex.: DPIN), escolha como a IA deve extrair os dados e, se quiser, monte um
             checklist de campos esperados. É esta lista que aparece pro RPPS escolher no Construtor de Documentos.
@@ -488,7 +488,7 @@ function SubcamposEditor({
 
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-ink-muted">Subcampos</p>
+      <p className="mb-1.5 text-xs font-medium text-ink-muted">Subcampos</p>
       {erro && <p className="mb-1.5 text-xs text-crit">{erro}</p>}
       <div className="flex flex-col gap-1.5">
         {(campo.subcampos ?? []).map((s) => (
@@ -533,7 +533,7 @@ export function AdminParametrizacoesPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Parametrizações globais</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Parametrizações globais</h1>
         <p className="mt-1 text-sm text-ink-muted">
           Cadastros cross-tenant, válidos para todos os RPPS clientes da plataforma.
         </p>

@@ -205,7 +205,7 @@ export function ConstrutorPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-6">
-        <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
+        <h1 className="flex items-center gap-2 text-2xl font-semibold sm:text-3xl text-ink">
           <Sparkles size={22} className="text-gold" /> Construtor de Documentos
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
@@ -321,7 +321,7 @@ export function ConstrutorPage() {
 
               {resultado.citacoes.length > 0 && (
                 <div className="mt-4">
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Fontes citadas</p>
+                  <p className="mb-2 text-xs font-medium text-ink-muted">Fontes citadas</p>
                   <div className="flex flex-col gap-2">
                     {resultado.citacoes.map((c, i) => (
                       <div key={i} className="rounded-lg border border-border p-2.5 text-xs">
@@ -343,7 +343,7 @@ export function ConstrutorPage() {
       {execucoes.length > 0 && (
         <section>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold text-ink">Histórico</h2>
+            <h2 className="text-lg font-semibold text-ink">Histórico</h2>
             {execucoesFiltradas.length !== execucoes.length && (
               <button
                 type="button"

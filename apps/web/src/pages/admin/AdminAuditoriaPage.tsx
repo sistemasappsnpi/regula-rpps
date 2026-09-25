@@ -48,7 +48,7 @@ export function AdminAuditoriaPage() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Auditoria</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Auditoria</h1>
           <p className="mt-1 text-sm text-ink-muted">
             Tudo que foi preenchido, enviado ou gerado em qualquer RPPS da plataforma, mais recente primeiro.
           </p>

@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShieldCheck, ClipboardList, Sparkles, Lock } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, ClipboardList, Sparkles } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
+import { AppShell, type ShellNavItem } from "./AppShell";
 import { SessionMenu } from "./SessionMenu";
 
 // Aba "Portal Previdenciário" (/portal-indicadores) tirada do menu por pedido do usuário — a tela
 // não estava do jeito que ele queria, vai ser revista depois. A rota e a página continuam no
 // código (só sem link nenhum apontando pra elas) pra retomar de onde parou quando for repensada.
 const NAV_ITEMS = [
-  { to: "/", label: "Painel", icon: LayoutDashboard, feature: null },
+  { to: "/", label: "Painel", icon: LayoutDashboard, feature: null, end: true },
   { to: "/crp", label: "Compliance CRP", icon: ShieldCheck, feature: "crp_compliance" },
   { to: "/pro-gestao", label: "Pró-Gestão RPPS", icon: ClipboardList, feature: "pro_gestao" },
   { to: "/construtor", label: "Construtor", icon: Sparkles, feature: "construtor_documentos" },
@@ -21,104 +21,30 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 export function DashboardShell({ children }: { children: ReactNode }) {
-  const { tenant, hasFeature, logout } = useAuth();
+  const { user, tenant, hasFeature, logout } = useAuth();
+
+  const items: ShellNavItem[] = NAV_ITEMS.map((item) => ({
+    to: item.to,
+    label: item.label,
+    icon: item.icon,
+    end: "end" in item ? item.end : false,
+    locked: !!item.feature && !hasFeature(item.feature),
+    lockedTitle: "Não incluído no plano contratado",
+  }));
 
   return (
-    <div className="flex min-h-screen bg-bg">
-      <aside className="flex w-64 shrink-0 flex-col border-r border-cyan-700/50 bg-gradient-to-br from-blue-900 to-cyan-900 px-4 py-6">
-        {/* Identidade do cliente logado, não da plataforma — quem loga precisa reconhecer de
-            cara em qual RPPS está (ex.: "IPRES"), não só ver a marca genérica "Regula RPPS".
-            Logo parametrizado pelo Admin Global em RPPS clientes → Dados Básicos; sem logo
-            próprio, cai no logo padrão da plataforma. */}
-        <div className="flex items-center gap-2.5 px-2">
-          <img
-            src={tenant?.logoUrl || "/logo-npi.png"}
-            alt={tenant?.name ?? "Regula RPPS"}
-            className="h-9 w-9 shrink-0 rounded-xl bg-white/10 object-contain"
-          />
-          <div className="min-w-0">
-            <p className="truncate font-display text-lg font-bold leading-tight text-sidebar-ink">
-              {tenant?.name ?? "Regula RPPS"}
-            </p>
-            <p className="truncate text-[11px] leading-tight text-sidebar-muted">
-              {tenant?.federatedEntity ?? "Compliance & transparência ativa"}
-            </p>
-          </div>
-        </div>
-
-        <nav className="mt-8 flex flex-col gap-0.5">
-          {NAV_ITEMS.map((item) => (
-            <NavItem
-              key={item.to}
-              to={item.to}
-              label={item.label}
-              icon={item.icon}
-              status={item.feature && !hasFeature(item.feature) ? "locked" : "active"}
-            />
-          ))}
-        </nav>
-
-        <div className="mt-auto flex flex-col gap-3">
-          <div className="rounded-xl bg-white/5 p-3.5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-sidebar-muted">Tenant ativo</p>
-            <p className="mt-1 truncate text-sm font-semibold text-sidebar-ink">{tenant?.name}</p>
-            <p className="mt-0.5 text-xs font-medium text-gold">{tenant ? PLAN_LABELS[tenant.plan] : ""}</p>
-          </div>
-          <SessionMenu onLogout={logout} />
-        </div>
-      </aside>
-
-      <main className="flex-1 overflow-y-auto px-8 py-8">{children}</main>
-    </div>
-  );
-}
-
-type NavStatus = "active" | "locked" | "soon";
-
-function NavItem({
-  to,
-  label,
-  icon: Icon,
-  status,
-}: {
-  to: string;
-  label: string;
-  icon: typeof LayoutDashboard;
-  status: NavStatus;
-}) {
-  if (status !== "active") {
-    return (
-      <span
-        className="flex items-center justify-between rounded-lg px-3 py-1.5 text-[13px] text-sidebar-muted/50"
-        title={status === "locked" ? "Não incluído no plano contratado" : "Disponível em uma próxima etapa"}
-      >
-        <span className="flex items-center gap-2">
-          <Icon size={15} />
-          {label}
-        </span>
-        {status === "locked" ? (
-          <Lock size={12} />
-        ) : (
-          <span className="rounded-full border border-white/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide">
-            em breve
-          </span>
-        )}
-      </span>
-    );
-  }
-
-  return (
-    <NavLink
-      to={to}
-      end={to === "/"}
-      className={({ isActive }) =>
-        `flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors ${
-          isActive ? "bg-cyan-700/30 text-cyan-400" : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-ink"
-        }`
-      }
+    <AppShell
+      // Identidade do cliente logado (não da plataforma): logo parametrizado em Admin → RPPS
+      // clientes → Dados Básicos; sem logo próprio, cai no logo padrão da plataforma.
+      brand={{
+        logo: tenant?.logoUrl || "/logo-npi.png",
+        title: tenant?.name ?? "Regula RPPS",
+        subtitle: tenant ? PLAN_LABELS[tenant.plan] : "Compliance & transparência ativa",
+      }}
+      sections={[{ items }]}
+      footer={<SessionMenu name={user?.name ?? "Usuário"} detail={user?.email} onLogout={logout} />}
     >
-      <Icon size={15} />
-      {label}
-    </NavLink>
+      {children}
+    </AppShell>
   );
 }

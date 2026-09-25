@@ -21,7 +21,7 @@ export function AdminDashboardPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Painel do Admin Global</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Painel do Admin Global</h1>
         <p className="mt-1 text-sm text-ink-muted">Visão consolidada de todos os RPPS clientes da plataforma.</p>
       </header>
 
@@ -46,7 +46,7 @@ export function AdminDashboardPage() {
 
       <section className="mt-10">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-ink">RPPS clientes</h2>
+          <h2 className="text-lg font-semibold text-ink">RPPS clientes</h2>
           <Link to="/admin/tenants" className="text-sm font-medium text-petrol hover:underline">
             Ver todos →
           </Link>

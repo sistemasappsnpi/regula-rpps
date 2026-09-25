@@ -20,17 +20,17 @@ export function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Coluna de identidade — some no mobile. Fundo fixo (nunca muda com o tema claro/escuro). */}
-      <div className="hidden flex-col justify-between bg-gradient-to-br from-blue-900 to-cyan-900 p-12 text-white lg:flex">
+      <div className="hidden flex-col justify-between bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-12 text-white lg:flex">
         <div className="flex items-center gap-3">
           <img src="/logo-npi.png" alt="NPI Brasil" className="h-10 w-10 rounded-xl bg-white/10 object-contain" />
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-cyan-400">Plataforma NPI Brasil</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-300">Plataforma NPI Brasil</p>
             <p className="font-display text-xl font-bold leading-tight">Regula RPPS</p>
           </div>
         </div>
 
         <div className="max-w-sm">
-          <ShieldCheck size={32} className="mb-4 text-cyan-400" />
+          <ShieldCheck size={32} className="mb-4 text-indigo-300" />
           <p className="font-display text-2xl font-bold leading-snug">
             Compliance previdenciário e transparência ativa, num só lugar.
           </p>
@@ -56,7 +56,7 @@ export function LoginPage() {
             <p className="mt-1 text-sm text-ink-muted">Controle de compliance e transparência ativa</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
+          <div className="rounded-2xl border border-border bg-surface p-7 shadow-lift">
             <p className="mb-5 font-display text-lg font-bold text-ink">Acesse sua conta</p>
 
             {erro && (
@@ -69,7 +69,7 @@ export function LoginPage() {
               {providers?.central && (
                 <a
                   href="/api/auth/central/login"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-petrol py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-petrol py-3 text-sm font-semibold text-on-petrol shadow-soft hover:brightness-110 hover:shadow-lift active:scale-[0.98]"
                 >
                   <LogIn size={15} /> Entrar com APP CENTRAL
                 </a>
@@ -77,7 +77,7 @@ export function LoginPage() {
               {providers?.microsoft && (
                 <a
                   href="/api/auth/microsoft/login"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-bg py-3 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
                 >
                   <MicrosoftIcon /> Entrar com Microsoft
                 </a>
@@ -85,7 +85,7 @@ export function LoginPage() {
               {providers?.govbr && (
                 <a
                   href="/api/auth/govbr/login"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-bg py-3 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
                 >
                   <ShieldCheck size={15} className="text-ok" /> Entrar com gov.br
                 </a>

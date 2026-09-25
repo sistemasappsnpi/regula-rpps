@@ -170,7 +170,7 @@ export function AdminTenantsPage() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">RPPS clientes</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl text-ink">RPPS clientes</h1>
           <p className="mt-1 text-sm text-ink-muted">Todos os Regimes Próprios de Previdência Social atendidos pela plataforma.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -249,7 +249,7 @@ export function AdminTenantsPage() {
               </div>
             </div>
             <div className="mt-3 border-t border-border pt-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">Membros</p>
+              <p className="text-xs font-medium text-ink-muted">Membros</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {t.membros.map((m) => (
                   <span key={m.membershipId} className="rounded-full border border-border px-2 py-0.5 text-xs text-ink-muted">

@@ -19,7 +19,7 @@ export function ThemeToggle() {
     <button
       onClick={alternar}
       title={theme === "light" ? "Ativar modo escuro" : "Ativar modo claro"}
-      className="flex h-8 w-8 items-center justify-center rounded-full text-sidebar-muted transition-colors hover:bg-white/10 hover:text-sidebar-ink"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-ink-muted shadow-soft hover:text-ink active:scale-95"
     >
       {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
     </button>

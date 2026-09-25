@@ -42,7 +42,7 @@ export function CrpDocumentosPage() {
       </Link>
 
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Documentos do CRP</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Documentos do CRP</h1>
         <p className="mt-1 text-sm text-ink-muted">
           Todas as evidências já anexadas, de todos os 22 critérios, em um só lugar. Para anexar um novo
           documento, abra o critério específico na Central de Compliance CRP.

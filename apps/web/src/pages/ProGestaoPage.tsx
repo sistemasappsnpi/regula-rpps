@@ -66,7 +66,7 @@ export function ProGestaoPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Pró-Gestão RPPS</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Pró-Gestão RPPS</h1>
         <p className="mt-1 text-sm text-ink-muted">
           As 24 ações do programa, organizadas por dimensão. Cada ação tem seu formulário dinâmico por nível de
           aderência e, quando compõe dado de outras ações, seu próprio motor de dependências.
@@ -154,12 +154,12 @@ function AcaoAccordionItem({
           <span className="font-mono text-xs text-ink-muted">{acao.numero}</span>{" "}
           <span className="text-sm text-ink">{acao.nome}</span>
           {acao.essencial && (
-            <span className="ml-2 rounded-full border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gold">
+            <span className="ml-2 rounded-full border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-gold">
               essencial
             </span>
           )}
           {acao.dependeDe.length > 0 && (
-            <span className="ml-2 text-[10px] uppercase tracking-wide text-ink-muted">
+            <span className="ml-2 text-xs uppercase tracking-wide text-ink-muted">
               documento composto · {acao.dependeDe.length} fonte{acao.dependeDe.length > 1 ? "s" : ""}
             </span>
           )}
@@ -484,7 +484,7 @@ function DocumentoCompostoSection({
         {composto && <Badge tone={compostoTone(composto.status)}>{composto.status}</Badge>}
       </div>
 
-      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Documentos-fonte</p>
+      <p className="mb-2 text-xs font-medium text-ink-muted">Documentos-fonte</p>
       <div className="mb-4 flex flex-col gap-2">
         {prontidao.map((f) => (
           <div key={f.fonteCodigo} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">

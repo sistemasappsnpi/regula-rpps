@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { Settings, LogOut } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
 import { getStoredTheme, applyTheme, type Theme } from "../../lib/theme";
 
-export function SessionMenu({ onLogout }: { onLogout: () => void }) {
+// Cartão do usuário (avatar com iniciais) + ações de sessão, no rodapé do menu lateral.
+export function SessionMenu({
+  name,
+  detail,
+  onLogout,
+}: {
+  name: string;
+  detail?: string;
+  onLogout: () => void;
+}) {
   const [theme, setTheme] = useState<Theme>(getStoredTheme());
 
   function alternarTema() {
@@ -11,25 +20,42 @@ export function SessionMenu({ onLogout }: { onLogout: () => void }) {
     applyTheme(proximo);
   }
 
+  const iniciais =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?";
+
   return (
-    <div>
-      <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-sidebar-section">Sessão</p>
-      <nav className="flex flex-col gap-0.5">
+    <>
+      <div className="flex items-center gap-3 px-1">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-petrol/10 text-sm font-semibold text-petrol">
+          {iniciais}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-sidebar-ink">{name}</p>
+          {detail && <p className="truncate text-xs text-sidebar-muted">{detail}</p>}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
         <button
           onClick={alternarTema}
-          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[13px] font-medium text-sidebar-muted transition-colors hover:bg-white/5 hover:text-sidebar-ink"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-sidebar-muted hover:bg-ink/[0.05] hover:text-sidebar-ink active:scale-[0.97]"
         >
-          <Settings size={15} />
-          {theme === "light" ? "Tema Claro" : "Tema Escuro"}
+          {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
+          {theme === "light" ? "Escuro" : "Claro"}
         </button>
         <button
           onClick={onLogout}
-          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[13px] font-bold text-red-400 transition-colors hover:text-red-300"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-crit hover:bg-crit/10 active:scale-[0.97]"
         >
-          <LogOut size={15} />
-          Sair do Sistema
+          <LogOut size={14} />
+          Sair
         </button>
-      </nav>
-    </div>
+      </div>
+    </>
   );
 }

@@ -45,7 +45,7 @@ export function DocumentosPage() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Documentos</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Documentos</h1>
           <p className="mt-1 text-sm text-ink-muted">
             Documentos do Pró-Gestão RPPS, organizados por ação. Para documentos/evidências do CRP, veja a Central
             de Compliance CRP.
@@ -82,7 +82,7 @@ export function DocumentosPage() {
 
         return (
           <section key={dimensao} className="mb-8">
-            <h2 className="mb-3 font-display text-lg font-bold text-ink">{dimensao}</h2>
+            <h2 className="mb-3 text-lg font-semibold text-ink">{dimensao}</h2>
             <div className="flex flex-col gap-2">
               {dasDimensao.map((acao) => (
                 <Link

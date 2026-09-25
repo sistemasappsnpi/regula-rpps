@@ -97,7 +97,7 @@ export function PortalIndicadoresLancamentoPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Portal Previdenciário — Indicadores</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Portal Previdenciário — Indicadores</h1>
         <p className="mt-1 text-sm text-ink-muted">
           O que já está publicado no Portal Previdenciário, por documento. Clique em "Editar" pra lançar ou corrigir
           um valor manualmente — ou envie um PDF pelo Construtor de Documentos e revise as sugestões extraídas por

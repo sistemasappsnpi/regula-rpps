@@ -3,52 +3,60 @@
 @tailwind utilities;
 
 :root {
-  /* Sidebar: sempre azul-marinho escuro, independente do tema do conteúdo — é a marca fixa
-     do produto (ver referência visual que definiu esta identidade). */
-  --color-sidebar: 22 33 62;
-  --color-sidebar-ink: 255 255 255;
-  --color-sidebar-ink-muted: 203 213 225;
-  --color-sidebar-border: 255 255 255;
-  --color-sidebar-section: 34 211 238;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Conteúdo — tema claro (padrão). Paleta slate do Tailwind, igual à referência
-     (atendimento.npibrasil.com): bg-slate-50, cards bg-white, texto slate-700/500,
-     borda slate-200. */
-  --color-bg: 248 250 252;
+  /* Conteúdo — tema claro (padrão): fundo levemente frio, superfícies brancas, texto em azul-ardósia
+     (nunca preto puro) e bordas suaves — contraste confortável pra ficar horas com a tela aberta. */
+  --color-bg: 246 247 251;
   --color-surface: 255 255 255;
-  --color-ink: 51 65 85;
-  --color-ink-muted: 100 116 139;
-  --color-border: 226 232 240;
+  --color-ink: 33 44 64;
+  --color-ink-muted: 104 116 138;
+  --color-border: 228 232 240;
 
-  --color-petrol: 8 145 178;
-  --color-gold: 124 58 237;
-  --color-ok: 22 163 74;
-  --color-warn: 217 119 6;
-  --color-crit: 220 38 38;
+  --color-petrol: 55 88 216;
+  --color-on-petrol: 255 255 255;
+  --color-gold: 139 92 246;
+  --color-ok: 16 150 110;
+  --color-warn: 208 128 8;
+  --color-crit: 221 63 63;
+
+  /* Menu lateral: acompanha o tema. */
+  --color-sidebar: 255 255 255;
+  --color-sidebar-ink: 33 44 64;
+  --color-sidebar-ink-muted: 104 116 138;
+  --color-sidebar-border: 228 232 240;
+  --color-sidebar-section: 148 158 178;
 }
 
 :root[data-theme="dark"] {
-  /* Confirmado via static/css/dark-mode.css da referência: body bg-slate-900,
-     cards/superfícies bg-slate-800, borda slate-700, texto slate-100/300/400. */
-  --color-bg: 15 23 42;
-  --color-surface: 30 41 59;
-  --color-ink: 226 232 240;
-  --color-ink-muted: 148 163 184;
-  --color-border: 51 65 85;
+  --color-bg: 14 18 30;
+  --color-surface: 22 28 44;
+  --color-ink: 226 232 244;
+  --color-ink-muted: 148 159 182;
+  --color-border: 40 48 68;
 
-  --color-petrol: 34 211 238;
-  --color-gold: 167 139 250;
-  --color-ok: 74 222 128;
-  --color-warn: 251 191 36;
-  --color-crit: 248 113 113;
+  --color-petrol: 124 150 255;
+  --color-on-petrol: 12 16 30;
+  --color-gold: 176 148 255;
+  --color-ok: 74 214 160;
+  --color-warn: 245 184 70;
+  --color-crit: 248 120 120;
+
+  --color-sidebar: 18 23 38;
+  --color-sidebar-ink: 226 232 244;
+  --color-sidebar-ink-muted: 148 159 182;
+  --color-sidebar-border: 40 48 68;
+  --color-sidebar-section: 110 122 148;
 }
 
 /* Portais públicos (Transparência e Portal Previdenciário) são documentos oficiais voltados ao
-   cidadão — sempre no tema claro, independente do tema escolhido pelo usuário logado no sistema
-   interno. Redeclara as mesmas variáveis do :root claro; como variável CSS é resolvida pelo
-   ancestral mais próximo que a declara, isso "trava" o claro nessa subárvore mesmo com
-   :root[data-theme="dark"] ativo mais acima. */
+   cidadão — sempre no tema claro e com o visual próprio deles (Poppins, paleta original),
+   independente do tema escolhido pelo usuário logado no sistema interno. Redeclara as variáveis;
+   como variável CSS é resolvida pelo ancestral mais próximo que a declara, isso "trava" a
+   subárvore mesmo com :root[data-theme="dark"] ativo mais acima. */
 .portal-publico-claro {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
   --color-bg: 248 250 252;
   --color-surface: 255 255 255;
   --color-ink: 51 65 85;
@@ -56,12 +64,14 @@
   --color-border: 226 232 240;
 
   --color-petrol: 8 145 178;
+  --color-on-petrol: 255 255 255;
   --color-gold: 124 58 237;
   --color-ok: 22 163 74;
   --color-warn: 217 119 6;
   --color-crit: 220 38 38;
 
   color-scheme: light;
+  font-family: var(--font-sans);
 }
 
 /* Alto contraste (barra de acessibilidade dos portais públicos, ver AcessibilidadeWidgets.tsx) —
@@ -79,19 +89,30 @@
   --color-border: 0 0 0;
 
   --color-petrol: 0 51 153;
+  --color-on-petrol: 255 255 255;
   --color-gold: 102 0 153;
   --color-ok: 0 92 0;
   --color-warn: 140 80 0;
   --color-crit: 170 0 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-ink));
-  font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background: rgb(var(--color-petrol) / 0.22);
 }
 
 .tabular {
@@ -100,6 +121,64 @@ body {
 
 * {
   scrollbar-color: rgb(var(--color-border)) transparent;
+}
+
+/* Cliques mais "gostosos": tudo que é clicável responde (cursor, transição, foco visível). */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease,
+      opacity 0.15s ease,
+      transform 0.12s ease;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-petrol) / 0.55);
+    outline-offset: 2px;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: rgb(var(--color-petrol));
+    box-shadow: 0 0 0 3px rgb(var(--color-petrol) / 0.15);
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Portal Previdenciário — cartões de indicador entrando em sequência, e o brilho animado atrás

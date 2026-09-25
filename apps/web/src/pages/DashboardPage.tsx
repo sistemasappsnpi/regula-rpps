@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, AlertTriangle, Clock, CalendarClock } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CheckCircle2, AlertTriangle, Clock, CalendarClock, ShieldCheck, ClipboardList, Sparkles, ChevronRight, type LucideIcon } from "lucide-react";
 import { api, type CrpCriterion, type ProGestaoResumo } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 import { Card, StatTile } from "../components/ui/Card";
@@ -57,8 +58,14 @@ const MODULOS = [
   },
 ];
 
+const ATALHOS: { to: string; titulo: string; descricao: string; icon: LucideIcon; feature: string }[] = [
+  { to: "/crp", titulo: "Compliance CRP", descricao: "Status dos 22 critérios e vencimentos", icon: ShieldCheck, feature: "crp_compliance" },
+  { to: "/pro-gestao", titulo: "Pró-Gestão RPPS", descricao: "Ações, níveis de aderência e documentos", icon: ClipboardList, feature: "pro_gestao" },
+  { to: "/construtor", titulo: "Construtor", descricao: "Monte documentos com IA a partir dos seus PDFs", icon: Sparkles, feature: "construtor_documentos" },
+];
+
 export function DashboardPage() {
-  const { tenant, hasFeature } = useAuth();
+  const { user, tenant, hasFeature } = useAuth();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [criterios, setCriterios] = useState<CrpCriterion[]>([]);
   const [resumoProGestao, setResumoProGestao] = useState<ProGestaoResumo | null>(null);
@@ -71,6 +78,8 @@ export function DashboardPage() {
   }, []);
 
   const now = Date.now();
+  const primeiroNome = (user?.name ?? "").split(" ")[0];
+  const atalhos = ATALHOS.filter((a) => hasFeature(a.feature));
   const proximosVencimentos = criterios
     .map((c) => ({ criterion: c, nextDueAt: c.tenantStatuses[0]?.nextDueAt }))
     .filter((c): c is { criterion: CrpCriterion; nextDueAt: string } => Boolean(c.nextDueAt))
@@ -78,9 +87,9 @@ export function DashboardPage() {
     .slice(0, 8);
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Painel geral</h1>
+    <div>
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold text-ink sm:text-3xl">Olá{primeiroNome ? `, ${primeiroNome}` : ""}</h1>
         <p className="mt-1 text-sm text-ink-muted">
           {tenant?.federatedEntity} · {tenant?.seguradosCount.toLocaleString("pt-BR")} segurados
         </p>
@@ -115,9 +124,28 @@ export function DashboardPage() {
         />
       </section>
 
+      {atalhos.length > 0 && (
+        <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {atalhos.map((a) => (
+            <Link key={a.to} to={a.to} className="group block rounded-2xl focus-visible:outline-offset-4">
+              <Card interactive className="flex h-full items-center gap-4 p-5">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-petrol/10 text-petrol transition-transform duration-200 group-hover:scale-110">
+                  <a.icon size={20} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-ink">{a.titulo}</p>
+                  <p className="mt-0.5 text-sm text-ink-muted">{a.descricao}</p>
+                </div>
+                <ChevronRight size={18} className="shrink-0 text-ink-muted transition-transform duration-200 group-hover:translate-x-1" />
+              </Card>
+            </Link>
+          ))}
+        </section>
+      )}
+
       {resumoProGestao && (
         <section className="mt-8">
-          <h2 className="mb-3 font-display text-lg font-bold text-ink">Progresso no Pró-Gestão RPPS</h2>
+          <h2 className="mb-3 text-lg font-semibold text-ink">Progresso no Pró-Gestão RPPS</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {resumoProGestao.porDimensao.map((d) => (
               <StatTile
@@ -132,7 +160,7 @@ export function DashboardPage() {
       )}
 
       <section className="mt-10">
-        <h2 className="mb-3 font-display text-lg font-bold text-ink">Calendário de obrigações</h2>
+        <h2 className="mb-3 text-lg font-semibold text-ink">Calendário de obrigações</h2>
         <Card className="p-5">
           {proximosVencimentos.length === 0 && <p className="text-sm text-ink-muted">Nenhum vencimento agendado.</p>}
           <div className="flex flex-col divide-y divide-border">
@@ -161,20 +189,21 @@ export function DashboardPage() {
 
       <section className="mt-10">
         <Card className="p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-petrol">Sobre o sistema</p>
-              <h2 className="mt-1 font-display text-xl font-bold text-ink">O que é o Regula RPPS</h2>
-            </div>
-            <Badge tone="warn">Em construção</Badge>
-          </div>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-muted">
+         <details className="group">
+          <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-ink">Sobre o Regula RPPS</h2>
+            <span className="flex items-center gap-2 text-sm text-ink-muted">
+              <Badge tone="warn">Em construção</Badge>
+              <ChevronRight size={16} className="transition-transform duration-200 group-open:rotate-90" />
+            </span>
+          </summary>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-muted">
             O Regula RPPS ajuda o seu RPPS a fazer três coisas: acompanhar se está regular no CRP, evoluir de nível
             no Pró-Gestão RPPS, e publicar ao público o que a lei exige — tudo usando o conteúdo oficial dos dois
             programas do Ministério da Previdência Social, nunca uma regra inventada dentro do sistema.
           </p>
 
-          <p className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+          <p className="mb-3 mt-6 text-sm font-medium text-ink-muted">
             O que já funciona nesta versão
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -187,13 +216,14 @@ export function DashboardPage() {
                 <div>
                   <p className="text-sm font-medium text-ink">
                     {m.nome}
-                    {!m.pronto && <span className="ml-2 text-[10px] font-normal uppercase text-ink-muted">planejado</span>}
+                    {!m.pronto && <span className="ml-2 text-xs font-normal uppercase text-ink-muted">planejado</span>}
                   </p>
                   <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">{m.descricao}</p>
                 </div>
               </div>
             ))}
           </div>
+         </details>
         </Card>
       </section>
     </div>

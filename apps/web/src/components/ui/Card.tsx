@@ -1,8 +1,19 @@
 import type { HTMLAttributes, ReactNode } from "react";
 
-export function Card({ className = "", children, ...props }: HTMLAttributes<HTMLDivElement>) {
+// `interactive`: pra cards clicáveis — sobe de leve e ganha sombra no hover, dando retorno ao clique.
+export function Card({
+  className = "",
+  children,
+  interactive = false,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { interactive?: boolean }) {
   return (
-    <div className={`rounded-2xl border border-border bg-surface shadow-soft ${className}`} {...props}>
+    <div
+      className={`rounded-2xl border border-border bg-surface shadow-soft ${
+        interactive ? "cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift" : ""
+      } ${className}`}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -33,16 +44,16 @@ export function StatTile({
 }) {
   return (
     <Card className="p-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{label}</p>
-      <div className="mt-3 flex items-center gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-ink-muted">{label}</p>
         {icon && (
-          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${ICON_TONE_CLASSES[tone]}`}>
+          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${ICON_TONE_CLASSES[tone]}`}>
             {icon}
           </span>
         )}
-        <p className="font-display text-2xl font-extrabold tabular text-ink">{value}</p>
       </div>
-      {hint && <p className="mt-1.5 text-xs text-ink-muted">{hint}</p>}
+      <p className="mt-2 text-3xl font-bold tabular tracking-tight text-ink">{value}</p>
+      {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
     </Card>
   );
 }

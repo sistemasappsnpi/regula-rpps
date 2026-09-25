@@ -80,7 +80,7 @@ export function AdminRelatoriosPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-ink">Relatórios</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Relatórios</h1>
         <p className="mt-1 text-sm text-ink-muted">Tabelas consolidadas de todos os RPPS clientes, exportáveis em CSV.</p>
       </header>
 

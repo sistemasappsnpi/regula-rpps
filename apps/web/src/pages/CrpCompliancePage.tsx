@@ -58,7 +58,7 @@ export function CrpCompliancePage() {
     <div className="mx-auto max-w-5xl">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Central de Compliance — CRP</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl text-ink">Central de Compliance — CRP</h1>
           <p className="mt-1 text-sm text-ink-muted">
             Os 22 critérios oficiais do Certificado de Regularidade Previdenciária, monitorados em um só lugar.
             Documentação e evidências de cada critério ficam organizadas aqui — independente dos documentos do

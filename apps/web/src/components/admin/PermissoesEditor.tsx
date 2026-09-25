@@ -58,7 +58,7 @@ export function PermissoesEditor({
 
       {grupos.map((grupo) => (
         <div key={grupo}>
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">{grupo}</p>
+          <p className="mb-2 text-xs font-medium text-ink-muted">{grupo}</p>
           <div className="flex flex-col gap-2">
             {permissoes
               .filter((p) => p.grupo === grupo)
@@ -67,7 +67,7 @@ export function PermissoesEditor({
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-ink">{p.nome}</p>
                     <p className="text-xs text-ink-muted">{p.descricao}</p>
-                    <p className="mt-1 text-[11px] text-ink-muted">
+                    <p className="mt-1 text-xs text-ink-muted">
                       {p.legendaHeranca}
                       {p.override !== null && (
                         <>
