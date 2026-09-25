@@ -26,5 +26,7 @@ jobs:
             git checkout -- docker-compose.prod.yml
             git pull origin main
             sed -i "s/WEB_PORT:-80/WEB_PORT:-9188/" docker-compose.prod.yml
+            sed -i "/^WEB_URL=/d" .env.production
+            echo "WEB_URL=https://previdencia.npibrasil.com" >> .env.production
             docker compose --env-file .env.production --profile local-db -f docker-compose.prod.yml up -d --build
           '

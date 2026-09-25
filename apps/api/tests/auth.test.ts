@@ -18,6 +18,16 @@ describe("JWT de autenticação", () => {
     expect(decoded.permissions).toEqual(["crp_compliance"]);
   });
 
+  it("criptografa o par de tokens do APP CENTRAL dentro do JWT e devolve igual na verificação", () => {
+    const central = { accessToken: "acc-secreto", accessTokenExp: 123, refreshToken: "ref-secreto" };
+    const token = signAuthToken({ userId: "u", tenantId: null, isSuperAdmin: true, authSource: "central", permissions: [], central });
+
+    const payloadLegivel = Buffer.from(token.split(".")[1], "base64url").toString();
+    expect(payloadLegivel).not.toContain("ref-secreto");
+    expect(payloadLegivel).not.toContain("acc-secreto");
+    expect(verifyAuthToken(token).central).toEqual(central);
+  });
+
   it("assina um token legacy sem lista de permissões", () => {
     const token = signAuthToken({ userId: "user-1", tenantId: "tenant-a", isSuperAdmin: false, authSource: "legacy" });
     const decoded = verifyAuthToken(token);

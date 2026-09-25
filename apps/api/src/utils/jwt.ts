@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
@@ -22,10 +23,35 @@ export interface AuthTokenPayload {
   central?: CentralTokenBundle;
 }
 
+// O JWT é só base64 (assinado, não criptografado) e fica no localStorage do navegador — o par
+// access/refresh do APP CENTRAL (refresh vale 30 dias) não pode ficar legível ali. Vai
+// criptografado com AES-256-GCM, com chave derivada do segredo do servidor; só o backend abre.
+function bundleKey(): Buffer {
+  return crypto.createHash("sha256").update(`central-bundle:${env.jwtSecret}`).digest();
+}
+
+function encryptBundle(bundle: CentralTokenBundle): string {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", bundleKey(), iv);
+  const ct = Buffer.concat([cipher.update(JSON.stringify(bundle), "utf8"), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), ct]).toString("base64url");
+}
+
+function decryptBundle(blob: string): CentralTokenBundle {
+  const raw = Buffer.from(blob, "base64url");
+  const decipher = crypto.createDecipheriv("aes-256-gcm", bundleKey(), raw.subarray(0, 12));
+  decipher.setAuthTag(raw.subarray(12, 28));
+  const pt = Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]);
+  return JSON.parse(pt.toString("utf8")) as CentralTokenBundle;
+}
+
 export function signAuthToken(payload: AuthTokenPayload): string {
-  return jwt.sign(payload, env.jwtSecret, { expiresIn: "8h" });
+  const { central, ...rest } = payload;
+  const claims = central ? { ...rest, centralEnc: encryptBundle(central) } : rest;
+  return jwt.sign(claims, env.jwtSecret, { expiresIn: "8h" });
 }
 
 export function verifyAuthToken(token: string): AuthTokenPayload {
-  return jwt.verify(token, env.jwtSecret) as AuthTokenPayload;
+  const { centralEnc, ...decoded } = jwt.verify(token, env.jwtSecret) as AuthTokenPayload & { centralEnc?: string };
+  return centralEnc ? { ...decoded, central: decryptBundle(centralEnc) } : decoded;
 }
