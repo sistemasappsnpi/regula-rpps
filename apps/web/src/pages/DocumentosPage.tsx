@@ -55,7 +55,7 @@ export function DocumentosPage() {
           to={`/transparencia/${tenant?.slug ?? ""}`}
           target="_blank"
           rel="noreferrer"
-          className="rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:brightness-110"
+          className="rounded-full bg-petrol px-4 py-2 text-sm font-semibold text-on-petrol shadow-soft hover:brightness-110"
         >
           Ver Portal de Transparência →
         </Link>

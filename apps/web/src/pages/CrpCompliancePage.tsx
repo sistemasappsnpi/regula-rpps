@@ -210,7 +210,7 @@ function CriterioDocumentosSection({ criterionCode }: { criterionCode: string })
             className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs outline-none focus:border-petrol"
           />
         </label>
-        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-soft hover:brightness-110">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-petrol px-3 py-1.5 text-xs font-semibold text-on-petrol shadow-soft hover:brightness-110">
           <Paperclip size={13} />
           {enviando ? "Enviando…" : "Anexar PDF"}
           <input

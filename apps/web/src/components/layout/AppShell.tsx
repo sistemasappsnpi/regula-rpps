@@ -38,7 +38,7 @@ export function AppShell({
 
   const brandBlock = (
     <div className="flex items-center gap-3 px-2">
-      <img src={brand.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-sidebar-border bg-surface object-contain p-1" />
+      <img src={brand.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-1 shadow-soft ring-1 ring-white/10" />
       <div className="min-w-0">
         <p className="truncate text-[15px] font-semibold leading-tight text-sidebar-ink">{brand.title}</p>
         {brand.subtitle && <p className="truncate text-xs leading-tight text-sidebar-muted">{brand.subtitle}</p>}
@@ -72,30 +72,30 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-bg lg:flex">
       {/* Desktop */}
-      <aside className="sticky top-0 hidden h-screen w-[272px] shrink-0 border-r border-sidebar-border bg-sidebar lg:block">
+      <aside className="sticky top-0 hidden h-screen w-[272px] shrink-0 border-r border-sidebar-border bg-gradient-to-b from-sidebar via-sidebar to-sidebar-to lg:block">
         {sidebar}
       </aside>
 
       {/* Celular: barra superior + gaveta */}
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-sidebar-border bg-sidebar/90 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-sidebar-border bg-sidebar/95 px-4 py-3 backdrop-blur lg:hidden">
         <button
           onClick={() => setOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-ink hover:bg-ink/5"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-ink hover:bg-white/10"
           aria-label="Abrir menu"
         >
           <Menu size={20} />
         </button>
-        <img src={brand.logo} alt="" className="h-7 w-7 rounded-lg object-contain" />
+        <img src={brand.logo} alt="" className="h-7 w-7 rounded-lg bg-white object-contain p-0.5" />
         <p className="truncate text-sm font-semibold text-sidebar-ink">{brand.title}</p>
       </header>
 
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 animate-fade-in bg-slate-950/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-[290px] max-w-[85%] animate-slide-in border-r border-sidebar-border bg-sidebar shadow-lift">
+          <aside className="absolute inset-y-0 left-0 w-[290px] max-w-[85%] animate-slide-in border-r border-sidebar-border bg-gradient-to-b from-sidebar via-sidebar to-sidebar-to shadow-lift">
             <button
               onClick={() => setOpen(false)}
-              className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-muted hover:bg-ink/5"
+              className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-muted hover:bg-white/10"
               aria-label="Fechar menu"
             >
               <X size={18} />
@@ -137,14 +137,14 @@ function NavItem({ item }: { item: ShellNavItem }) {
       className={({ isActive }) =>
         `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
           isActive
-            ? "bg-petrol/10 text-petrol"
-            : "text-sidebar-muted hover:bg-ink/[0.05] hover:text-sidebar-ink"
+            ? "bg-white/10 text-white shadow-[inset_0_0_0_1px_rgb(255_255_255/0.06)]"
+            : "text-sidebar-muted hover:bg-white/[0.06] hover:text-sidebar-ink"
         }`
       }
     >
       {({ isActive }) => (
         <>
-          {isActive && <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-petrol" />}
+          {isActive && <span className="absolute -left-4 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-indigo-300" />}
           <Icon size={18} className="transition-transform duration-150 group-hover:scale-110" />
           {item.label}
         </>

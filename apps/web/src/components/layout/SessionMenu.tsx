@@ -31,7 +31,7 @@ export function SessionMenu({
   return (
     <>
       <div className="flex items-center gap-3 px-1">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-petrol/10 text-sm font-semibold text-petrol">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white ring-1 ring-white/10">
           {iniciais}
         </span>
         <div className="min-w-0">
@@ -43,14 +43,14 @@ export function SessionMenu({
       <div className="flex gap-2">
         <button
           onClick={alternarTema}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-sidebar-muted hover:bg-ink/[0.05] hover:text-sidebar-ink active:scale-[0.97]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-sidebar-muted hover:bg-white/[0.06] hover:text-sidebar-ink active:scale-[0.97]"
         >
           {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
           {theme === "light" ? "Escuro" : "Claro"}
         </button>
         <button
           onClick={onLogout}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-crit hover:bg-crit/10 active:scale-[0.97]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-red-300 hover:bg-red-400/10 active:scale-[0.97]"
         >
           <LogOut size={14} />
           Sair

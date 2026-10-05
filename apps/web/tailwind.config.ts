@@ -19,6 +19,7 @@ export default {
         crit: "rgb(var(--color-crit) / <alpha-value>)",
         // Menu lateral acompanha o tema (claro/escuro) do conteúdo.
         sidebar: "rgb(var(--color-sidebar) / <alpha-value>)",
+        "sidebar-to": "rgb(var(--color-sidebar-to) / <alpha-value>)",
         "sidebar-ink": "rgb(var(--color-sidebar-ink) / <alpha-value>)",
         "sidebar-muted": "rgb(var(--color-sidebar-ink-muted) / <alpha-value>)",
         "sidebar-border": "rgb(var(--color-sidebar-border) / <alpha-value>)",
