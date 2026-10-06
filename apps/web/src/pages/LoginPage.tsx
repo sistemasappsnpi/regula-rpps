@@ -121,6 +121,14 @@ export function LoginPage() {
                   <ArrowRight size={16} className="transition-transform duration-150 group-hover:translate-x-0.5" />
                 </a>
               )}
+              {providers?.central && (
+                <a
+                  href="/api/auth/central/login?trocar=1"
+                  className="-mt-1 text-center text-xs font-medium text-ink-muted hover:text-petrol hover:underline"
+                >
+                  Entrar com outra conta
+                </a>
+              )}
 
               {providers?.central && temOutros && (
                 <div className="flex items-center gap-3 py-1 text-[11px] font-medium uppercase tracking-wider text-ink-muted">

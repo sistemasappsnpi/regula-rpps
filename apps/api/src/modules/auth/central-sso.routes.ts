@@ -59,7 +59,7 @@ function decodeIdToken(idToken: string): CentralIdTokenClaims {
   return payload as CentralIdTokenClaims;
 }
 
-centralSsoRouter.get("/login", async (_req, res) => {
+centralSsoRouter.get("/login", async (req, res) => {
   if (!isCentralSsoConfigured()) {
     redirectComErro(res, "Login com o APP CENTRAL não está disponível neste ambiente.");
     return;
@@ -78,6 +78,12 @@ centralSsoRouter.get("/login", async (_req, res) => {
     authorizeUrl.searchParams.set("code_challenge", codeChallenge);
     authorizeUrl.searchParams.set("code_challenge_method", "S256");
     authorizeUrl.searchParams.set("state", state);
+    // "Entrar com outra conta": OIDC padrão — força a Central a pedir credenciais mesmo que já
+    // exista sessão ativa lá (ex.: admin logado na Central testando o sistema como outro usuário).
+    if (req.query.trocar === "1") {
+      authorizeUrl.searchParams.set("prompt", "login");
+      authorizeUrl.searchParams.set("max_age", "0");
+    }
     res.redirect(authorizeUrl.toString());
   } catch {
     redirectComErro(res, "Não foi possível iniciar o login com o APP CENTRAL.");
