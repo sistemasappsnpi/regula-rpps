@@ -71,6 +71,8 @@ export interface PaginaExtraida {
   corPrimaria: string | null;
   corDestaque: string | null;
   logoUrl: string;
+  /** o logo veio de uma <img> da página (e não só de og:image) */
+  logoImg: boolean;
   iconeUrl: string;
   cnpj: string;
   endereco: string;
@@ -127,7 +129,7 @@ export function extrairDaPagina(html: string, base: string): PaginaExtraida {
   return {
     nome: nome.trim(), nomeCompleto: nomeCompleto.trim(), site, seoUrl: canonical ? absoluta(canonical, base) : "",
     descricao: m["description"] || m["og:description"] || "", titulo: limparTexto(sem.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i)?.[1] ?? ""),
-    corPrimaria, corDestaque, logoUrl: absoluta(imgA.src || m["og:image"] || "", base), iconeUrl: absoluta(icone, base),
+    corPrimaria, corDestaque, logoUrl: absoluta(imgA.src || m["og:image"] || "", base), logoImg: !!imgA.src, iconeUrl: absoluta(icone, base),
     cnpj, endereco, telefone, email, redes, folhas,
   };
 }
@@ -232,8 +234,8 @@ export function normalizarLinkPortal(entrada: string): string {
   return u;
 }
 
-/** Cores (inclusive das folhas de estilo ligadas) e imagens de uma página já lida. */
-export async function lerIdentidade(x: PaginaExtraida) {
+/** Cores declaradas em CSS (inline ou nas folhas ligadas) de uma página já lida. */
+export async function lerCores(x: PaginaExtraida) {
   let { corPrimaria, corDestaque } = x;
   if (!corPrimaria || !corDestaque) {
     for (const f of x.folhas.slice(0, 3)) {
@@ -247,9 +249,13 @@ export async function lerIdentidade(x: PaginaExtraida) {
   // azul padrão do Bootstrap (--primary de quase todo site feito com ele) não é cor de marca
   if (corPrimaria && /^#(007bff|0d6efd)$/.test(corPrimaria)) corPrimaria = null;
   if (corDestaque && /^#(007bff|0d6efd|6c757d)$/.test(corDestaque)) corDestaque = null;
-  return { corPrimaria, corDestaque, logo: await imagem(x.logoUrl, "logo"), icone: await imagem(x.iconeUrl, "logo-icon") };
+  return { corPrimaria, corDestaque };
 }
 
+/** Cores e imagens de uma página já lida. */
+export async function lerIdentidade(x: PaginaExtraida) {
+  return { ...(await lerCores(x)), logo: await imagem(x.logoUrl, "logo"), icone: await imagem(x.iconeUrl, "logo-icon") };
+}
 /** Estado já gravado de um portal, usado na renovação para não perder o que a origem não devolveu. */
 export interface Anterior {
   logo?: ArquivoEnviado;

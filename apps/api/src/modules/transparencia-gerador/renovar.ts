@@ -9,7 +9,7 @@ import { HttpError } from "../../middleware/errorHandler";
 import {
   apiUrlDe, baixarJson, configModelo, importarPortal, normalizarApiUrl, slug, testarTransparencia, type ArquivoEnviado,
 } from "./gerador.service";
-import { extrairDaPagina, hostsCitados, importarPorLink, lerIdentidade, type Anterior, type ResultadoLink } from "./importar-link";
+import { extrairDaPagina, hostsCitados, importarPorLink, lerCores, lerIdentidade, type Anterior, type ResultadoLink } from "./importar-link";
 import { fetchPagina, hostPermitido } from "./http";
 import { coresDaLogo } from "./cores-logo";
 
@@ -18,12 +18,13 @@ type Cfg = Record<string, any>;
 
 const ehMenu = (d: unknown) => Array.isArray(d) && d.length > 0 && typeof d[0] === "object" && d[0] !== null && "Nome" in d[0];
 
-/** Página inicial do órgão: o item "início" do menu (ou o site mais citado pelos links do menu). */
-export function siteDoMenu(menu: Cfg[]): string {
+/** Página inicial do órgão: o item "início" do menu (ou, com `aproximado`, o site mais citado pelos links do menu). */
+export function siteDoMenu(menu: Cfg[], aproximado = true): string {
   const http = (s: unknown) => (typeof s === "string" && /^https?:\/\//i.test(s.trim()) ? s.trim() : "");
   const raizes = menu.filter((m) => !m?.NMenu && http(m?.Pagina)).sort((a, b) => (Number(a.Ordem) || 0) - (Number(b.Ordem) || 0));
   const inicio = raizes.find((m) => /^\s*([ií]n[ií]cio|home|p[aá]gina inicial)\s*$/i.test(String(m.Nome)));
   if (inicio) return http(inicio.Pagina);
+  if (!aproximado) return "";
   const host = hostsCitados(menu)[0];
   return host ?? "";
 }
@@ -43,7 +44,7 @@ export async function importarPorApis(
   const urlT = t.url!;
 
   // menu: o link informado; sem ele, o mesmo servidor da transparência
-  const urlM = normalizarApiUrl(urlM0 || urlT, "menu");
+  const urlM = normalizarApiUrl(urlM0 || urlT.replace(/^(https?:\/\/[^/]+).*$/, "$1"), "menu");
   const menuBaixado = await baixarJson(urlM);
   const menu = (menuBaixado.data ?? []) as Cfg[];
   if (menuBaixado.data === null || (menu.length > 0 && !ehMenu(menu))) {
@@ -58,26 +59,45 @@ export async function importarPorApis(
   // identidade (nome, logo, cores, contatos): vem do site do órgão (item "Início" do menu) ou, se ele não
   // trouxer nome e logo, da própria página de acesso à informação do servidor da API
   const origemApi = t.url!.replace(/^(https?:\/\/[^/]+).*$/, "$1");
-  const siteMenu = (entrada.site ?? "").trim() || siteDoMenu(menu);
-  const candidatos = [siteMenu, t.paginaOficial, `${origemApi}/acessoainformacao`]
+  const inicio = (entrada.site ?? "").trim() || siteDoMenu(menu, false);
+  // sem item "Início", o servidor da API só entra por último: a raiz dele costuma ser uma página genérica da plataforma
+  const siteMenu = inicio || siteDoMenu(menu);
+  const candidatos = [inicio, t.paginaOficial, `${origemApi}/acessoainformacao`, siteMenu]
     .map((u) => (u && !/^https?:\/\//i.test(u) ? `https://${u}` : u))
     .filter((u, i, a) => u && hostPermitido(u) && a.indexOf(u) === i);
   let siteUrl = siteMenu;
   let x = null as ReturnType<typeof extrairDaPagina> | null;
   let melhor = -1;
+  const lidasUrls = new Set<string>();
   for (const u of candidatos) {
     const pagina = await fetchPagina(u);
     if (!pagina) continue;
     const e = extrairDaPagina(pagina.html, pagina.url);
-    const pontos = (e.nome ? 1 : 0) + (e.logoUrl ? 2 : 0);
+    lidasUrls.add(u);
+    // o logo precisa vir de uma <img> da página (og:image sozinho costuma ser imagem de compartilhamento genérica)
+    const pontos = (e.nome ? 1 : 0) + (e.logoUrl && e.logoImg ? 2 : 0);
     if (pontos > melhor) {
       melhor = pontos;
       x = e;
-      siteUrl = u === siteMenu ? u : siteMenu || u;
+      siteUrl = inicio || u;
     }
     if (pontos >= 3) break;
   }
   const ident = x ? await lerIdentidade(x) : null;
+  // a página escolhida pelo nome/logo pode não declarar cores: tenta as demais páginas do mesmo órgão
+  if (ident && !ident.corPrimaria) {
+    for (const u of candidatos) {
+      if (lidasUrls.has(u)) continue;
+      const pg = await fetchPagina(u);
+      if (!pg) continue;
+      const c = await lerCores(extrairDaPagina(pg.html, pg.url));
+      if (c.corPrimaria) {
+        ident.corPrimaria = c.corPrimaria;
+        ident.corDestaque = c.corDestaque;
+        break;
+      }
+    }
+  }
   if (!x) avisos.push("Não consegui abrir o site do órgão nem a página de acesso à informação: nome, logo e cores precisam ser conferidos no portal.");
 
   let nome: string = (entrada.nome ?? "").trim() || x?.nome || (typeof base?.cliente?.nome === "string" ? base.cliente.nome : "");
@@ -107,7 +127,7 @@ export async function importarPorApis(
     ...config.cliente,
     nome,
     nomeCompleto: nomeCompleto || config.cliente?.nomeCompleto || nome,
-    site: siteMenu || x?.site || config.cliente?.site || "",
+    site: inicio || x?.site || config.cliente?.site || "",
     cnpj: x?.cnpj || config.cliente?.cnpj || "", endereco: x?.endereco || config.cliente?.endereco || "",
     telefone: x?.telefone || config.cliente?.telefone || "", email: x?.email || config.cliente?.email || "",
     redes: x?.redes.length ? x.redes : (config.cliente?.redes ?? []),
