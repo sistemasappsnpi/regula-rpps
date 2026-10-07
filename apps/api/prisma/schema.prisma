@@ -779,3 +779,28 @@ model UserFeature {
   @@unique([userId, featureKey])
   @@map("user_features")
 }
+
+// Gerador de Portal da Transparência (Admin Global): cada registro é um portal gerado — o
+// config.json do portal, a logo/ícone enviados e a primeira cópia dos dados das APIs do cliente.
+// O pacote publicável (ZIP PHP) é montado na hora a partir disto + os arquivos-modelo versionados
+// em apps/api/assets/transparencia-gerador (nada disso é gravado em disco).
+model TransparenciaPortal {
+  id               String   @id @default(cuid())
+  pasta            String   @unique // slug usado no nome do ZIP (portal-<pasta>.zip)
+  nome             String
+  config           Json
+  preset           String? // catálogo de reserva (presets/<nome>) copiado para dados/ no pacote
+  logoNome        String?
+  logoMime         String?
+  logoDados        Bytes?
+  iconeNome        String?
+  iconeMime        String?
+  iconeDados       Bytes?
+  cacheTransparencia String? @db.LongText
+  cacheMenu        String?  @db.LongText
+  cacheOrdem       String?  @db.LongText
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("transparencia_portais")
+}

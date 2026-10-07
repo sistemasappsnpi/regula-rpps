@@ -1,0 +1,135 @@
+{
+    "cliente": {
+        "nome": "BuziosPrev",
+        "nomeCompleto": "Fundo de Previdência dos Servidores Municipais de Armação dos Búzios",
+        "site": "https://buziosprev.rj.gov.br/",
+        "logo": "logo.webp",
+        "icone": "logo-icon.webp",
+        "cnpj": "15.553.850/0001-94",
+        "endereco": "Avenida dos Esportistas, Rua Guilhermina Maria de São José, s/nº - quadra 4, lote 7, Armação dos Búzios - RJ, 28950-000",
+        "telefone": "(22) 2623-1655",
+        "email": "buziosprev@buziosprev.rj.gov.br",
+        "redes": [
+            {
+                "tipo": "instagram",
+                "url": "https://www.instagram.com/buziosprefeitura/"
+            }
+        ]
+    },
+    "cores": {
+        "primaria": "#01305f",
+        "destaque": "#98c810",
+        "rodape": "#01305f"
+    },
+    "api": {
+        "base": "https://transparencia.buziosprev.rj.gov.br",
+        "urlTransparencia": "https://transparencia.buziosprev.rj.gov.br/dadosabertosexportar?d=transparencia&a=&f=json&itens_por_pagina=1000000",
+        "urlMenu": "https://transparencia.buziosprev.rj.gov.br/dadosabertosexportar?d=menu&a=&f=json&itens_por_pagina=1000000",
+        "dominioLinks": "https://www.transparencia.buziosprev.rj.gov.br",
+        "atualizarMinutos": 5,
+        "cacheSegundos": 60,
+        "transparencia": true,
+        "menu": true,
+        "paginaOficial": "https://transparencia.buziosprev.rj.gov.br/acessoainformacao"
+    },
+    "seo": {
+        "url": "",
+        "descricao": ""
+    },
+    "textos": {
+        "titulo": "Acesso à Informação",
+        "subtitulo": "Todas as categorias em uma página só. Use a busca ou o índice ao lado para ir direto ao que precisa.",
+        "placeholderBusca": "Ex.: licitações, folha de pagamento, atas, ouvidoria..."
+    },
+    "grupos": {
+        "ordem": [
+            "Atendimento ao Cidadão",
+            "RECEITAS, DESPESAS, PESSOAL, COMPRAS E CONVÊNIOS",
+            "ATOS, PUBLICAÇÕES, COMPRAS E CONVÊNIO",
+            "Transparência Fiscal e Contas Públicas",
+            "Informações Institucionais",
+            "GOVERNANÇA CORPORATIVA",
+            "ÓRGÃOS COLEGIADOS",
+            "EDUCAÇÃO PREVIDENCIÁRIA",
+            "CONTAS PÚBLICAS"
+        ],
+        "ocultar": [],
+        "icones": [],
+        "descricoes": [],
+        "ordemAutomatica": true,
+        "ordemItens": {
+            "Atendimento ao Cidadão": [
+                "E-sic",
+                "Ouvidoria Municipal"
+            ],
+            "RECEITAS, DESPESAS, PESSOAL, COMPRAS E CONVÊNIOS": [
+                "Receitas",
+                "Despesas",
+                "Execução orçamentária",
+                "Folha de pagamento",
+                "Licitações",
+                "Contratos administrativos",
+                "Parcelamento de debitos"
+            ],
+            "ATOS, PUBLICAÇÕES, COMPRAS E CONVÊNIO": [
+                "Almoxarifado",
+                "Leis",
+                "Decretos Municipais",
+                "Portarias",
+                "Publicações",
+                "Concurso Público"
+            ],
+            "Transparência Fiscal e Contas Públicas": [
+                "Lei de Responsábilidade Fiscal (LRF)",
+                "Prestação de contas do governo"
+            ],
+            "Informações Institucionais": [
+                "Prefeitura",
+                "Serviços Online",
+                "Certificado de pró-gestão",
+                "Perguntas Frequentes - FAQ"
+            ],
+            "GOVERNANÇA CORPORATIVA": [
+                "Atuarial",
+                "Política anual de investimentos",
+                "Cronograma de reuniões dos orgãos colegiados",
+                "Relatório de controle interno",
+                "Credenciamento de entidades",
+                "Licitações",
+                "Acórdãos tce",
+                "Ato do presidente",
+                "Demonstrativos financeiros e contábeis",
+                "Código de ética",
+                "Cronograma de educação previdenciária",
+                "Relatório de governança",
+                "Crp - certificado de regularidade previdenciária",
+                "Plano de ação anual",
+                "Autorização de aplicação e resgate",
+                "Certidões",
+                "Política de segurança da informação"
+            ],
+            "ÓRGÃOS COLEGIADOS": [
+                "Diretoria executiva",
+                "Comitê de investimentos",
+                "Conselho municipal de previdência"
+            ],
+            "EDUCAÇÃO PREVIDENCIÁRIA": [
+                "Cartilha previdenciária",
+                "Audiências públicas",
+                "Audiências públicas - vídeos",
+                "Termo de doação"
+            ]
+        }
+    },
+    "descricoesItens": [],
+    "amparos": [],
+    "glossario": [],
+    "sinonimos": [],
+    "acessibilidade": {
+        "vlibras": true
+    },
+    "recursos": {
+        "feedback": true,
+        "linksNovaAba": false
+    }
+}

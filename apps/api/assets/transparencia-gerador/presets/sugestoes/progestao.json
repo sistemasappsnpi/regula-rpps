@@ -1,0 +1,1389 @@
+{
+ "fonte": "Portal da MesquitaPrev (RPPS preparado para auditoria do Pró-Gestão)",
+ "sigla": "Pró-Gestão",
+ "amparoPadrao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+ "referencia": {
+  "nome": "MesquitaPrev",
+  "portal": "https://mesquitaprev.rj.gov.br/transparencia/",
+  "api": "https://portal.mesquitaprev.rj.gov.br/dadosabertosexportar?d=transparencia&a=&f=json&itens_por_pagina=1000000"
+ },
+ "itens": [
+  {
+   "grupo": "Canais de Atendimento",
+   "rotulo": "Ouvidoria",
+   "descricao": "Acesse nosso canal de ouvidoria e envie suas manifestações, críticas, elogios, denúncias e ajude o governo a tornar nossa cidade cada vez melhor.",
+   "icone": "i-message",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/ouvidoria",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Canais de Atendimento",
+   "rotulo": "E-SIC",
+   "descricao": "SIC (Serviço de Informações ao Cidadão) permite que qualquer pessoa encaminhe pedidos de informação aos órgãos e entidades do Poder Executivo Municipal.",
+   "icone": "i-info",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/sic",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Canais de Atendimento",
+   "rotulo": "Pesquisa de Satisfação",
+   "descricao": "O compromisso de atender com eficiência às demandas da sociedade.",
+   "icone": "i-doc-check",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pesquisasatisfacao",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Comitê de Investimentos",
+   "rotulo": "Regimento Interno",
+   "descricao": "Regimento interno que organiza o funcionamento do órgão colegiado.",
+   "icone": "i-book",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/3?tipo=8&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Comitê de Investimentos",
+   "rotulo": "Atas",
+   "descricao": "Registros das reuniões e deliberações do órgão colegiado.",
+   "icone": "i-document",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/3?tipo=1",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Comitê de Investimentos",
+   "rotulo": "Calendário de Reuniões",
+   "descricao": "Calendário das reuniões previstas do órgão colegiado.",
+   "icone": "i-calendar",
+   "criterio": "3.2.8 (f)",
+   "exigencia": "Cronograma das reuniões dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/3?tipo=10&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Compras",
+   "rotulo": "Portal de Licitações",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "3.2.8 (j)",
+   "exigencia": "Informações relativas a procedimentos licitatórios e contratos administrativos ou declaração de inexistência de processo licitatório realizado diretamente pela unidade gestora do RPPS",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/portalcompras",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Compras",
+   "rotulo": "Contratos",
+   "descricao": "Contratos administrativos firmados pelo instituto.",
+   "icone": "i-document",
+   "criterio": "3.2.8 (j)",
+   "exigencia": "Informações relativas a procedimentos licitatórios e contratos administrativos ou declaração de inexistência de processo licitatório realizado diretamente pela unidade gestora do RPPS",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/contrato",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Conselho de Administração",
+   "rotulo": "Regimento Interno",
+   "descricao": "Regimento interno que organiza o funcionamento do órgão colegiado.",
+   "icone": "i-book",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/1?tipo=8&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Conselho de Administração",
+   "rotulo": "Atas",
+   "descricao": "Registros das reuniões e deliberações do órgão colegiado.",
+   "icone": "i-document",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/1?tipo=1",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Conselho de Administração",
+   "rotulo": "Calendário de Reuniões",
+   "descricao": "Calendário das reuniões previstas do órgão colegiado.",
+   "icone": "i-calendar",
+   "criterio": "3.2.8 (f)",
+   "exigencia": "Cronograma das reuniões dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/1?tipo=10&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Conselho Fiscal",
+   "rotulo": "Regimento Interno",
+   "descricao": "Regimento interno que organiza o funcionamento do órgão colegiado.",
+   "icone": "i-book",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/2?tipo=8&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Conselho Fiscal",
+   "rotulo": "Atas",
+   "descricao": "Registros das reuniões e deliberações do órgão colegiado.",
+   "icone": "i-document",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/2?tipo=1",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Conselho Fiscal",
+   "rotulo": "Calendário de Reuniões",
+   "descricao": "Calendário das reuniões previstas do órgão colegiado.",
+   "icone": "i-calendar",
+   "criterio": "3.2.8 (f)",
+   "exigencia": "Cronograma das reuniões dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos/2?tipo=10&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Educação Previdenciária",
+   "rotulo": "Cronograma de Ações de Educação Previdenciária",
+   "descricao": "Calendário das Ações de Educação Previdenciária Realizadas Pelo Instituto.",
+   "icone": "i-calendar",
+   "criterio": "3.2.8 (e)",
+   "exigencia": "Cronograma de ações de educação previdenciária",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?grupo=9",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Educação Previdenciária",
+   "rotulo": "Plano de Ação Anual",
+   "descricao": "Plano de ação anual do instituto.",
+   "icone": "i-doc-check",
+   "criterio": "3.2.8 (l)",
+   "exigencia": "Plano de Ação Anual (Níveis I e II) ou Planejamento Estratégico (Níveis III e IV)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=108&secr=&exer=&descr=",
+   "tambemEm": [
+    "Governança Corporativa"
+   ]
+  },
+  {
+   "grupo": "Educação Previdenciária",
+   "rotulo": "Audiencias Públicas Vídeos",
+   "descricao": "Gravações em vídeo das audiências públicas realizadas pelo instituto.",
+   "icone": "i-megaphone",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/videos",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Educação Previdenciária",
+   "rotulo": "Cartilha Previdenciária",
+   "descricao": "Material explicativo sobre regras e direitos previdenciários dos segurados.",
+   "icone": "i-book",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=110&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Regimento Interno dos Órgãos Colegiados",
+   "descricao": "Regimento interno que organiza o funcionamento dos órgãos colegiados do instituto.",
+   "icone": "i-book",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=114&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Certidões",
+   "descricao": "Certidões emitidas pelo instituto para comprovação de situação junto ao órgão.",
+   "icone": "i-award",
+   "criterio": "3.2.8 (b)",
+   "exigencia": "Certidões de tributos: Certidão de Débitos Relativos a Créditos Tributários Federais e à Dívida Ativa da União e Certidão de Regularidade do FGTS, podendo ser quaisquer certidões: negativa, positiva com efeitos de negativa ou positiva",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&cat=106&exer=&descr=&num=&comp=&grupo=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "CND - Federal",
+   "descricao": "Certidão Positiva com Efeitos de Negativa de Débitos Relativos aos Tributos Federais e à Dívida Ativa da União",
+   "icone": "i-award",
+   "criterio": "3.2.8 (b)",
+   "exigencia": "Certidões de tributos: Certidão de Débitos Relativos a Créditos Tributários Federais e à Dívida Ativa da União e Certidão de Regularidade do FGTS, podendo ser quaisquer certidões: negativa, positiva com efeitos de negativa ou positiva",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "http://mesquitaprev.rj.gov.br/wp-content/uploads/2026/09/13_tp_Certidao_certidao_negativa_federal.pdf",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "CRF",
+   "descricao": "Certificado de Regularidade do FGTS",
+   "icone": "i-award",
+   "criterio": "3.2.8 (b)",
+   "exigencia": "Certidões de tributos: Certidão de Débitos Relativos a Créditos Tributários Federais e à Dívida Ativa da União e Certidão de Regularidade do FGTS, podendo ser quaisquer certidões: negativa, positiva com efeitos de negativa ou positiva",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?cat=106&descr=fgts",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "CRP",
+   "descricao": "Certificado de Regularidade Previdenciária vigente do instituto.",
+   "icone": "i-award",
+   "criterio": "3.2.8 (c)",
+   "exigencia": "Certificado de Regularidade Previdenciária, se houver, e links para acesso, no endereço eletrônico da Previdência Social na Internet, ao Extrato Previdenciário e aos demonstrativos obrigatórios previstos no art. 241, III, IV e V, da Portaria MTP nº 1.467/2022",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=109&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "CRP – Cadprev",
+   "descricao": "Consulta ao Certificado de Regularidade Previdenciária no sistema CadPrev do Governo Federal.",
+   "icone": "i-award",
+   "criterio": "3.2.8 (c)",
+   "exigencia": "Certificado de Regularidade Previdenciária, se houver, e links para acesso, no endereço eletrônico da Previdência Social na Internet, ao Extrato Previdenciário e aos demonstrativos obrigatórios previstos no art. 241, III, IV e V, da Portaria MTP nº 1.467/2022",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://cadprev.previdencia.gov.br/Cadprev/pages/publico/crp/pesquisarEnteCrp.xhtml",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Comprev",
+   "descricao": "Informações sobre a compensação previdenciária entre regimes (Comprev).",
+   "icone": "i-link2",
+   "criterio": "3.2.8 (c)",
+   "exigencia": "Certificado de Regularidade Previdenciária, se houver, e links para acesso, no endereço eletrônico da Previdência Social na Internet, ao Extrato Previdenciário e aos demonstrativos obrigatórios previstos no art. 241, III, IV e V, da Portaria MTP nº 1.467/2022",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/contrato/8",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Relatório de Governança",
+   "descricao": "Relatório sobre as práticas de governança corporativa adotadas pelo instituto.",
+   "icone": "i-sitemap",
+   "criterio": "3.2.8 (d)",
+   "exigencia": "Relatório de Governança Corporativa",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=103&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Código de Ética",
+   "descricao": "Diretrizes de conduta ética aplicáveis a gestores, servidores e conselheiros do instituto.",
+   "icone": "i-scale",
+   "criterio": "3.2.8 (g)",
+   "exigencia": "Código de Ética",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=104&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Demonstrativos Financeiros e Contábeis",
+   "descricao": "Demonstrativos financeiros e contábeis da gestão do instituto.",
+   "icone": "i-document",
+   "criterio": "3.2.8 (h)",
+   "exigencia": "Demonstrações financeiras e contábeis (periodicidade: Níveis I, II e III - trimestral; Nível IV - mensal)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pcsg",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Relatório de Licitações e Contratos",
+   "descricao": "Relatório consolidado das licitações e contratos do instituto.",
+   "icone": "i-scale",
+   "criterio": "3.2.8 (j)",
+   "exigencia": "Informações relativas a procedimentos licitatórios e contratos administrativos ou declaração de inexistência de processo licitatório realizado diretamente pela unidade gestora do RPPS",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=100&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Avaliação do Passivo Judicial",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "3.2.8 (k)",
+   "exigencia": "Relatório de avaliação do passivo judicial ou declaração de inexistência de passivo judicial de responsabilidade de pagamento pela unidade gestora do RPPS (apenas Níveis III e IV)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Relatório de Controle Interno",
+   "descricao": "Relatório produzido pela área de controle interno do instituto.",
+   "icone": "i-shield",
+   "criterio": "3.2.8 (n)",
+   "exigencia": "Relatórios de controle interno (Níveis I e II: semestral; Níveis III e IV: trimestral)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=98&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Entidades de Investimentos Credenciadas",
+   "descricao": "Instituições financeiras credenciadas para operar com os recursos do instituto.",
+   "icone": "i-landmark",
+   "criterio": "3.2.8 (o)",
+   "exigencia": "Relação das entidades escolhidas para receber investimentos, por meio de credenciamento",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=99&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Relatório Mensais e Anuais de Investimentos",
+   "descricao": "Relatórios mensais e anuais de investimentos do regime próprio de previdência.",
+   "icone": "i-chart",
+   "criterio": "3.2.8 (p)",
+   "exigencia": "Relatórios mensais e anuais de investimentos",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=102&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "DAIR - Cadprev",
+   "descricao": "Consulta ao Demonstrativo de Aplicação e Investimentos de Recursos no sistema CadPrev.",
+   "icone": "i-chart",
+   "criterio": "3.2.8 (p)",
+   "exigencia": "Relatórios mensais e anuais de investimentos",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://cadprev.previdencia.gov.br/Cadprev/pages/modulos/dair/consultarDemonstrativos.xhtml",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Acórdãos TCE",
+   "descricao": "Acórdões do Tribunal de Contas do Estado relacionados ao instituto.",
+   "icone": "i-landmark",
+   "criterio": "3.2.8 (q)",
+   "exigencia": "Acórdãos das decisões do Tribunal de Contas sobre as contas anuais do RPPS e o Parecer Prévio das contas de governo, caso o Órgão de Controle Externo emita os dois",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=101&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Relatórios do RPC",
+   "descricao": "Acesso aos relatórios do Regime de Previdência Complementar.",
+   "icone": "i-document",
+   "criterio": "3.2.8 (r)",
+   "exigencia": "Relatório do Regime de Previdência Complementar (Níveis I e II: anual; Níveis III e IV: semestral)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?cat=126",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Limites de Alçadas",
+   "descricao": "Consulte os níveis de competência e autorização para decisões e operações relacionadas à Previdência.",
+   "icone": "i-shield",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "http://mesquitaprev.rj.gov.br/wp-content/uploads/2026/09/13_tp_Certidao_certidao_negativa_federal.pdf",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Governança Corporativa",
+   "rotulo": "Política de Segurança da Informação",
+   "descricao": "Diretrizes adotadas para proteger as informações e sistemas do instituto.",
+   "icone": "i-lock",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes/98",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Órgãos Colegiados",
+   "descricao": "Conselho de Administração, Conselho Fiscal e Comitê de Investimentos do instituto.",
+   "icone": "i-users",
+   "criterio": "3.2.8 (a)",
+   "exigencia": "Regimentos internos e atas dos órgãos colegiados (Conselho Deliberativo, Conselho Fiscal e Comitê de Investimentos)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/conselhos",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Audiências Públicas",
+   "descricao": "Materiais e publicações das audiências públicas realizadas pelo instituto.",
+   "icone": "i-users",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=38&secr=&exer=&descr=",
+   "tambemEm": [
+    "Educação Previdenciária"
+   ]
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Diário Oficial",
+   "descricao": "Edições do Diário Oficial com atos publicados pelo instituto.",
+   "icone": "i-document",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://transparencia.mesquita.rj.gov.br/?serv=18",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Dados Abertos",
+   "descricao": "Base de dados públicos do instituto disponibilizada em formato aberto.",
+   "icone": "i-database",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/dadosabertos",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Glossario",
+   "descricao": "Explicação de termos técnicos usados na área previdenciária.",
+   "icone": "i-book",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/glossario",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Leis",
+   "descricao": "Leis municipais que regem o funcionamento do instituto.",
+   "icone": "i-scale",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/leis",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Perguntas Frequentes",
+   "descricao": "Respostas às dúvidas mais comuns sobre os serviços do instituto.",
+   "icone": "i-question",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/perguntaserespostas",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "Calendário de Pagamento",
+   "descricao": "Datas previstas para pagamento de benefícios e salários ao longo do ano.",
+   "icone": "i-calendar",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/calendariofopag",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Institucional",
+   "rotulo": "TACS",
+   "descricao": "Termos de Ajustamento de Conduta firmados pelo instituto.",
+   "icone": "i-doc-check",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=43&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Demonstrações Financeiras e Contábeis",
+   "descricao": "Demonstrativos e informações financeiras e contábeis do instituto.",
+   "icone": "i-chart",
+   "criterio": "3.2.8 (h)",
+   "exigencia": "Demonstrações financeiras e contábeis (periodicidade: Níveis I, II e III - trimestral; Nível IV - mensal)",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?grupo=10",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Lei de Diretrizes Orçamentárias (LDO)",
+   "descricao": "Lei de Diretrizes Orçamentárias e seus anexos.",
+   "icone": "i-book",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=9&comp=&secr=&descr=&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Lei Orçamentária Anual (LOA)",
+   "descricao": "Lei Orçamentária Anual e seus anexos.",
+   "icone": "i-chart",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=8&comp=&secr=&descr=&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Plano Plurianual (PPA)",
+   "descricao": "Lei do Plano Plurianual e seus anexos.",
+   "icone": "i-calendar",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=17&comp=&secr=&descr=&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Relatório de Gestão Fiscal (RGF)",
+   "descricao": "Relatório de Gestão Fiscal, exigido pela lei de Responsabilidade Fiscal.",
+   "icone": "i-chart",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=4&comp=&descr=&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Relatório Resumido de Execução Orçamentária (RREO)",
+   "descricao": "Relatório Resumido da Execução Orçamentária, exigido pela Lei de Responsabilidade Fiscal.",
+   "icone": "i-chart",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=7&comp=&secr=&descr=&exer=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "PCS - Prestação de Contas de Gestão",
+   "descricao": "Prestação de contas de gestão do instituto.",
+   "icone": "i-document",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=116&exer=&descr=&comp=&secr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Balanços Financeiros",
+   "descricao": "Balanços financeiros do instituto.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=35&secr=&exer=&descr=&comp=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Balanços Orçamentários",
+   "descricao": "Balanços orçamentários do instituto.",
+   "icone": "i-scale",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=36&secr=&exer=&descr=&comp=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "LRF e Prestação de Contas",
+   "rotulo": "Balanços Patrimoniais",
+   "descricao": "Balanços patrimoniais do intituto.",
+   "icone": "i-landmark",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=111&secr=&exer=&descr=&comp=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Previdência",
+   "rotulo": "Avaliação Atuarial",
+   "descricao": "Avaliação atuarial anual do regime próprio de previdência.",
+   "icone": "i-chart",
+   "criterio": "3.2.8 (i)",
+   "exigencia": "Avaliação atuarial anual",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=29&secr=&exer=&descr=",
+   "tambemEm": [
+    "Governança Corporativa"
+   ]
+  },
+  {
+   "grupo": "Previdência",
+   "rotulo": "Política de Investimentos",
+   "descricao": "Política de Investimentos do regime próprio de previdência.",
+   "icone": "i-chart",
+   "criterio": "3.2.8 (m)",
+   "exigencia": "Política de Investimentos",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=30&secr=&exer=&descr=",
+   "tambemEm": [
+    "Governança Corporativa"
+   ]
+  },
+  {
+   "grupo": "Previdência",
+   "rotulo": "Autorização de Aplicação e Resgate (APR)",
+   "descricao": "Documentos que formalizam movimentações na carteira de investimentos.",
+   "icone": "i-doc-check",
+   "criterio": "3.2.8 (p)",
+   "exigencia": "Relatórios mensais e anuais de investimentos",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=31&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Previdência",
+   "rotulo": "Relatório de Investimentos",
+   "descricao": "Acompanhamento dos resultados da carteira de investimentos do instituto.",
+   "icone": "i-chart",
+   "criterio": "3.2.8 (p)",
+   "exigencia": "Relatórios mensais e anuais de investimentos",
+   "fundamentacao": "Pró-Gestão RPPS, item 3.2.8; art. 241 da Portaria MTP nº 1.467/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=40&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Previdência",
+   "rotulo": "Carteira de Investimentos",
+   "descricao": "Composição e valores dos recursos aplicados pelo regime próprio de previdência.",
+   "icone": "i-briefcase",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=39&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Previdência",
+   "rotulo": "Rentabilidade",
+   "descricao": "Rentabilidade da carteira de investimentos do regime próprio de previdência.",
+   "icone": "i-chart",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=41&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Receitas e Despesas",
+   "rotulo": "Despesas",
+   "descricao": "Registro detalhado das despesas executadas pelo instituto.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://transparencia.mesquita.rj.gov.br/?serv=145",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Receitas e Despesas",
+   "rotulo": "Receitas",
+   "descricao": "Registro detalhado das receitas arrecadadas pelo intituto.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://transparencia.mesquita.rj.gov.br/?serv=97",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Receitas e Despesas",
+   "rotulo": "Demonstrativos de receitas e Despesas",
+   "descricao": "Demonstrativos consolidados de receitas e despesas do instituto.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=112&secr=&exer=&descr=&comp=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Folha de Pagamento - Servidores Ativos",
+   "descricao": "Folha de pagamento dos servidores ativos vinculados ao instituto.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=1&cat=33&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Folha de Pagamento - Aposentados",
+   "descricao": "Folha de pagamento dos aposentados vinculados ao regime próprio de previdência.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=2&cat=33&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Folha de Pagamento - Pensionistas",
+   "descricao": "Folha de pagamento dos pensionistas vinculados ao regime próprio de previdência.",
+   "icone": "i-coins",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=3&cat=33&secr=&exer=&descr=",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Portarias",
+   "descricao": "Portarias administrativas expedidas pelo instituto.",
+   "icone": "i-document",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/portaria",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Diárias e Passagens",
+   "descricao": "Gastos com diárias e passagens de servidores e conselheiros em viagens a serviço.",
+   "icone": "i-plane",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/diarias",
+   "tambemEm": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Demonstrativo de Gasto com Pessoal",
+   "descricao": "Demonstrativo dos gastos com pessoal do instituto.",
+   "icone": "i-users",
+   "criterio": "",
+   "exigencia": "Publicado pelo portal de referência (boa prática observada, sem exigência expressa no item 3.2.8).",
+   "fundamentacao": "",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "rpps"
+   ],
+   "esferas": [],
+   "matriz": "rpps",
+   "verificacao": "",
+   "apelidos": [],
+   "exemplo": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=42&secr=&exer=&descr=",
+   "tambemEm": []
+  }
+ ],
+ "recursos": []
+}

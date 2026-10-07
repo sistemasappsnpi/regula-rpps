@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LayoutDashboard, Building2, SlidersHorizontal, History, FileBarChart2 } from "lucide-react";
+import { LayoutDashboard, Building2, SlidersHorizontal, History, FileBarChart2, Globe2 } from "lucide-react";
 import { useAuth } from "../../lib/auth-context";
 import { AppShell, type ShellNavItem } from "./AppShell";
 import { SessionMenu } from "./SessionMenu";
@@ -15,6 +15,9 @@ const PARAMETRIZACAO_ITEMS = [
   { to: "/admin/parametrizacoes", label: "Parametrizações", icon: SlidersHorizontal, feature: "admin_parametrizacoes", end: false },
 ];
 
+const TRANSPARENCIA_ITEMS = [
+  { to: "/admin/transparencia-gerador", label: "Gerador de transparência", icon: Globe2, feature: "admin_parametrizacoes", end: false },
+];
 export function GlobalAdminShell({ children }: { children: ReactNode }) {
   const { user, hasFeature, logout } = useAuth();
 
@@ -30,7 +33,7 @@ export function GlobalAdminShell({ children }: { children: ReactNode }) {
   return (
     <AppShell
       brand={{ logo: "/logo-npi.png", title: "Admin Global", subtitle: "Regula RPPS · plataforma" }}
-      sections={[{ items: toItems(NAV_ITEMS) }, { label: "Parametrização", items: toItems(PARAMETRIZACAO_ITEMS) }]}
+      sections={[{ items: toItems(NAV_ITEMS) }, { label: "Parametrização", items: toItems(PARAMETRIZACAO_ITEMS) }, { label: "Portal da transparência", items: toItems(TRANSPARENCIA_ITEMS) }]}
       footer={<SessionMenu name={user?.name ?? "Usuário"} detail={user?.email} onLogout={logout} />}
     >
       {children}

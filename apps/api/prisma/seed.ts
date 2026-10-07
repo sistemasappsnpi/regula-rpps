@@ -455,11 +455,44 @@ async function seedDemoData(): Promise<void> {
   console.log("Tenant de demonstração vinculado a admin@valeverde.rpps.gov.br — entre por Microsoft, gov.br ou APP CENTRAL com este e-mail.");
 }
 
+// Portais de transparencia que existiam no gerador antigo (pasta separada): importados uma unica vez
+// (nunca sobrescreve um portal que ja exista no banco, entao edicoes feitas na aba do Admin ficam).
+async function seedPortaisTransparenciaLegados(): Promise<void> {
+  const raiz = path.resolve(process.cwd(), "assets/transparencia-gerador/legado");
+  if (!fs.existsSync(raiz)) return;
+  const mimes: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", svg: "image/svg+xml", webp: "image/webp", gif: "image/gif" };
+  const ler = (file: string) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "") : null);
+  for (const pasta of fs.readdirSync(raiz)) {
+    const dir = path.join(raiz, pasta);
+    if (!fs.existsSync(path.join(dir, "config.json"))) continue;
+    if (await prisma.transparenciaPortal.findUnique({ where: { pasta } })) continue;
+    const config = JSON.parse(ler(path.join(dir, "config.json"))!);
+    const imagem = (nome: unknown) => {
+      if (typeof nome !== "string" || !fs.existsSync(path.join(dir, nome))) return null;
+      return { nome, mime: mimes[nome.split(".").pop()!.toLowerCase()] ?? "application/octet-stream", dados: fs.readFileSync(path.join(dir, nome)) };
+    };
+    const logo = imagem(config.cliente?.logo);
+    const icone = config.cliente?.icone !== config.cliente?.logo ? imagem(config.cliente?.icone) : null;
+    await prisma.transparenciaPortal.create({
+      data: {
+        pasta, nome: config.cliente.nome, config,
+        logoNome: logo?.nome, logoMime: logo?.mime, logoDados: logo?.dados,
+        iconeNome: icone?.nome, iconeMime: icone?.mime, iconeDados: icone?.dados,
+        cacheTransparencia: ler(path.join(dir, "dados", "cache_transparencia.json")),
+        cacheMenu: ler(path.join(dir, "dados", "cache_menu.json")),
+        cacheOrdem: ler(path.join(dir, "dados", "cache_ordem.json")),
+      },
+    });
+    console.log(`Portal de transparência importado: ${pasta}`);
+  }
+}
+
 async function main() {
   await seedFeatureGating();
   await seedCrpCatalog();
   await seedProGestaoCatalog();
   await seedSuperAdmin();
+  await seedPortaisTransparenciaLegados();
 
   if (process.env.SEED_DEMO_DATA === "true") {
     await seedDemoData();

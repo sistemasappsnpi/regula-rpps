@@ -1,0 +1,3546 @@
+{
+ "fonte": "Cartilha do Programa Nacional de Transparência Pública (Atricon)",
+ "sigla": "Atricon",
+ "amparoPadrao": "Levantamento Nacional de Transparência Pública (Atricon)",
+ "itens": [
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Estrutura Organizacional",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.1",
+   "exigencia": "Divulga a sua estrutura organizacional e a norma que a institui/altera?",
+   "fundamentacao": "Art. 8º, § 3º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Organograma",
+    "Estrutura Administrativa"
+   ]
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Competências e Atribuições",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.2",
+   "exigencia": "Divulga competências e/ou atribuições?",
+   "fundamentacao": "Art. 8º, § 1º, I, da Lei nº 12.527/2011 - LAI e art. 6º, VI, b, da Lei 13.460/2017",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Responsáveis pela Gestão",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.3",
+   "exigencia": "Identifica o nome dos atuais responsáveis pela gestão do Poder/Órgão?",
+   "fundamentacao": "Art. 8º, § 3º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Diretoria",
+    "Gestores",
+    "Quem é Quem",
+    "Corpo Diretivo"
+   ]
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Endereços e Contatos",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.4",
+   "exigencia": "Divulga os endereços e telefones atuais do Poder ou órgão e e-mails institucionais?",
+   "fundamentacao": "Art. 8º, § 1º, I, da Lei nº 12.527/2011 - LAI e art. 6º, VI, b, da Lei 13.460/2017",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Contato",
+    "Fale Conosco",
+    "Onde Estamos",
+    "Endereço"
+   ]
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Horário de Atendimento",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.5",
+   "exigencia": "Divulga o horário de atendimento?",
+   "fundamentacao": "Art. 8º, § 1º, I, da Lei nº 12.527/2011 - LAI e art. 6º, VI, b, da Lei 13.460/2017",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Atos Normativos",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.6",
+   "exigencia": "Divulga os atos normativos próprios?",
+   "fundamentacao": "Art. 37 da CF (princípio da publicidade) e arts. 3º, II; 6°, inciso I; 7º, incisos II, V e VI e 8º da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "Legislação",
+    "Leis",
+    "Normas",
+    "Portarias",
+    "Atos Oficiais",
+    "Diário Oficial"
+   ]
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Perguntas Frequentes",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.7",
+   "exigencia": "Divulga as perguntas e respostas mais frequentes relacionadas às atividades desenvolvidas pelo Poder/Órgão?",
+   "fundamentacao": "Art. 8º, § 1º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "FAQ",
+    "Dúvidas Frequentes"
+   ]
+  },
+  {
+   "grupo": "Receita",
+   "rotulo": "Receitas: Previsão e Realização",
+   "descricao": "",
+   "icone": "i-coins",
+   "criterio": "3.1",
+   "exigencia": "Divulga as receitas do Poder ou órgão, evidenciando sua previsão e realização?",
+   "fundamentacao": "Arts. 48, §1º, II e 48-A, inciso II, da LC nº 101/00 e art. 8º, II, do Decreto nº 10.540/20",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Receitas"
+   ]
+  },
+  {
+   "grupo": "Receita",
+   "rotulo": "Classificação Orçamentária da Receita",
+   "descricao": "",
+   "icone": "i-coins",
+   "criterio": "3.2",
+   "exigencia": "Divulga a classificação orçamentária por natureza da receita (categoria econômica, origem, espécie, desdobramento)?",
+   "fundamentacao": "Art. 8º, II, \"e\", do Decreto nº 10.540/2020",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Receita",
+   "rotulo": "Dívida Ativa",
+   "descricao": "",
+   "icone": "i-coins",
+   "criterio": "3.3",
+   "exigencia": "Divulga a lista dos inscritos em dívida ativa, contendo, no mínimo, dados referentes ao nome do inscrito e o valor total da dívida?",
+   "fundamentacao": "Art. 198, § 3º, II da Lei 5.172/1966",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatório e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Despesa",
+   "rotulo": "Despesas Empenhadas, Liquidadas e Pagas",
+   "descricao": "",
+   "icone": "i-chart",
+   "criterio": "4.1",
+   "exigencia": "Divulga o total das despesas empenhadas, liquidadas e pagas?",
+   "fundamentacao": "Arts. 7º, VI e 8º, §1º, inciso III, da Lei nº 12.527/2011 - LAI; arts. 48, §1º, inciso II e 48-A, inciso I, da LC nº 101/20; art. 8º, inciso I, do Decreto nº 10.540/20",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Despesas",
+    "Execução Orçamentária"
+   ]
+  },
+  {
+   "grupo": "Despesa",
+   "rotulo": "Despesas por Classificação Orçamentária",
+   "descricao": "",
+   "icone": "i-chart",
+   "criterio": "4.2",
+   "exigencia": "Divulga as despesas por classificação orçamentária?",
+   "fundamentacao": "Arts. 7º, VI e 8º, §1º, inciso III, da Lei nº 12.527/2011 - LAI; arts. 48, §1º, inciso II e 48-A, inciso I, da LC nº 101/20; art. 8º, inciso I, do Decreto nº 10.540/20",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Despesa",
+   "rotulo": "Consulta de Empenhos",
+   "descricao": "",
+   "icone": "i-chart",
+   "criterio": "4.3",
+   "exigencia": "Possibilita a consulta de empenhos com os detalhes do beneficiário do pagamento ou credor, o valor, o bem fornecido ou serviço prestado e a identificação do procedimento licitatório originário da despesa?",
+   "fundamentacao": "Arts. 7º, VI e 8º, §1º, inciso III, da Lei nº 12.527/2011 - LAI; arts. 48, §1º, inciso II e 48-A, inciso I, da LC nº 101/20, art. 8º, I, \"h\", do Decreto nº 10.540/2020",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Empenhos",
+    "Notas de Empenho"
+   ]
+  },
+  {
+   "grupo": "Despesa",
+   "rotulo": "Aquisições de Bens",
+   "descricao": "",
+   "icone": "i-chart",
+   "criterio": "4.4",
+   "exigencia": "Publica relação das despesas com aquisições de bens efetuadas pela instituição contendo: identificação do bem, preço unitário, quantidade, nome do fornecedor e valor total de cada aquisição?",
+   "fundamentacao": "Estatais Dependentes: Art. 3º c/c art. 6º, I, c/c art. 7º, II e VI, c/c art. 8º, caput e § 1º, III-IV e § 2º da Lei 12.527/2011 (LAI); Art. 48 da Lei 13.303/2016. Estatais Independentes: Arts. 3º, III, 6º, I, e 8º, §2º, da Lei nº 12.527/2011(LAI)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Despesa",
+   "rotulo": "Despesas com Patrocínio",
+   "descricao": "",
+   "icone": "i-chart",
+   "criterio": "4.5",
+   "exigencia": "Publica informações sobre despesas de patrocínio?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II e VI, c/c art. 8º, caput e § 1º, III-IV e § 2º da Lei 12.527/2011 (LAI); Art. 93 da Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Despesa",
+   "rotulo": "Contratos de Publicidade",
+   "descricao": "",
+   "icone": "i-chart",
+   "criterio": "4.6",
+   "exigencia": "Publica informações detalhadas sobre a execução dos contratos de publicidade, com nomes dos fornecedores de serviços especializados e veículos, bem como informações sobre os totais de valores pagos para cada tipo de serviço e meio de divulgação?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II e VI, c/c art. 8º, caput e § 1º, III-IV e § 2º da Lei 12.527/2011 (LAI); Art. 93 da Lei 13.303/2016; Art. 10 da Lei 12.232/2010",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Convênios e Transferências",
+   "rotulo": "Transferências Recebidas",
+   "descricao": "",
+   "icone": "i-link2",
+   "criterio": "5.1",
+   "exigencia": "Divulga as transferências recebidas a partir da celebração de convênios/acordos com indicação, no mínimo, do número/ano do convênio/termo ou ajuste, do valor total previsto dos recursos envolvidos, do valor recebido, do objeto, da vigência, da origem (órgão repassador/concedente) e o inteiro teor do instrumento de convênio/transferência?",
+   "fundamentacao": "Art. 8º, § 1º, inciso II, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Convênios e Transferências",
+   "rotulo": "Transferências Realizadas",
+   "descricao": "",
+   "icone": "i-link2",
+   "criterio": "5.2",
+   "exigencia": "Divulga as transferências realizadas a partir da celebração de convênios/acordos/ajustes, com indicação, no mínimo, do número/ano do convênio/termo ou ajuste, do beneficiário, do objeto, da vigência, do valor total previsto para repasse, do valor concedido e inteiro teor do instrumento de convênio/termo ou ajuste?",
+   "fundamentacao": "Art. 8º, §1º, inciso II, da Lei nº 12.527/2011 - LAI e art. 8º, inciso I, \"f\" do Decreto nº 10.540/20. — e para as Estatais: art.7º, § 3º, inciso III , do Decreto 7.724/2012 e arts. 13 e 22 da Portaria Interministerial CGU/MPOG 140/2006",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Convênios e Transferências",
+   "rotulo": "Acordos sem Transferência de Recursos",
+   "descricao": "",
+   "icone": "i-link2",
+   "criterio": "5.3",
+   "exigencia": "Divulga os acordos firmados que não envolvam transferência de recursos financeiros, identificando as partes, o número/ano do convênio/termo ou ajuste, o objeto, a vigência, as obrigações ajustadas e o inteiro teor do instrumento de convênio/termo ou ajuste?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, V, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Quadro de Pessoal",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.1",
+   "exigencia": "Divulga a relação nominal dos servidores/autoridades/membros, seus cargos/funções, as respectivas lotações, as suas datas de admissão/exoneração/inativação e a carga horária do cargo/função ocupada/desempenhada?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípios da publicidade e moralidade) e 39, § 6º, da CF; arts. 3º, incisos I, II, III, IV e V, e 8º da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Folha de Pagamento",
+    "Relação de Servidores",
+    "Quadro Funcional",
+    "Servidores"
+   ]
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Remuneração Nominal",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.2",
+   "exigencia": "Divulga a remuneração nominal de cada servidor/autoridade/Membro?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípios da publicidade e moralidade) e 39, § 6º, da CF; arts. 3º, incisos I, II, III, IV e V, e 8º da Lei nº 12.527/2011 – LAI e Recurso Extraordinário com Agravo nº 652777 (STF - Leading Case - Tema 0483), e para as Estatais: arts. 3º, incisos I, II, III, IV e V, e 8º da Lei nº 12.527/2011 - LAI; art. 7º, VI Decreto 7.724/2012",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Remuneração dos Servidores",
+    "Folha de Pagamento",
+    "Vencimentos",
+    "Salários"
+   ]
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Tabela de Cargos e Funções",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.3",
+   "exigencia": "Divulga a tabela com o padrão remuneratório dos cargos e funções?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípios da publicidade e moralidade) e 39, § 6º, da CF; e, arts. 3º, incisos I, II, III, IV e V, e 8º da Lei nº 12.527/2011 – LAI, e para as Estatais: arts. 3º, incisos I, II, III, IV e V, e 8º da Lei nº 12.527/2011 - LAI; art. 7º, VI do Decreto 7.724/2012",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": [
+    "Plano de Cargos e Salários",
+    "Tabela Salarial",
+    "Estrutura Remuneratória"
+   ]
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Estagiários",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.4",
+   "exigencia": "Divulga a lista de seus estagiários, contendo o nome dos estudantes; a data de contratação e a data de término do respectivo contrato?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípios da publicidade e moralidade) e 39, § 6º, da CF; arts. 3º, incisos I, II, III, IV e V, e 8º da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtros de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Terceirizados",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.5",
+   "exigencia": "Publica lista dos terceirizados que prestam serviços para o Poder ou órgão/entidades, contendo, em relação a cada um deles: nome completo, função ou atividade exercida e nome da empresa empregadora?",
+   "fundamentacao": "Art. 3º, I-III, combinado com art. 6º, I, combinado com art. 7º, II e VI, combinado com art. 8º, caput e § 1º, III e § 2º da Lei 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Editais de Concursos",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.6",
+   "exigencia": "Divulga a íntegra dos editais de concursos e seleções públicas realizados pelo Poder ou órgão para provimento de cargos e empregos públicos?",
+   "fundamentacao": "Art. 3º, I-III, combinado com art. 6º, I, combinado com art. 7º, II e VI, combinado com art. 8º, caput e § 1º, IV (por analogia) e § 2º da Lei 12.527/2011 – LAI, e, para Consórcio: Art. 14 da LEI Nº 11.107/2005",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Recursos Humanos",
+   "rotulo": "Resultados de Concursos",
+   "descricao": "",
+   "icone": "i-users",
+   "criterio": "6.7",
+   "exigencia": "Divulga informações sobre os demais atos dos concursos públicos e processos seletivos do Poder ou órgão, contendo no mínimo a lista de aprovados com as classificações e as nomeações?",
+   "fundamentacao": "Art. 3º, I-III, combinado com art. 6º, I, combinado com art. 7º, II e VI, combinado com art. 8º, caput e § 1º, IV (por analogia) e § 2º da Lei 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Diárias",
+   "rotulo": "Diárias Concedidas",
+   "descricao": "",
+   "icone": "i-plane",
+   "criterio": "7.1",
+   "exigencia": "Divulga o nome e o cargo/função do beneficiário, além do valor total recebido, número de diárias usufruídas por afastamento, período de afastamento, motivo do afastamento e local de destino?",
+   "fundamentacao": "Art. 48-A, I, da LC nº 101/00; arts. 3º, incisos I, II, III, IV e V, 7º, incisos VI, e 8º da Lei nº 12.527/2011 - LAI, art. 37, \"caput\", da CF (princípio da publicidade) e art. 8º, inciso I, \"e\" do Decreto nº 10.540/20, e para estatais: art.7º, § 3º, inciso VI, do Decreto 7.724/2012 e arts. 15 e 22 da Portaria Interministerial CGU/MPOG 140/2006",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Diárias e Passagens",
+    "Diárias"
+   ]
+  },
+  {
+   "grupo": "Diárias",
+   "rotulo": "Tabela de Valores de Diárias",
+   "descricao": "",
+   "icone": "i-plane",
+   "criterio": "7.2",
+   "exigencia": "Divulga tabela ou relação que explicite os valores das diárias dentro do Estado, fora do Estado e fora do país, conforme legislação local?",
+   "fundamentacao": "Art. 48-A, I, da LC nº 101/00; arts. 3º, incisos I, II, III, IV e V, 7º, incisos VI, e 8º da Lei nº 12.527/2011 - LAI, art. 37, \"caput\", da CF (princípio da publicidade) e art. 8º, inciso I, \"e\" do Decreto nº 10.540/20",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Relação de Licitações",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.1",
+   "exigencia": "Divulga a relação das licitações em ordem sequencial, informando o número e modalidade licitatória, o objeto, a data, o valor estimado/homologado e a situação?",
+   "fundamentacao": "Arts. 7º, VI, e 8º, § 1º, IV, da Lei nº 12.527/2011 – LAI. – Estatais: e art. 34, da Lei 13.303/2016; art. 7º, § 3º, inciso V, do Decreto 7.724/2012 e arts. 10, 11 e 22 da Portaria Interministerial CGU/MPOG 140/2006",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Licitações",
+    "Portal de Licitações",
+    "Compras",
+    "Processos Licitatórios"
+   ]
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Editais de Licitação",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.2",
+   "exigencia": "Divulga a íntegra dos editais de licitação?",
+   "fundamentacao": "Arts. 7º, VI, e 8º, §1º, IV, da Lei nº 12.527/2011 – LAI c/c art. 25, § 3º, da Lei 14.133/2021. – Nas Estatais: c/c art. 39, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "Editais"
+   ]
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Documentos das Fases da Licitação",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.3",
+   "exigencia": "Divulga a íntegra dos demais documentos das fases interna e externa das licitações?",
+   "fundamentacao": "Arts. 7º, VI, e 8º, § 1º, IV, da Lei nº 12.527/2011 – LAI c/c art. 25, § 3º, da Lei 14.133/2022. Nas Estatais: c/c art. 39, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Dispensa e Inexigibilidade",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.4",
+   "exigencia": "Divulga a íntegra dos principais documentos dos processos de dispensa e inexigibilidade de licitação?",
+   "fundamentacao": "Arts. 7º, VI, e 8º, §1º, IV, da Lei nº 12.527/2011 – LAI e art. 72, parágrafo único, da Lei nº 14.133/2021. e para as estatais: c/c art. 39, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Atas de Adesão (SRP)",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.5",
+   "exigencia": "Divulga a íntegra das Atas de Adesão – SRP?",
+   "fundamentacao": "Arts. 7º, VI, e 8º, §1º, IV, da Lei nº 12.527/2011 – LAI; art. 11, III, do Decreto nº 7.892/2013 e art. 18, §4º, do Decreto nº 11.462/2023",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Plano de Contratações Anual",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.6",
+   "exigencia": "Divulga o plano de contratações anual?",
+   "fundamentacao": "Art. 12, §1º, da Lei 14.133/2021",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": [
+    "PCA",
+    "Plano Anual de Contratações"
+   ]
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Sancionados Administrativamente",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.7",
+   "exigencia": "Divulga a relação dos licitantes e/ou contratados sancionados administrativamente pelo Poder ou órgão?",
+   "fundamentacao": "Art. 156 e 161 da Lei 14.133/2022, e para as estatais: Art. 83 da Lei 13.303/2016 c/c art. 161 da Lei 14.133/2021; arts. 12 e 22 da Portaria Interministerial CGU/MPOG 140/2006",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Licitações",
+   "rotulo": "Regulamento de Licitações",
+   "descricao": "",
+   "icone": "i-scale",
+   "criterio": "8.8",
+   "exigencia": "Divulga regulamento interno de licitações e contratos?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 40 da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Contratos",
+   "rotulo": "Relação de Contratos",
+   "descricao": "",
+   "icone": "i-folder",
+   "criterio": "9.1",
+   "exigencia": "Divulga a relação dos contratos celebrados em ordem sequencial, com o seu respectivo resumo, contendo, no mínimo, indicação do contratado(a), do valor, do objeto e da vigência, bem como dos aditivos deles decorrentes?",
+   "fundamentacao": "Arts. 7º, VI e 8º, §1º, inciso IV, da Lei nº 12.527/2011 – LAI, e para as estatais: e arts. 39 e 48 da Lei nº 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": [
+    "Contratos",
+    "Contratos Administrativos"
+   ]
+  },
+  {
+   "grupo": "Contratos",
+   "rotulo": "Íntegra dos Contratos",
+   "descricao": "",
+   "icone": "i-folder",
+   "criterio": "9.2",
+   "exigencia": "Divulga o inteiro teor dos contratos e dos respectivos termos aditivos?",
+   "fundamentacao": "Arts. 7º, VI e 8º, §1º, inciso IV, da Lei nº 12.527/2011 – LAI, e para as estatais: e arts. 39 e 51 da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "Contratos",
+    "Termos Aditivos"
+   ]
+  },
+  {
+   "grupo": "Contratos",
+   "rotulo": "Fiscais dos Contratos",
+   "descricao": "",
+   "icone": "i-folder",
+   "criterio": "9.3",
+   "exigencia": "Divulga a relação/lista dos fiscais de cada contrato vigente e encerrado?",
+   "fundamentacao": "Arts. 7º, VI e 8º, §1º, inciso IV, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Contratos",
+   "rotulo": "Ordem Cronológica de Pagamentos",
+   "descricao": "",
+   "icone": "i-folder",
+   "criterio": "9.4",
+   "exigencia": "Divulga a ordem cronológica de seus pagamentos, bem como as justificativas que fundamentaram a eventual alteração dessa ordem?",
+   "fundamentacao": "Art. 141, § 3º, da Lei 14.133/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Obras",
+   "rotulo": "Andamento das Obras",
+   "descricao": "",
+   "icone": "i-briefcase",
+   "criterio": "10.1",
+   "exigencia": "Divulga informações sobre as obras contendo o objeto, a situação atual, as datas de início e de conclusão da obra, empresa contratada e o percentual concluído?",
+   "fundamentacao": "Art. 8º, § 1º, V da Lei nº 12.527/2011;",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Obras",
+   "rotulo": "Quantitativos e Preços Contratados",
+   "descricao": "",
+   "icone": "i-briefcase",
+   "criterio": "10.2",
+   "exigencia": "Divulga os quantitativos, os preços unitários e totais contratados?",
+   "fundamentacao": "Art. 8º, §1º, V da Lei nº 12.527/2011; art. 94, § 3º, da Lei 14.133/2021. Estatais Dependentes e Estatais Independentes: art. 39, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e gravação de relatórios",
+   "apelidos": []
+  },
+  {
+   "grupo": "Obras",
+   "rotulo": "Quantitativos Executados",
+   "descricao": "",
+   "icone": "i-briefcase",
+   "criterio": "10.3",
+   "exigencia": "Divulga os quantitativos executados e os preços efetivamente pagos?",
+   "fundamentacao": "Art. 8º, §1º, V da Lei nº 12.527/2011; art. 94, § 3º, da Lei 14.133/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e gravação de relatórios",
+   "apelidos": []
+  },
+  {
+   "grupo": "Obras",
+   "rotulo": "Obras Paralisadas",
+   "descricao": "",
+   "icone": "i-briefcase",
+   "criterio": "10.4",
+   "exigencia": "Divulga relação das obras paralisadas contendo o motivo, o responsável pela inexecução temporária do objeto do contrato e a data prevista para o reinício da sua execução?",
+   "fundamentacao": "Art. 8º, § 1º, V, da Lei nº 12.527/2011 – LAI e art. 115, § 6º, da Lei nº 14.133/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Prestação de Contas Anual",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.1",
+   "exigencia": "Publica a Prestação de Contas do Ano Anterior (Balanço Geral)?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "Prestação de Contas",
+    "Balanço Geral",
+    "PCS",
+    "Contas Anuais"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Relatório de Gestão",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.2",
+   "exigencia": "Divulga o Relatório de Gestão ou Atividades?",
+   "fundamentacao": "Art. 8º, §1º, inciso V, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "Relatório de Atividades",
+    "Relatório Anual"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Julgamento das Contas pelo TC",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.3",
+   "exigencia": "Divulga a íntegra da decisão da apreciação ou julgamento das contas pelo Tribunal de Contas?",
+   "fundamentacao": "Art. 48, “caput”, da LRF",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": [
+    "Acórdãos",
+    "Decisões do Tribunal de Contas",
+    "Parecer Prévio"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Julgamento pelo Legislativo",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.4",
+   "exigencia": "Divulga o resultado do julgamento das Contas do Chefe do Poder Executivo pelo Poder Legislativo?",
+   "fundamentacao": "Art. 56, §3º, da LC nº 101/00",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Relatório de Gestão Fiscal (RGF)",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.5",
+   "exigencia": "Divulga o Relatório de Gestão Fiscal (RGF)?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00. e para Consórcio: inclui-se a Portaria STN nº. 274/16, art. 14, IV",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "RGF"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Relatório Resumido da Execução Orçamentária (RREO)",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.6",
+   "exigencia": "Divulga o Relatório Resumido da Execução Orçamentária (RREO)?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00. Consórcio: Portaria STN nº. 274/16, art. 14, IV",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "consorcios",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": [
+    "RREO"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Plano Estratégico Institucional",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.7",
+   "exigencia": "Divulga o plano estratégico institucional?",
+   "fundamentacao": "Art. 3º, I-III, combinado com art. 7º, VII, a, combinado com art. 8º, § 1º, V, da Lei 12.527/2011. Para estatal independentes: Art. 7º, § 3º, II, do Decreto 7.724/2012",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Planejamento Estratégico",
+    "Plano de Ação Anual"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Plano Plurianual (PPA)",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.8",
+   "exigencia": "Divulga a Lei do Plano Plurianual (PPA) e seus anexos?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "PPA"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Lei de Diretrizes Orçamentárias (LDO)",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.9",
+   "exigencia": "Divulga a Lei de Diretrizes Orçamentárias (LDO) e seus anexos?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "LDO"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Lei Orçamentária Anual (LOA)",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.10",
+   "exigencia": "Divulga a Lei Orçamentária (LOA) e seus anexos?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00",
+   "classificacao": "essencial",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "LOA"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Orçamento do Consórcio Público",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.11",
+   "exigencia": "Divulga o Orçamento do Consórcio Público onde conste a estimativa da receita e a fixação da despesa para o exercício atual?",
+   "fundamentacao": "Art. 48, \"caput\", da LC nº 101/00; Portaria STN nº. 274/16, art 2, II, Art 6 e art. 14, IV",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e gravação de relatórios",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Demonstrações Financeiras Trimestrais",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.12",
+   "exigencia": "Divulga as demonstrações financeiras trimestrais?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI);",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e gravação de relatórios",
+   "apelidos": [
+    "Demonstrativos Financeiros e Contábeis",
+    "Balanços",
+    "Balanço Patrimonial"
+   ]
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Demonstrações Contábeis com Parecer",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.13",
+   "exigencia": "Divulga as demonstrações financeiras (contábeis) acompanhadas dos pareceres do Conselho Fiscal e da auditoria independente?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e gravação de relatórios",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Orçamento de Investimentos",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.14",
+   "exigencia": "Pública o Orçamento de Investimentos da instituição que compõe a Lei Orçamentária Anual?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, VI e VII, c/c art. 8º, caput e § 1º, III e V, e § 2º da Lei 12.527/2011 (LAI); Art. 7º, § 3º, II-IV, do Decreto 7.724/2012;",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e gravação de relatórios",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Demonstrações Contábeis Auditadas",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.15",
+   "exigencia": "Divulga as demonstrações contábeis auditadas em formato eletrônico editável?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 46, § 1º, do Decreto 8.945/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica e gravação de relatórios",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Relatório do Comitê de Auditoria",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.16",
+   "exigencia": "Divulga o relatório anual elaborado pelo Comitê de Auditoria Estatutário com informações sobre as atividades e os resultados e suas conclusões e recomendações?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 24, § 1º, VII, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Atas do Comitê de Auditoria",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.17",
+   "exigencia": "Divulga as atas das reuniões do Comitê de Auditoria Estatutário?",
+   "fundamentacao": "Art. 3º combinado com art. 6º, I, combinado com art. 7º, II, V e VI, combinado com art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 24, § 4º da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Atas do Comitê de Elegibilidade",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.18",
+   "exigencia": "Divulga as atas das reuniões do Comitê de Elegibilidade Estatutário ou Comitê de Pessoas, Elegibilidade, Sucessão e Remuneração a partir de 2022, na forma de sumário dos fatos ocorridos, inclusive das dissidências e protestos?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 24, § 4º da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Planejamento e Prestação de Contas",
+   "rotulo": "Relatório Integrado/Sustentabilidade",
+   "descricao": "",
+   "icone": "i-doc-check",
+   "criterio": "11.19",
+   "exigencia": "Divulga anualmente relatório integrado ou de sustentabilidade?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 8º, IX, e § 4º da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "e-SIC: Unidade Responsável",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.1",
+   "exigencia": "Existe o SIC no site ou no portal de transparência e indica a unidade/setor responsável?",
+   "fundamentacao": "Arts. 8º, §3º, VII e 9º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "e-SIC",
+    "SIC",
+    "Serviço de Informação ao Cidadão"
+   ]
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Contato do SIC",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.2",
+   "exigencia": "Indica o endereço físico, o telefone e o e-mail da unidade responsável pelo SIC, além do horário de funcionamento?",
+   "fundamentacao": "Arts. 8º, §1º, I, da Lei nº 12.527/2011 – LAI e art. 6º, VI, b, da Lei nº 13.460/2017",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Pedido Eletrônico (e-SIC)",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.3",
+   "exigencia": "Há possibilidade de envio de pedidos de informação de forma eletrônica (e-SIC)?",
+   "fundamentacao": "Art. 10, §2º, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "e-SIC",
+    "Pedido de Informação"
+   ]
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Solicitação por meio de eSic é simples",
+   "descricao": "",
+   "icone": "",
+   "criterio": "12.4",
+   "exigencia": "A solicitação por meio de eSic é simples, ou seja, sem a exigência de itens de identificação do requerente que dificultem ou impossibilitem o acesso à informação, tais como: envio de documentos, assinatura reconhecida, declaração de responsabilidade, maioridade?",
+   "fundamentacao": "Art. 10, §1º, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Regulamentação Local da LAI",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.5",
+   "exigencia": "Divulga nesta seção, instrumento normativo local que regulamente a Lei nº 12.527/2011 – LAI?",
+   "fundamentacao": "Art. 45 da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Prazos e Recursos do e-SIC",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.6",
+   "exigencia": "Divulga, na seção relativa ao e-SIC, os prazos de resposta ao cidadão, incluindo o recursal, e as autoridades competentes para o exame dos pedidos, além do procedimento referente à realização do pedido e de eventual recurso?",
+   "fundamentacao": "Art. 7, 15 da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Relatório Estatístico de Pedidos",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.7",
+   "exigencia": "Divulga relatório anual estatístico contendo a quantidade de pedidos de acesso recebidos, atendidos, indeferidos, bem como informações genéricas sobre os solicitantes?",
+   "fundamentacao": "Art. 30, inciso III, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Documentos Classificados por Sigilo",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.8",
+   "exigencia": "Divulga lista de documentos classificados em cada grau de sigilo, contendo pelo menos o assunto sobre o qual versa a informação, a categoria na qual ela se encontra, o dispositivo legal que fundamenta a classificação e o respectivo prazo?",
+   "fundamentacao": "Art. 30, II, c/c art. 24, §1º) da Lei 12.527/2011",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Serviço de Informação ao Cidadão",
+   "rotulo": "Informações Desclassificadas",
+   "descricao": "",
+   "icone": "i-info",
+   "criterio": "12.9",
+   "exigencia": "Divulga lista das informações que tenham sido desclassificadas nos últimos 12 (doze) meses?",
+   "fundamentacao": "Art. 30, I, da Lei 12.527/2011",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Acessibilidade",
+   "rotulo": "Mapa do Site",
+   "descricao": "",
+   "icone": "i-contrast",
+   "criterio": "13.5",
+   "exigencia": "Contém mapa do site institucional?",
+   "fundamentacao": "Art. 8º, § 3º, VIII, da Lei nº 12.527/2011 – LAI; art. 63, da Lei nº 13.146/2015 e art. 3º, XIX, da Lei nº 14.129/2021",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Mapa do Site"
+   ]
+  },
+  {
+   "grupo": "Ouvidoria",
+   "rotulo": "Atendimento Presencial",
+   "descricao": "",
+   "icone": "i-message",
+   "criterio": "14.1",
+   "exigencia": "Há informações sobre o atendimento presencial pela Ouvidoria (Indicação de endereço físico e telefone, além do horário de funcionamento)?",
+   "fundamentacao": "Arts. 8º, §1º, I, e 9º, da Lei nº 12.527/2011 – LAI c/c arts. 6º, VI, b, 7º, § 2º, VI, e 10, § 4º, da Lei nº 13.460/2017 c/c arts. 24, I, a, e 27, II, da Lei 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Ouvidoria"
+   ]
+  },
+  {
+   "grupo": "Ouvidoria",
+   "rotulo": "Canal Eletrônico",
+   "descricao": "",
+   "icone": "i-message",
+   "criterio": "14.2",
+   "exigencia": "Há canal eletrônico de acesso/interação com a ouvidoria?",
+   "fundamentacao": "Art. 8º,§3º, VII, Art. 10, §2º, da Lei nº 12.527/2011 – LAI c/c Art. 10, § 4º, da Lei nº 13.460/2017 c/c Art. 27, IV, da Lei nº 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Ouvidoria",
+    "Manifestações"
+   ]
+  },
+  {
+   "grupo": "Ouvidoria",
+   "rotulo": "Carta de Serviços ao Usuário",
+   "descricao": "",
+   "icone": "i-message",
+   "criterio": "14.3",
+   "exigencia": "Divulga Carta de Serviços ao Usuário?",
+   "fundamentacao": "Art. 7º, §4º, da Lei nº 13.460/2017",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Carta de Serviços"
+   ]
+  },
+  {
+   "grupo": "LGPD e Governo Digital",
+   "rotulo": "Encarregado de Dados (DPO)",
+   "descricao": "",
+   "icone": "i-lock",
+   "criterio": "15.1",
+   "exigencia": "Identifica o encarregado/responsável pelo tratamento de dados pessoais e disponibiliza Canal de Comunicação com esse servidor (telefone e/ou e-mail)?",
+   "fundamentacao": "Arts. 5º, inciso VIII e 23, inciso III, 41, § 1º da LGPD (Lei 13.709/ 2018) + Art. 3º, incisos XVII, da Lei 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Encarregado de Dados",
+    "DPO",
+    "LGPD"
+   ]
+  },
+  {
+   "grupo": "LGPD e Governo Digital",
+   "rotulo": "Política de Privacidade",
+   "descricao": "",
+   "icone": "i-lock",
+   "criterio": "15.2",
+   "exigencia": "Publica a sua Política de Privacidade e Proteção de Dados?",
+   "fundamentacao": "Art. 50, inciso I, da LGPD (Lei 13.709/ 2018); Art. 3º, incisos XVII, da Lei 14.129/2021",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Política de Privacidade",
+    "LGPD",
+    "Proteção de Dados"
+   ]
+  },
+  {
+   "grupo": "LGPD e Governo Digital",
+   "rotulo": "Serviços Digitais",
+   "descricao": "",
+   "icone": "i-lock",
+   "criterio": "15.3",
+   "exigencia": "Possibilita a demanda e o acesso a serviços públicos por meio digital, sem necessidade de solicitação presencial?",
+   "fundamentacao": "Arts. 3º, incisos II, III e X, e 14 da Lei 14.129/2021. e, para empresas estatais, art. 8º, inciso I do Decreto 7.724/2012",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "LGPD e Governo Digital",
+   "rotulo": "Dados Abertos",
+   "descricao": "",
+   "icone": "i-lock",
+   "criterio": "15.4",
+   "exigencia": "Possibilita o acesso automatizado por sistemas externos em dados abertos (estruturados e legíveis por máquina), e a página contém as regras de utilização?",
+   "fundamentacao": "Art. 8º, §3º, III da Lei nº 12.527/2011 - LAI e Art. 3º, XXV e 24, V da Lei 14.129/2021. e, para empresas estatais, art. 8º, incisos III-V do Decreto 7.724/2012",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Dados Abertos",
+    "API",
+    "Dados Abertos e API"
+   ]
+  },
+  {
+   "grupo": "LGPD e Governo Digital",
+   "rotulo": "Regulamentação do Governo Digital",
+   "descricao": "",
+   "icone": "i-lock",
+   "criterio": "15.5",
+   "exigencia": "Regulamenta a Lei Federal nº 14.129/2021 (Governo Digital) e divulga a normativa em seu portal?",
+   "fundamentacao": "NR Conjunta Atricon nº 02/2022",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "LGPD e Governo Digital",
+   "rotulo": "Pesquisa de Satisfação",
+   "descricao": "",
+   "icone": "i-lock",
+   "criterio": "15.6",
+   "exigencia": "Realiza e divulga resultados de pesquisas de satisfação?",
+   "fundamentacao": "Art. 23, § 1º e 2º, da Lei nº 13.460/2017 c/c Art. 3º, inciso IV, e 24, inciso II, da Lei 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": [
+    "Pesquisa de Satisfação"
+   ]
+  },
+  {
+   "grupo": "Renúncias de Receitas",
+   "rotulo": "Desonerações Tributárias",
+   "descricao": "",
+   "icone": "i-target",
+   "criterio": "16.1",
+   "exigencia": "Divulga as desonerações tributárias concedidas e a fundamentação legal individualizada?",
+   "fundamentacao": "Art. 7º, inciso VI, da Lei nº 12.527/2011 - LAI; art. 48, §1º, IV da LC nº 101/00; e art. 198, §3º, III, do Código Tributário Nacional",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Renúncias de Receitas",
+   "rotulo": "Valores da Renúncia Fiscal",
+   "descricao": "",
+   "icone": "i-target",
+   "criterio": "16.2",
+   "exigencia": "Divulga os valores da renúncia fiscal prevista e realizada, por tipo ou espécie de benefício ou incentivo fiscal?",
+   "fundamentacao": "Art. 37, caput, da CF, arts. 14, 48, §1º, II, IV e 48-A, inciso II, da LC nº 101/00 e art. 8º, II, do Decreto nº 10.540/20",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Renúncias de Receitas",
+   "rotulo": "Beneficiários das Desonerações",
+   "descricao": "",
+   "icone": "i-target",
+   "criterio": "16.3",
+   "exigencia": "Identifica os beneficiários das desonerações tributárias (benefícios ou incentivos fiscais)?",
+   "fundamentacao": "Art. 37, caput, da CF, Arts. 14, 48, §1º, II e 48-A, inciso II, da LC nº 101/00 e art. 8º, II, do Decreto nº 10.540/20",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Renúncias de Receitas",
+   "rotulo": "Incentivo à Cultura e ao Esporte",
+   "descricao": "",
+   "icone": "i-target",
+   "criterio": "16.4",
+   "exigencia": "Divulga informações sobre projetos de incentivo à cultura (incluindo esportivos), identificando os projetos aprovados, o respectivo beneficiário e o valor aprovado?",
+   "fundamentacao": "Art. 37, caput, da CF, Arts. 14, 48, §1º, II e 48-A, inciso II, da LC nº 101/00 e art. 8º, II, do Decreto nº 10.540/20",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Emendas Parlamentares",
+   "rotulo": "Emendas Parlamentares Federais",
+   "descricao": "",
+   "icone": "i-megaphone",
+   "criterio": "17.1",
+   "exigencia": "Identifica as emendas parlamentares federais recebidas, contendo informações sobre a origem, a forma de repasse, o tipo de emenda, o número da emenda, a autoria, o valor previsto e realizado, o objeto e função de governo?",
+   "fundamentacao": "Art. 163-A da CF; Emenda à Constituição nº 105/2019, Portaria Interministerial ME/SEGOV nº 6.411/2021, art. 19; Nota Recomendatória Atricon nº 01/2022; Nota Recomendatória Conjunta Atricon nº 001/2025; Acórdão nº 518/2023 - TCU-Plenário; ADPF 854/DF e ADI 7697 - Supremo Tribunal Federal",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Emendas Parlamentares",
+   "rotulo": "Emendas Estaduais e Municipais",
+   "descricao": "",
+   "icone": "i-megaphone",
+   "criterio": "17.2",
+   "exigencia": "Identifica as emendas parlamentares estaduais e municipais, contendo informações sobre a origem, a forma de repasse, o tipo de emenda, o número da emenda, a autoria, o valor previsto e realizado, o objeto e função de governo?",
+   "fundamentacao": "Art. 163-A da CF; Emenda à Constituição nº 105/2019, Portaria Interministerial ME/SEGOV nº 6.411/2021, art. 19; Nota Recomendatória Atricon nº 01/2022; Nota Recomendatória Conjunta Atricon nº 001/2025; Acórdão nº 518/2023 - TCU-Plenário; ADPF 854/DF e ADI 7697 - Supremo Tribunal Federal",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [
+    "municipal",
+    "estadual",
+    "distrital"
+   ],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Emendas Parlamentares",
+   "rotulo": "Execução das Emendas Recebidas",
+   "descricao": "",
+   "icone": "i-megaphone",
+   "criterio": "17.3",
+   "exigencia": "Demonstra a execução orçamentária e financeira oriunda das emendas parlamentares recebidas e próprias?",
+   "fundamentacao": "Art. 163-A da CF; Emenda à Constituição nº 105/2019, Portaria Interministerial ME/SEGOV nº 6.411/2021, art. 19; Nota Recomendatória Atricon nº 01/2022; Nota Recomendatória Conjunta Atricon n° 01/2025; Acórdão nº 518/2023 - TCU-Plenário; ADPF 854/DF - Supremo Tribunal Federal",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Saúde",
+   "rotulo": "Plano de Saúde e Relatório de Gestão",
+   "descricao": "",
+   "icone": "i-shield",
+   "criterio": "18.1",
+   "exigencia": "Divulga o plano de saúde, a programação anual e o relatório de gestão?",
+   "fundamentacao": "Art. 8º, § 1º, V e art. 9º, II, da Lei nº 12.527/2011 - LAI e art. 37, \"caput\", da CF (princípio da publicidade)",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "",
+   "apelidos": []
+  },
+  {
+   "grupo": "Saúde",
+   "rotulo": "Serviços de Saúde",
+   "descricao": "",
+   "icone": "i-shield",
+   "criterio": "18.2",
+   "exigencia": "Divulga informações relacionadas aos serviços de saúde, indicando os horários, os profissionais prestadores de serviços, as especialidades e local?",
+   "fundamentacao": "Art. 7º, VI, da Lei nº 8.080/1990",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [
+    "municipal"
+   ],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Saúde",
+   "rotulo": "Lista de Espera na Saúde",
+   "descricao": "",
+   "icone": "i-shield",
+   "criterio": "18.3",
+   "exigencia": "Divulga a lista de espera de regulação para acesso às consultas, exames e serviços médicos?",
+   "fundamentacao": "Portaria nº 1.559, de 1º de agosto de 2008",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Saúde",
+   "rotulo": "Medicamentos do SUS",
+   "descricao": "",
+   "icone": "i-shield",
+   "criterio": "18.4",
+   "exigencia": "Divulga lista dos medicamentos a serem fornecidos pelo SUS e informações de como obter medicamentos, incluindo os de alto custo?",
+   "fundamentacao": "Art. 26, parágrafo único, inciso I, do Decreto n. 7.508, de 28 de junho de 2011 (redação dada pelo Decreto n. 11.161, de 2022)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Saúde",
+   "rotulo": "Estoque de Medicamentos",
+   "descricao": "",
+   "icone": "i-shield",
+   "criterio": "18.5",
+   "exigencia": "Divulga os estoques de medicamentos das farmácias públicas?",
+   "fundamentacao": "Art. 6º-A da Lei nº 8.080/1990 (alterada pela Lei nº 14.654/2023)",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Saúde",
+   "rotulo": "Conselho de Saúde",
+   "descricao": "",
+   "icone": "i-shield",
+   "criterio": "18.6",
+   "exigencia": "Divulga informações atualizadas sobre a composição e o funcionamento do Conselho de Saúde?",
+   "fundamentacao": "Art. 31, III da Lei Complementar nº 141/12; art. 3º, II da Lei nº 12.527/11; e Resolução Ministério da Saúde nº 453/12",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [
+    "municipal",
+    "estadual",
+    "distrital"
+   ],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Educação e Assistência Social",
+   "rotulo": "Plano de Educação",
+   "descricao": "",
+   "icone": "i-graduation",
+   "criterio": "19.1",
+   "exigencia": "Divulga o plano de educação e o respectivo relatório de resultados?",
+   "fundamentacao": "Art. 37, \"caput\" da CF; Art. 8º, § 1º, V, da Lei nº 12.527/2011 – LAI e Art. 8º da Lei nº 13.005/2014",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Educação e Assistência Social",
+   "rotulo": "Lista de Espera em Creches",
+   "descricao": "",
+   "icone": "i-graduation",
+   "criterio": "19.2",
+   "exigencia": "Divulga a lista de espera em creches públicas e os critérios de priorização de acesso a elas?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, V, da Lei nº 12.527/2011 – LAI; Art. 5º, §1º, IV da Lei nº 9.394/96 (LDB, alterada pela Lei nº 14.685/23)",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [
+    "municipal"
+   ],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Educação e Assistência Social",
+   "rotulo": "Conselho do Fundeb",
+   "descricao": "",
+   "icone": "i-graduation",
+   "criterio": "19.3",
+   "exigencia": "Divulga informações atualizadas sobre a composição e o funcionamento do Conselho do Fundeb?",
+   "fundamentacao": "Art. 34, § 11, I, II, III, IV e V da Lei nº 14.113/2020",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [
+    "municipal",
+    "estadual",
+    "distrital"
+   ],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Educação e Assistência Social",
+   "rotulo": "Conselho de Assistência Social",
+   "descricao": "",
+   "icone": "i-graduation",
+   "criterio": "19.4",
+   "exigencia": "Divulga informações atualizadas sobre a composição e o funcionamento do Conselho de Assistência Social?",
+   "fundamentacao": "Arts. 17, §1º, e 18, XIV da Lei nº 8.742/93; art. 3º, II da Lei nº 12.527/11",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "executivo"
+   ],
+   "esferas": [
+    "municipal",
+    "estadual",
+    "distrital"
+   ],
+   "matriz": "executivo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Composição da Casa",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.1",
+   "exigencia": "Divulga a composição da Casa, com a biografia dos parlamentares?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Leis e Atos Infralegais",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.2",
+   "exigencia": "Divulga as leis e atos infralegais (resoluções, decretos, etc.) produzidos?",
+   "fundamentacao": "Art. 37, da CF (princípio da publicidade) e arts. 6, inciso I, e 8º da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Tramitação de Projetos",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.3",
+   "exigencia": "Divulga projetos de leis e de atos infralegais, bem como as respectivas tramitações (contemplando ementa, documentos anexos, situação atual e autor/relator)?",
+   "fundamentacao": "Art. 37, da CF (princípio da publicidade) e arts. 6, inciso I, e 8º da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Pauta do Plenário",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.4",
+   "exigencia": "Divulga a pauta das sessões do Plenário?",
+   "fundamentacao": "arts. 7º, incisos IV, V e VI, e 8º \"caput\" da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Pauta das Comissões",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.5",
+   "exigencia": "Divulga a pauta das Comissões?",
+   "fundamentacao": "Art. 37, caput, da CF e Art. 3, II, da Lei nº 12.527/2011 – LAI. Possibilidade de download das pautas em pelo menos um formato editável (em extensões do tipo xls, xlsx, txt, csv, odt, calc, ods, doc, docx e outros). Considera-se igualmente atendido se apresentar documentos em formato PDF pesquisável",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, gravação de relatórios e filtro de pesquisa Disponibilidade: Trata-se da disponibilização da pauta das matérias a serem discutidas nas Comissões",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Atas das Sessões",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.6",
+   "exigencia": "Divulga as atas das sessões, incluindo a lista de presença dos parlamentares em cada sessão?",
+   "fundamentacao": "Art. 37, caput, da CF e Art. 3, II, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Votações Nominais",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.7",
+   "exigencia": "Divulga lista sobre as votações nominais?",
+   "fundamentacao": "Art. 37, caput, da CF e Art. 3, II, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Julgamento das Contas do Executivo",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.8",
+   "exigencia": "Divulga o ato que aprecia as Contas do Chefe do Poder Executivo (Decreto) e o teor do julgamento (Ata ou Resumo da Sessão que aprovou ou rejeitou as contas)?",
+   "fundamentacao": "Art. 7º, inciso VII, alínea \"b\", da Lei nº 12.527/2011 - LAI e art. 56, §3º, da LRF",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Transmissão das Sessões",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.9",
+   "exigencia": "Há transmissão de sessões, audiências públicas, consultas públicas ou outras formas de participação popular via meios de comunicação como rádio, TV, internet, entre outros?",
+   "fundamentacao": "Arts. 7, 13 e ss. da Lei 13.460/17, c/c art. 9º, inciso II, da Lei nº 12.527/2011 - LAI e art. 37, \"caput\", da CF (princípio da publicidade)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Verba Indenizatória",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.10",
+   "exigencia": "Divulga a regulamentação e os valores relativos às cotas para exercício da atividade parlamentar/verba indenizatória?",
+   "fundamentacao": "Arts. 7º, incisos IV e V, e 8º \"caput\" da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades Legislativas",
+   "rotulo": "Atividade Parlamentar",
+   "descricao": "",
+   "icone": "i-sitemap",
+   "criterio": "20.11",
+   "exigencia": "Divulga dados sobre as atividades legislativas dos parlamentares?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, V, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "legislativo"
+   ],
+   "esferas": [],
+   "matriz": "legislativo",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Judiciário",
+   "rotulo": "Composição da Casa",
+   "descricao": "",
+   "icone": "",
+   "criterio": "21.1",
+   "exigencia": "Divulga a composição da Casa, com a indicação de onde cada magistrado atua?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "judiciario"
+   ],
+   "esferas": [],
+   "matriz": "judiciario",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Judiciário",
+   "rotulo": "Pauta das sessões",
+   "descricao": "",
+   "icone": "",
+   "criterio": "21.2",
+   "exigencia": "Divulga pauta das sessões?",
+   "fundamentacao": "Art. 7º, V, da Lei nº 12.527/2011 - LAI; art. 12, § 1º, da Lei nº 13.105/15",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "judiciario"
+   ],
+   "esferas": [],
+   "matriz": "judiciario",
+   "verificacao": "disponibilidade, atualidade, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Judiciário",
+   "rotulo": "Ata das sessões de julgamento/deliberativas",
+   "descricao": "",
+   "icone": "",
+   "criterio": "21.3",
+   "exigencia": "Divulga ata das sessões de julgamento/deliberativas?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípio da publicidade), e 93, IX e X, da CF; arts. 7º, II e V, e 8º, caput, da Lei nº 12.527/2011 - LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "judiciario"
+   ],
+   "esferas": [],
+   "matriz": "judiciario",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Judiciário",
+   "rotulo": "Decisões",
+   "descricao": "",
+   "icone": "",
+   "criterio": "21.4",
+   "exigencia": "Divulga suas decisões?",
+   "fundamentacao": "Arts. 7º, incisos II e VI, e 8º, \"caput\" da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "judiciario"
+   ],
+   "esferas": [],
+   "matriz": "judiciario",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Judiciário",
+   "rotulo": "Informativo de jurisprudência",
+   "descricao": "",
+   "icone": "",
+   "criterio": "21.5",
+   "exigencia": "Divulga informativo de jurisprudência contendo decisões atualizadas?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípio da publicidade), e 93, IX e X, da CF; arts. 7º, II e V, e 8º, \"caput\", da Lei nº 12.527/2011 - LAI e art. 24, parágrafo único da do Decreto-Lei nº 4.657/42",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "judiciario"
+   ],
+   "esferas": [],
+   "matriz": "judiciario",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Judiciário",
+   "rotulo": "Transmissão das sessões de julgamento e eventuais audiências públicas",
+   "descricao": "",
+   "icone": "",
+   "criterio": "21.6",
+   "exigencia": "Há transmissão das sessões de julgamento e eventuais audiências públicas via meios de comunicação como rádio, TV, internet, entre outros?",
+   "fundamentacao": "Art. 37, caput, da CF e Arts. 3º, incisos II, III e X, e 14 da Lei 14.129/2021 e Art. 3º, III, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "judiciario"
+   ],
+   "esferas": [],
+   "matriz": "judiciario",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Composição da Casa",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.1",
+   "exigencia": "Divulga a composição da Casa, com a indicação das funções exercidas por membro e onde cada um deles atua?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, I, da Lei nº 12.527/2011 - LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Pauta das sessões",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.2",
+   "exigencia": "Divulga pauta das sessões?",
+   "fundamentacao": "Arts. 7º, incisos IV e V; e 8º, \"caput\" da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Ata das sessões de julgamento/deliberativas",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.3",
+   "exigencia": "Divulga ata das sessões de julgamento/deliberativas?",
+   "fundamentacao": "Arts. 7º, incisos IV e V, e 8º, \"caput\", da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Decisões",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.4",
+   "exigencia": "Divulga suas Decisões?",
+   "fundamentacao": "Arts. 7º, incisos II e VI, e 8º, \"caput\" da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Peças dos processos em trâmite nos Tribunais de Contas a partir da",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.5",
+   "exigencia": "Divulga as peças dos processos em trâmite nos Tribunais de Contas a partir da análise do contraditório?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípio da publicidade), e 93, IX e X, da CF c/c arts. 7º, II, V, VII, “b” e 8º, \"caput\", da Lei nº 12.527/2011 - LAI; Normas Brasileiras de Auditoria no Setor Público - NBASP nº 1 (VI, seções 16 e 17) 12 (princípio 4, 31), 20 (18, 28, princípio 7, 35, 36, 37, 38, 39, princípio 8, 40, 41, 42, 43), 100 (43 e 51), 300 (29 e 41), 400 (49) e 300 (133, 134 e 135)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Íntegra dos processos após o trânsito em julgado",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.6",
+   "exigencia": "Divulga a íntegra dos processos após o trânsito em julgado?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípio da publicidade), e 93, IX e X, da CF c/c arts. 7º, II, V, VII, “b” e 8º, \"caput\", da Lei nº 12.527/2011 - LAI, Normas Brasileiras de Auditoria no Setor Público - NBASP nº 1 (VI, seções 16 e 17) 12 (princípio 4, 31), 20 (18, 28, princípio 7, 35, 36, 37, 38, 39, princípio 8, 40, 41, 42, 43), 100 (43 e 51), 300 (29 e 41), 400 (49) e 300 (133, 134 e 135)",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Informativo de jurisprudência",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.7",
+   "exigencia": "Divulga informativo de jurisprudência contendo decisões atualizadas?",
+   "fundamentacao": "Arts. 37, \"caput\" (princípio da publicidade), e 93, IX e X, da CF; arts. 7º, II e V, e 8º, \"caput\", da Lei nº 12.527/2011 - LAI e art. 24, parágrafo único da do Decreto-Lei nº 4.657/42, Normas Brasileiras de Auditoria no Setor Público - NBASP nº 1 (VI, seções 16 e 17) 12 (princípio 4, 31), 20 (18, 28, princípio 7, 35, 36, 37, 38, 39, princípio 8, 40, 41, 42, 43), 100 (43 e 51), 300 (29 e 41), 400 (49) e 300 (133, 134 e 135)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Informações técnicas de cunho orientativo",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.8",
+   "exigencia": "Divulga informações técnicas de cunho orientativo?",
+   "fundamentacao": "Art. 37, caput, da CF e Art. 3, II, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Sobre valor das condenações (débitos e multas)",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.9",
+   "exigencia": "Informa sobre valor das condenações (débitos e multas)?",
+   "fundamentacao": "Art. 37, caput, da CF e Art. 3, II, da Lei nº 12.527/2011 - LAI, Normas Brasileiras de Auditoria no Setor Público - NBASP nº 1 (VI, seções 16 e 17) 12 (princípio 4, 31), 20 (18, 28, princípio 7, 35, 36, 37, 38, 39, princípio 8, 40, 41, 42, 43), 100 (43 e 51), 300 (29 e 41), 400 (49) e 300 (133, 134 e 135)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Relação de responsáveis",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.10",
+   "exigencia": "Divulga relação de responsáveis que tiveram suas contas julgadas irregulares ou receberam parecer pela reprovação de suas contas?",
+   "fundamentacao": "Arts. 7º, incisos IV e V, e 8º \"caput\" da LAI, Normas Brasileiras de Auditoria no Setor Público - NBASP nº 1 (VI, seções 16 e 17) 12 (princípio 4, 31), 20 (18, 28, princípio 7, 35, 36, 37, 38, 39, princípio 8, 40, 41, 42, 43), 100 (43 e 51), 300 (29 e 41), 400 (49) e 300 (133, 134 e 135)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Tribunal de Contas disponibiliza dados atualizados encaminhados pelos",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.11",
+   "exigencia": "O Tribunal de Contas disponibiliza dados atualizados encaminhados pelos respectivos entes fiscalizados (Estados ou Municípios) referentes à despesa e à receita?",
+   "fundamentacao": "Arts. 7º, II, V e VI e 8º, \"caput\" da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Tribunal de Contas",
+   "rotulo": "Transmissão das sessões de julgamento e eventuais audiências públicas",
+   "descricao": "",
+   "icone": "",
+   "criterio": "22.12",
+   "exigencia": "Há transmissão das sessões de julgamento e eventuais audiências públicas via meios de comunicação como rádio, TV, internet, entre outros?",
+   "fundamentacao": "Art. 37, caput, da CF e Arts. 3º, incisos II, III e X, e 14 da Lei 14.129/2021 e Art. 3º, III, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "tribunal-contas"
+   ],
+   "esferas": [],
+   "matriz": "tribunal-contas",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Ministério Público",
+   "rotulo": "Composição da Casa",
+   "descricao": "",
+   "icone": "",
+   "criterio": "23.1",
+   "exigencia": "Divulga a composição da Casa, com a indicação de onde cada membro atual?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "ministerio-publico"
+   ],
+   "esferas": [],
+   "matriz": "ministerio-publico",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Ministério Público",
+   "rotulo": "Registros de \"procedimentos preparatórios\" e de seus respectivos",
+   "descricao": "",
+   "icone": "",
+   "criterio": "23.2",
+   "exigencia": "Divulga os registros de \"procedimentos preparatórios\" e de seus respectivos andamentos?",
+   "fundamentacao": "Art. 3º, II e V, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "ministerio-publico"
+   ],
+   "esferas": [],
+   "matriz": "ministerio-publico",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Ministério Público",
+   "rotulo": "Registros de \"procedimentos de investigação” e de seus respectivos",
+   "descricao": "",
+   "icone": "",
+   "criterio": "23.3",
+   "exigencia": "Divulga os registros de \"procedimentos de investigação” e de seus respectivos andamentos?",
+   "fundamentacao": "Art. 3º, II e V, da Lei nº 12.527/2011 - LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "ministerio-publico"
+   ],
+   "esferas": [],
+   "matriz": "ministerio-publico",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades do Ministério Público",
+   "rotulo": "Registros sobre os \"inquéritos civis\" e de seus respectivos andamentos",
+   "descricao": "",
+   "icone": "",
+   "criterio": "23.4",
+   "exigencia": "Divulga os registros sobre os \"inquéritos civis\" e de seus respectivos andamentos?",
+   "fundamentacao": "Art. 3º, II e V, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "ministerio-publico"
+   ],
+   "esferas": [],
+   "matriz": "ministerio-publico",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades da Defensoria",
+   "rotulo": "Composição da Casa",
+   "descricao": "",
+   "icone": "",
+   "criterio": "24.1",
+   "exigencia": "Divulga a composição da Casa?",
+   "fundamentacao": "Art. 37, \"caput\" da CF e Art. 8º, § 1º, I, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "defensoria"
+   ],
+   "esferas": [],
+   "matriz": "defensoria",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades da Defensoria",
+   "rotulo": "Material informativo",
+   "descricao": "",
+   "icone": "",
+   "criterio": "24.2",
+   "exigencia": "Disponibiliza material informativo?",
+   "fundamentacao": "Art. 3º, II e V, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "defensoria"
+   ],
+   "esferas": [],
+   "matriz": "defensoria",
+   "verificacao": "disponibilidade, atualidade, série histórica, gravação de relatórios e filtro de pesquisa",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades da Defensoria",
+   "rotulo": "Informações sobre o atendimento",
+   "descricao": "",
+   "icone": "",
+   "criterio": "24.3",
+   "exigencia": "Disponibiliza informações sobre o atendimento?",
+   "fundamentacao": "Art. 4º-A, I, da Lei Complementar nº 80/1994",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "defensoria"
+   ],
+   "esferas": [],
+   "matriz": "defensoria",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Protocolo de intenções",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.1",
+   "exigencia": "Divulga o protocolo de intenções que antecede a formalização do Contrato?",
+   "fundamentacao": "Lei Federal nº 11.107/2005, art. 4º, §2º e 5º",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Estatuto do consórcio",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.2",
+   "exigencia": "Divulga estatuto do consórcio?",
+   "fundamentacao": "Lei Federal nº 11.107/2005, art. 7º; Decreto Federal nº. 6.017/07, art. 8º, §3º",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Contratos de rateio",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.3",
+   "exigencia": "Divulga os contratos de rateio?",
+   "fundamentacao": "Lei Federal nº 11.107/2005, art. 8º, §1º; Portaria STN nº. 274/16, art. 14, II; Lei Complementar nº 101, de 4 de maio de 2000",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Contrato de Programa",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.4",
+   "exigencia": "Divulga o Contrato de Programa?",
+   "fundamentacao": "Lei Federal nº 11.107/2005, art. 13, §1º, II; Decreto Federal nº. 6.017/07, art. 33, V",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Ata de eleição dos atuais dirigentes",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.5",
+   "exigencia": "Divulga a ata de eleição dos atuais dirigentes?",
+   "fundamentacao": "Lei Federal nº 11.107/2005, art. 6º, §1º; Decreto Federal nº. 6.017/07",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Atas da assembleia geral",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.6",
+   "exigencia": "Divulga as atas da assembleia geral?",
+   "fundamentacao": "Lei Federal nº 11.107/2005; Decreto Federal nº. 6.017/07",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades dos Consórcios",
+   "rotulo": "Entes consorciados (municípios integrantes)",
+   "descricao": "",
+   "icone": "",
+   "criterio": "25.7",
+   "exigencia": "Divulga os entes consorciados (municípios integrantes)?",
+   "fundamentacao": "Lei Federal nº 11.107/2005; Decreto Federal nº. 6.017/07",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "consorcios"
+   ],
+   "esferas": [],
+   "matriz": "consorcios",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Plano de negócios para o exercício seguinte",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.1",
+   "exigencia": "Divulga o plano de negócios para o exercício seguinte?",
+   "fundamentacao": "Art. 23, §1º, I, da Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Ato ou lei de criação",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.2",
+   "exigencia": "Divulga o ato ou lei de criação?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Estatuto social",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.3",
+   "exigencia": "Divulga o estatuto social?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); art. 8º, II da Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Missão, princípios e valores da instituição",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.4",
+   "exigencia": "Divulga a missão, princípios e valores da instituição?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Código de Conduta e Integridade",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.5",
+   "exigencia": "Código de Conduta e Integridade?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 9º, § 1º, Lei 13.303/2016; Art. 18 do do Decreto 8.945/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Composição do capital social",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.6",
+   "exigencia": "Divulga a composição do capital social?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI)",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Descrição da composição e da remuneração da diretoria executiva",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.7",
+   "exigencia": "Divulga a descrição da composição e da remuneração da diretoria executiva?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 8º, III; Art. 16, parágrafo único e Art. 17 da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Composição dos conselhos de administração e fiscal",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.8",
+   "exigencia": "Divulga a composição dos conselhos de administração e fiscal?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Extrato das atas de assembleias gerais, quando for o caso",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.9",
+   "exigencia": "Extrato das atas de assembleias gerais, quando for o caso?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Fatos relevantes e comunicados ao mercado, quando houver",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.10",
+   "exigencia": "Divulga fatos relevantes e comunicados ao mercado, quando houver?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Currículo profissional resumido dos membros dos órgãos societários de",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.11",
+   "exigencia": "Divulga currículo profissional resumido dos membros dos órgãos societários de administração e fiscalização?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Lei 13.303/2016",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Política de divulgação de informações",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.12",
+   "exigencia": "Publica a política de divulgação de informações?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 8º, IV, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Política de distribuição de dividendos",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.13",
+   "exigencia": "Publica a política de distribuição de dividendos ?",
+   "fundamentacao": "Art. 3º c/c art. 6º, I, c/c art. 7º, II, V e VI, c/c art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 8º, V, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Política de transações com partes relacionadas, revisada ao menos",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.14",
+   "exigencia": "Divulga política de transações com partes relacionadas, revisada ao menos anualmente e aprovada pelo Conselho de Administração?",
+   "fundamentacao": "Art. 3º combinado com art. 6º, I, combinado com art. 7º, II, V e VI, combinado com art. 8º, caput e § 2º da Lei 12.527/2011 (LAI); Art. 8º, VII, da Lei 13.303/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade e atualidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Publica, no sítio eletrônico da instituição, carta anual subscrita",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.15",
+   "exigencia": "Publica, no sítio eletrônico da instituição, carta anual subscrita pelos membros do Conselho de Administração contendo: Explicitação dos compromissos de consecução de objetivos de políticas públicas pela empresa estatal e por suas subsidiárias, em atendimento ao interesse coletivo ou ao imperativo de segurança nacional que justificou a autorização de sua criação?",
+   "fundamentacao": "Art. 3º c/a art. 6º, I, c/c art. 7º, II e V-VII, c/c art. 8º, caput e § 1º, I-V e § 2º, da Lei 12.527/2011 (LAI); Art. 8º, I, III, VIII e § 4º, c/c art. 16, parágrafo único, da Lei 13.303/2016; Art. 13, I, III, VIII, § 1º e § 5º do Decreto 8.945/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Divulga, de forma detalhada e individual, toda e qualquer remuneração",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.24",
+   "exigencia": "Divulga, de forma detalhada e individual, toda e qualquer remuneração dos dirigentes (administradores) e membros do Conselho Fiscal?",
+   "fundamentacao": "Art. 3º c/a art. 6º, I, c/c art. 7º, II e V-VII, c/c art. 8º, caput e § 1º, I-V e § 2º, da Lei 12.527/2011 (LAI); Art. 12, I, c/c art. 16, parágrafo único, da Lei 13.303/2016; Art. 2º, VII, c/c art. 13, III e § 5º , c/c art. 19 do Decreto 8.945/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Divulga, em nota explicativa às demonstrações financeiras anuais, os",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.25",
+   "exigencia": "Divulga, em nota explicativa às demonstrações financeiras anuais, os seguintes valores, considerados na data de elaboração da nota: Maior e menor remuneração pagas a seus empregados e administradores, nelas computadas as vantagens e benefícios efetivamente percebidos?",
+   "fundamentacao": "Art. 1º, II, §§ 1º, 2º e 3º, da Resolução-CGPAR-30/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Relativamente à exploração de atividade econômica, no",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.28",
+   "exigencia": "Relativamente à exploração de atividade econômica, no que concerne às obrigações e responsabilidades assumidas em condições distintas às de qualquer outra empresa do setor privado em que atua, é dada ampla publicidade, no sítio eletrônico da instituição, aos contratos, convênios ou ajustes celebrados nessas condições?",
+   "fundamentacao": "Art. 3º c/a art. 6º, I, c/c art. 7º, II e V-VII, c/c art. 8º, caput e § 1º, I-V e § 2º, da Lei 12.527/2011 (LAI); Art. 8º, I, III, VIII e § 4º, c/c art. 12, I, c/c art. 16, parágrafo único, da Lei 13.303/2016; Art. 2º, VII, c/c art. 13, I, III, V; Art. 8º, § 2º caput e inciso I, Lei 13.303/2016; Art. 13, § 3º caput e inciso I, e § 5º, Decreto 8.945/2016",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  },
+  {
+   "grupo": "Atividades das Estatais",
+   "rotulo": "Em seu sítio eletrônico os currículos profissionais dos membros da",
+   "descricao": "",
+   "icone": "",
+   "criterio": "26.29",
+   "exigencia": "Publica em seu sítio eletrônico os currículos profissionais dos membros da Diretoria Executiva e dos Conselhos de Administração e Fiscal?",
+   "fundamentacao": "Art. 1º, III, da Resolução-CGPAR-30/2022",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes"
+   ],
+   "esferas": [],
+   "matriz": "estatais",
+   "verificacao": "disponibilidade, atualidade e série histórica",
+   "apelidos": []
+  }
+ ],
+ "recursos": [
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Radar da Transparência",
+   "descricao": "",
+   "icone": "i-landmark",
+   "criterio": "2.9",
+   "exigencia": "Inclui botão do Radar da Transparência Pública no site institucional ou portal transparência?",
+   "fundamentacao": "Art. 37 da CF (princípio da publicidade) e art. 3º da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Informações Institucionais",
+   "rotulo": "Redes sociais e apresenta, no seu sítio institucional, link de acesso",
+   "descricao": "",
+   "icone": "",
+   "criterio": "2.8",
+   "exigencia": "Participa em redes sociais e apresenta, no seu sítio institucional, link de acesso ao seu perfil?",
+   "fundamentacao": "Arts. 3º, III, 6º, I, e 8º, §2º, da Lei nº 12.527/2011 – LAI",
+   "classificacao": "recomendada",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "",
+   "apelidos": []
+  },
+  {
+   "grupo": "Acessibilidade",
+   "rotulo": "Site oficial e o portal de transparência contêm símbolo de",
+   "descricao": "",
+   "icone": "",
+   "criterio": "13.1",
+   "exigencia": "O site oficial e o portal de transparência contêm símbolo de acessibilidade em destaque?",
+   "fundamentacao": "Art. 63, § 1º, da Lei nº 13.146/2015",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Acessibilidade",
+   "rotulo": "Site e o portal de transparência contêm exibição do “caminho” de",
+   "descricao": "",
+   "icone": "",
+   "criterio": "13.2",
+   "exigencia": "O site e o portal de transparência contêm exibição do “caminho” de páginas percorridas pelo usuário?",
+   "fundamentacao": "Art. 8º, §3º, inciso VIII, da Lei nº 12.527/2011 – LAI e art. 63, \"caput\" e § 1º, da Lei nº 13.146/15, Art. 3º, incisos XIX, da Lei 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Acessibilidade",
+   "rotulo": "Site e o portal de transparência contêm opção de alto contraste",
+   "descricao": "",
+   "icone": "",
+   "criterio": "13.3",
+   "exigencia": "O site e o portal de transparência contêm opção de alto contraste?",
+   "fundamentacao": "Art. 8º, §3º, VIII, da Lei nº 12.527/2011 - LAI; art. 63, da Lei nº 13.146/2015 e art. 3º, XIX, da Lei nº 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  },
+  {
+   "grupo": "Acessibilidade",
+   "rotulo": "Site e o portal de transparência contêm ferramenta de",
+   "descricao": "",
+   "icone": "",
+   "criterio": "13.4",
+   "exigencia": "O site e o portal de transparência contêm ferramenta de redimensionamento de texto?",
+   "fundamentacao": "Art. 8º, §3º, VIII, da Lei nº 12.527/2011 – LAI; art. 63, da Lei nº 13.146/2015 e art. 3º, XIX, da Lei nº 14.129/2021",
+   "classificacao": "obrigatoria",
+   "aplicavelA": [
+    "estatais-dependentes",
+    "estatais-independentes",
+    "consorcios",
+    "tribunal-contas",
+    "ministerio-publico",
+    "defensoria",
+    "judiciario",
+    "legislativo",
+    "executivo"
+   ],
+   "esferas": [],
+   "matriz": "geral",
+   "verificacao": "disponibilidade",
+   "apelidos": []
+  }
+ ]
+}

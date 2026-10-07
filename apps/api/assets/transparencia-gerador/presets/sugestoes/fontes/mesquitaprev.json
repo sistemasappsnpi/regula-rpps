@@ -1,0 +1,752 @@
+[
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-file-text-o",
+  "Descricao": "Relatórios do RPC",
+  "MaisInformacoes": "Acesso aos relatórios do Regime de Previdência Complementar.",
+  "Cor": "#1F5F99",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?cat=126"
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-bar-chart",
+  "Descricao": "Demonstrações Financeiras e Contábeis",
+  "MaisInformacoes": "Demonstrativos e informações financeiras e contábeis do instituto.",
+  "Cor": "#0F766E",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?grupo=10"
+ },
+ {
+  "Id": "32",
+  "Grupo": "Educação Previdenciária",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calendar-alt",
+  "Descricao": "Cronograma de Ações de Educação Previdenciária",
+  "MaisInformacoes": "Calendário das Ações de Educação Previdenciária Realizadas Pelo Instituto.",
+  "Cor": "#2563EB",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?grupo=9"
+ },
+ {
+  "Id": "32",
+  "Grupo": "Educação Previdenciária",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-tasks",
+  "Descricao": "Plano de Ação Anual",
+  "MaisInformacoes": "Plano de ação anual do instituto.",
+  "Cor": "#3B82F6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=108&secr=&exer=&descr="
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-users",
+  "Descricao": "Audiências Públicas",
+  "MaisInformacoes": "Materiais e publicações das audiências públicas realizadas pelo instituto.",
+  "Cor": "#1B71A5",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=38&secr=&exer=&descr="
+ },
+ {
+  "Id": "29",
+  "Grupo": "Comitê de Investimentos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-book",
+  "Descricao": "Regimento Interno",
+  "MaisInformacoes": "Regimento interno que organiza o funcionamento do órgão colegiado.",
+  "Cor": "#14B8A6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/3?tipo=8&exer="
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-book",
+  "Descricao": "Lei de Diretrizes Orçamentárias (LDO)",
+  "MaisInformacoes": "Lei de Diretrizes Orçamentárias e seus anexos.",
+  "Cor": "#F97316",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=9&comp=&secr=&descr=&exer="
+ },
+ {
+  "Id": "34",
+  "Grupo": "Previdência",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-file-earmark-check",
+  "Descricao": "Autorização de Aplicação e Resgate (APR)",
+  "MaisInformacoes": "Documentos que formalizam movimentações na carteira de investimentos.",
+  "Cor": "#EC4899",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=31&secr=&exer=&descr="
+ },
+ {
+  "Id": "30",
+  "Grupo": "Conselho de Administração",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-book",
+  "Descricao": "Regimento Interno",
+  "MaisInformacoes": "Regimento interno que organiza o funcionamento do órgão colegiado.",
+  "Cor": "#F59E0B",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/1?tipo=8&exer="
+ },
+ {
+  "Id": "31",
+  "Grupo": "Conselho Fiscal",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-book",
+  "Descricao": "Regimento Interno",
+  "MaisInformacoes": "Regimento interno que organiza o funcionamento do órgão colegiado.",
+  "Cor": "#10B981",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/2?tipo=8&exer="
+ },
+ {
+  "Id": "25",
+  "Grupo": "Compras",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-gavel",
+  "Descricao": "Portal de Licitações",
+  "MaisInformacoes": null,
+  "Cor": "#DC2626",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/portalcompras"
+ },
+ {
+  "Id": "32",
+  "Grupo": "Educação Previdenciária",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-users",
+  "Descricao": "Audiências Públicas",
+  "MaisInformacoes": "Materiais e publicações das audiências públicas realizadas pelo instituto.",
+  "Cor": "#3B82F6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=38&secr=&exer=&descr="
+ },
+ {
+  "Id": "24",
+  "Grupo": "Canais de Atendimento",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-comments",
+  "Descricao": "Ouvidoria",
+  "MaisInformacoes": "Acesse nosso canal de ouvidoria e envie suas manifestações, críticas, elogios, denúncias e ajude o governo a tornar nossa cidade cada vez melhor.",
+  "Cor": "#0EA5E9",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/ouvidoria"
+ },
+ {
+  "Id": "33",
+  "Grupo": "Recursos Humanos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-money",
+  "Descricao": "Folha de Pagamento - Servidores Ativos",
+  "MaisInformacoes": "Folha de pagamento dos servidores ativos vinculados ao instituto.",
+  "Cor": "#6366F1",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=1&cat=33&secr=&exer=&descr="
+ },
+ {
+  "Id": "26",
+  "Grupo": "Receitas e Despesas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-money",
+  "Descricao": "Despesas",
+  "MaisInformacoes": "Registro detalhado das despesas executadas pelo instituto.",
+  "Cor": "#9333EA",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://transparencia.mesquita.rj.gov.br/?serv=145"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-book",
+  "Descricao": "Regimento Interno dos Órgãos Colegiados",
+  "MaisInformacoes": "Regimento interno que organiza o funcionamento dos órgãos colegiados do instituto.",
+  "Cor": "#16A34A",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=114&secr=&exer=&descr="
+ },
+ {
+  "Id": "25",
+  "Grupo": "Compras",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-file-earmark-text",
+  "Descricao": "Contratos",
+  "MaisInformacoes": "Contratos administrativos firmados pelo instituto.",
+  "Cor": "#9333EA",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/contrato"
+ },
+ {
+  "Id": "24",
+  "Grupo": "Canais de Atendimento",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-info-circle",
+  "Descricao": "E-SIC",
+  "MaisInformacoes": "SIC (Serviço de Informações ao Cidadão) permite que qualquer pessoa encaminhe pedidos de informação aos órgãos e entidades do Poder Executivo Municipal.",
+  "Cor": "#0891B2",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/sic"
+ },
+ {
+  "Id": "34",
+  "Grupo": "Previdência",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-line-chart",
+  "Descricao": "Política de Investimentos",
+  "MaisInformacoes": "Política de Investimentos do regime próprio de previdência.",
+  "Cor": "#D97706",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=30&secr=&exer=&descr="
+ },
+ {
+  "Id": "26",
+  "Grupo": "Receitas e Despesas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-cash-stack",
+  "Descricao": "Receitas",
+  "MaisInformacoes": "Registro detalhado das receitas arrecadadas pelo intituto.",
+  "Cor": "#16A34A",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://transparencia.mesquita.rj.gov.br/?serv=97"
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calculator",
+  "Descricao": "Lei Orçamentária Anual (LOA)",
+  "MaisInformacoes": "Lei Orçamentária Anual e seus anexos.",
+  "Cor": "#F97316",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=8&comp=&secr=&descr=&exer="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-shield",
+  "Descricao": "Relatório de Controle Interno",
+  "MaisInformacoes": "Relatório produzido pela área de controle interno do instituto.",
+  "Cor": "#0EA5E9",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=98&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-shield",
+  "Descricao": "Limites de Alçadas",
+  "MaisInformacoes": "Consulte os níveis de competência e autorização para decisões e operações relacionadas à Previdência.",
+  "Cor": "#0EA5E9",
+  "Link": "http://mesquitaprev.rj.gov.br/wp-content/uploads/2026/09/13_tp_Certidao_certidao_negativa_federal.pdf"
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-people-fill",
+  "Descricao": "Órgãos Colegiados",
+  "MaisInformacoes": "Conselho de Administração, Conselho Fiscal e Comitê de Investimentos do instituto.",
+  "Cor": "#1B71A5",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos"
+ },
+ {
+  "Id": "29",
+  "Grupo": "Comitê de Investimentos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calendar-check-o",
+  "Descricao": "Calendário de Reuniões",
+  "MaisInformacoes": "Calendário das reuniões previstas do órgão colegiado.",
+  "Cor": "#DC2626",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/3?tipo=10&exer="
+ },
+ {
+  "Id": "30",
+  "Grupo": "Conselho de Administração",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calendar-check-o",
+  "Descricao": "Calendário de Reuniões",
+  "MaisInformacoes": "Calendário das reuniões previstas do órgão colegiado.",
+  "Cor": "#0D9488",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/1?tipo=10&exer="
+ },
+ {
+  "Id": "33",
+  "Grupo": "Recursos Humanos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-money",
+  "Descricao": "Folha de Pagamento - Aposentados",
+  "MaisInformacoes": "Folha de pagamento dos aposentados vinculados ao regime próprio de previdência.",
+  "Cor": "#EF4444",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=2&cat=33&secr=&exer=&descr="
+ },
+ {
+  "Id": "31",
+  "Grupo": "Conselho Fiscal",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calendar-check-o",
+  "Descricao": "Calendário de Reuniões",
+  "MaisInformacoes": "Calendário das reuniões previstas do órgão colegiado.",
+  "Cor": "#8B5CF6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/2?tipo=10&exer="
+ },
+ {
+  "Id": "32",
+  "Grupo": "Educação Previdenciária",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-video-camera",
+  "Descricao": "Audiencias Públicas Vídeos",
+  "MaisInformacoes": "Gravações em vídeo das audiências públicas realizadas pelo instituto.",
+  "Cor": "#84CC16",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/videos"
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-newspaper-o",
+  "Descricao": "Diário Oficial",
+  "MaisInformacoes": "Edições do Diário Oficial com atos publicados pelo instituto.",
+  "Cor": "#10B981",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://transparencia.mesquita.rj.gov.br/?serv=18"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-university",
+  "Descricao": "Entidades de Investimentos Credenciadas",
+  "MaisInformacoes": "Instituições financeiras credenciadas para operar com os recursos do instituto.",
+  "Cor": "#0D9488",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=99&secr=&exer=&descr="
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calendar",
+  "Descricao": "Plano Plurianual (PPA)",
+  "MaisInformacoes": "Lei do Plano Plurianual e seus anexos.",
+  "Cor": "#D97706",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=17&comp=&secr=&descr=&exer="
+ },
+ {
+  "Id": "33",
+  "Grupo": "Recursos Humanos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-money",
+  "Descricao": "Folha de Pagamento - Pensionistas",
+  "MaisInformacoes": "Folha de pagamento dos pensionistas vinculados ao regime próprio de previdência.",
+  "Cor": "#6366F1",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=3&cat=33&secr=&exer=&descr="
+ },
+ {
+  "Id": "24",
+  "Grupo": "Canais de Atendimento",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-check-circle",
+  "Descricao": "Pesquisa de Satisfação",
+  "MaisInformacoes": "O compromisso de atender com eficiência às demandas da sociedade.",
+  "Cor": "#84CC16",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pesquisasatisfacao"
+ },
+ {
+  "Id": "32",
+  "Grupo": "Educação Previdenciária",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-journal-richtext",
+  "Descricao": "Cartilha Previdenciária",
+  "MaisInformacoes": "Material explicativo sobre regras e direitos previdenciários dos segurados.",
+  "Cor": "#F59E0B",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=110&secr=&exer=&descr="
+ },
+ {
+  "Id": "31",
+  "Grupo": "Conselho Fiscal",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-file-text",
+  "Descricao": "Atas",
+  "MaisInformacoes": "Registros das reuniões e deliberações do órgão colegiado.",
+  "Cor": "#EC4899",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/2?tipo=1"
+ },
+ {
+  "Id": "30",
+  "Grupo": "Conselho de Administração",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-file-text",
+  "Descricao": "Atas",
+  "MaisInformacoes": "Registros das reuniões e deliberações do órgão colegiado.",
+  "Cor": "#14B8A6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/1?tipo=1"
+ },
+ {
+  "Id": "26",
+  "Grupo": "Receitas e Despesas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-money",
+  "Descricao": "Demonstrativos de receitas e Despesas",
+  "MaisInformacoes": "Demonstrativos consolidados de receitas e despesas do instituto.",
+  "Cor": "#8B5CF6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=112&secr=&exer=&descr=&comp="
+ },
+ {
+  "Id": "34",
+  "Grupo": "Previdência",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-briefcase",
+  "Descricao": "Carteira de Investimentos",
+  "MaisInformacoes": "Composição e valores dos recursos aplicados pelo regime próprio de previdência.",
+  "Cor": "#3B82F6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=39&secr=&exer=&descr="
+ },
+ {
+  "Id": "29",
+  "Grupo": "Comitê de Investimentos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-file-text",
+  "Descricao": "Atas",
+  "MaisInformacoes": "Registros das reuniões e deliberações do órgão colegiado.",
+  "Cor": "#EF4444",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/conselhos/3?tipo=1"
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-line-chart",
+  "Descricao": "Relatório de Gestão Fiscal (RGF)",
+  "MaisInformacoes": "Relatório de Gestão Fiscal, exigido pela lei de Responsabilidade Fiscal.",
+  "Cor": "#F97316",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=4&comp=&descr=&exer="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-gavel",
+  "Descricao": "Relatório de Licitações e Contratos",
+  "MaisInformacoes": "Relatório consolidado das licitações e contratos do instituto.",
+  "Cor": "#0891B2",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=100&secr=&exer=&descr="
+ },
+ {
+  "Id": "34",
+  "Grupo": "Previdência",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-area-chart",
+  "Descricao": "Relatório de Investimentos",
+  "MaisInformacoes": "Acompanhamento dos resultados da carteira de investimentos do instituto.",
+  "Cor": "#16A34A",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=40&secr=&exer=&descr="
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-database",
+  "Descricao": "Dados Abertos",
+  "MaisInformacoes": "Base de dados públicos do instituto disponibilizada em formato aberto.",
+  "Cor": "#1B71A5",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/dadosabertos"
+ },
+ {
+  "Id": "33",
+  "Grupo": "Recursos Humanos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-file-text",
+  "Descricao": "Portarias",
+  "MaisInformacoes": "Portarias administrativas expedidas pelo instituto.",
+  "Cor": "#9333EA",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/portaria"
+ },
+ {
+  "Id": "34",
+  "Grupo": "Previdência",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-graph-up-arrow",
+  "Descricao": "Rentabilidade",
+  "MaisInformacoes": "Rentabilidade da carteira de investimentos do regime próprio de previdência.",
+  "Cor": "#F59E0B",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=41&secr=&exer=&descr="
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-book",
+  "Descricao": "Glossario",
+  "MaisInformacoes": "Explicação de termos técnicos usados na área previdenciária.",
+  "Cor": "#0EA5E9",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/glossario"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-university",
+  "Descricao": "Acórdãos TCE",
+  "MaisInformacoes": "Acórdões do Tribunal de Contas do Estado relacionados ao instituto.",
+  "Cor": "#DC2626",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=101&secr=&exer=&descr="
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-bar-chart",
+  "Descricao": "Relatório Resumido de Execução Orçamentária (RREO)",
+  "MaisInformacoes": "Relatório Resumido da Execução Orçamentária, exigido pela Lei de Responsabilidade Fiscal.",
+  "Cor": "#10B981",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/lrf?dtini=&dtfim=&cat=7&comp=&secr=&descr=&exer="
+ },
+ {
+  "Id": "33",
+  "Grupo": "Recursos Humanos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-plane",
+  "Descricao": "Diárias e Passagens",
+  "MaisInformacoes": "Gastos com diárias e passagens de servidores e conselheiros em viagens a serviço.",
+  "Cor": "#3B82F6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/diarias"
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-file-earmark-text",
+  "Descricao": "PCS - Prestação de Contas de Gestão",
+  "MaisInformacoes": "Prestação de contas de gestão do instituto.",
+  "Cor": "#84CC16",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=116&exer=&descr=&comp=&secr="
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-gavel",
+  "Descricao": "Leis",
+  "MaisInformacoes": "Leis municipais que regem o funcionamento do instituto.",
+  "Cor": "#14B8A6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/leis"
+ },
+ {
+  "Id": "34",
+  "Grupo": "Previdência",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calculator",
+  "Descricao": "Avaliação Atuarial",
+  "MaisInformacoes": "Avaliação atuarial anual do regime próprio de previdência.",
+  "Cor": "#EF4444",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=29&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-line-chart",
+  "Descricao": "Relatório Mensais e Anuais de Investimentos",
+  "MaisInformacoes": "Relatórios mensais e anuais de investimentos do regime próprio de previdência.",
+  "Cor": "#6366F1",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=102&secr=&exer=&descr="
+ },
+ {
+  "Id": "33",
+  "Grupo": "Recursos Humanos",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-people-fill",
+  "Descricao": "Demonstrativo de Gasto com Pessoal",
+  "MaisInformacoes": "Demonstrativo dos gastos com pessoal do instituto.",
+  "Cor": "#EC4899",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=42&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-sitemap",
+  "Descricao": "Relatório de Governança",
+  "MaisInformacoes": "Relatório sobre as práticas de governança corporativa adotadas pelo instituto.",
+  "Cor": "#0D9488",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=103&secr=&exer=&descr="
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-money",
+  "Descricao": "Balanços Financeiros",
+  "MaisInformacoes": "Balanços financeiros do instituto.",
+  "Cor": "#8B5CF6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=35&secr=&exer=&descr=&comp="
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-question-circle",
+  "Descricao": "Perguntas Frequentes",
+  "MaisInformacoes": "Respostas às dúvidas mais comuns sobre os serviços do instituto.",
+  "Cor": "#D97706",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/perguntaserespostas"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-lock",
+  "Descricao": "Política de Segurança da Informação",
+  "MaisInformacoes": "Diretrizes adotadas para proteger as informações e sistemas do instituto.",
+  "Cor": "#16A34A",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes/98"
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-balance-scale",
+  "Descricao": "Balanços Orçamentários",
+  "MaisInformacoes": "Balanços orçamentários do instituto.",
+  "Cor": "#0891B2",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=36&secr=&exer=&descr=&comp="
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calendar",
+  "Descricao": "Calendário de Pagamento",
+  "MaisInformacoes": "Datas previstas para pagamento de benefícios e salários ao longo do ano.",
+  "Cor": "#1B71A5",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/calendariofopag"
+ },
+ {
+  "Id": "35",
+  "Grupo": "Institucional",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "bi-file-earmark-check",
+  "Descricao": "TACS",
+  "MaisInformacoes": "Termos de Ajustamento de Conduta firmados pelo instituto.",
+  "Cor": "#9333EA",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=43&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-line-chart",
+  "Descricao": "Política de Investimentos",
+  "MaisInformacoes": "Política de Investimentos do regime próprio de previdência.",
+  "Cor": "#F97316",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=30&secr=&exer=&descr="
+ },
+ {
+  "Id": "27",
+  "Grupo": "LRF e Prestação de Contas",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-building",
+  "Descricao": "Balanços Patrimoniais",
+  "MaisInformacoes": "Balanços patrimoniais do intituto.",
+  "Cor": "#DC2626",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pcsg?dtini=&dtfim=&cat=111&secr=&exer=&descr=&comp="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-balance-scale",
+  "Descricao": "Código de Ética",
+  "MaisInformacoes": "Diretrizes de conduta ética aplicáveis a gestores, servidores e conselheiros do instituto.",
+  "Cor": "#F59E0B",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=104&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-certificate",
+  "Descricao": "Certidões",
+  "MaisInformacoes": "Certidões emitidas pelo instituto para comprovação de situação junto ao órgão.",
+  "Cor": "#10B981",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&cat=106&exer=&descr=&num=&comp=&grupo="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-tasks",
+  "Descricao": "Plano de Ação Anual",
+  "MaisInformacoes": "Plano de ação anual do instituto.",
+  "Cor": "#3B82F6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=108&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-certificate",
+  "Descricao": "CRP",
+  "MaisInformacoes": "Certificado de Regularidade Previdenciária vigente do instituto.",
+  "Cor": "#6366F1",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=109&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-certificate",
+  "Descricao": "CND - Federal",
+  "MaisInformacoes": "Certidão Positiva com Efeitos de Negativa de Débitos Relativos aos Tributos Federais e à Dívida Ativa da União",
+  "Cor": "#6366F1",
+  "Link": "http://mesquitaprev.rj.gov.br/wp-content/uploads/2026/09/13_tp_Certidao_certidao_negativa_federal.pdf"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-certificate",
+  "Descricao": "CRF",
+  "MaisInformacoes": "Certificado de Regularidade do FGTS",
+  "Cor": "#6366F1",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/publicacoes?cat=106&descr=fgts"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-id-card",
+  "Descricao": "CRP – Cadprev",
+  "MaisInformacoes": "Consulta ao Certificado de Regularidade Previdenciária no sistema CadPrev do Governo Federal.",
+  "Cor": "#EC4899",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://cadprev.previdencia.gov.br/Cadprev/pages/publico/crp/pesquisarEnteCrp.xhtml"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-file-text",
+  "Descricao": "Demonstrativos Financeiros e Contábeis",
+  "MaisInformacoes": "Demonstrativos financeiros e contábeis da gestão do instituto.",
+  "Cor": "#14B8A6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/pcsg"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-calculator",
+  "Descricao": "Avaliação Atuarial",
+  "MaisInformacoes": "Avaliação atuarial anual do regime próprio de previdência.",
+  "Cor": "#84CC16",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/publicacoes?dtini=&dtfim=&grupo=&cat=29&secr=&exer=&descr="
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-exchange",
+  "Descricao": "Comprev",
+  "MaisInformacoes": "Informações sobre a compensação previdenciária entre regimes (Comprev).",
+  "Cor": "#EF4444",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://www.portal.mesquitaprev.rj.gov.br/contrato/8"
+ },
+ {
+  "Id": "28",
+  "Grupo": "Governança Corporativa",
+  "Amparo": "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)",
+  "NomeImagem": "fa fa-pie-chart",
+  "Descricao": "DAIR - Cadprev",
+  "MaisInformacoes": "Consulta ao Demonstrativo de Aplicação e Investimentos de Recursos no sistema CadPrev.",
+  "Cor": "#8B5CF6",
+  "Link": "https://www.portal.mesquitaprev.rj.gov.br/https://cadprev.previdencia.gov.br/Cadprev/pages/modulos/dair/consultarDemonstrativos.xhtml"
+ }
+]

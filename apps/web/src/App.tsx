@@ -19,6 +19,7 @@ import { ContaNaoVinculadaPage } from "./pages/ContaNaoVinculadaPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminTenantsPage } from "./pages/admin/AdminTenantsPage";
 import { AdminParametrizacoesPage } from "./pages/admin/AdminParametrizacoesPage";
+import { AdminTransparenciaGeradorPage } from "./pages/admin/AdminTransparenciaGeradorPage";
 import { AdminAuditoriaPage } from "./pages/admin/AdminAuditoriaPage";
 import { AdminRelatoriosPage } from "./pages/admin/AdminRelatoriosPage";
 
@@ -193,6 +194,16 @@ export default function App() {
           <RequireAdminFeature feature="admin_parametrizacoes">
             <GlobalAdminShell>
               <AdminParametrizacoesPage />
+            </GlobalAdminShell>
+          </RequireAdminFeature>
+        }
+      />
+      <Route
+        path="/admin/transparencia-gerador"
+        element={
+          <RequireAdminFeature feature="admin_parametrizacoes">
+            <GlobalAdminShell>
+              <AdminTransparenciaGeradorPage />
             </GlobalAdminShell>
           </RequireAdminFeature>
         }

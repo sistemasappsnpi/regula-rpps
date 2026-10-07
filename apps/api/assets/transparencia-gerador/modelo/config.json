@@ -1,0 +1,61 @@
+{
+  "cliente": {
+    "nome": "NOME DO CLIENTE",
+    "nomeCompleto": "Nome institucional completo",
+    "site": "https://SEU-DOMINIO.gov.br/",
+    "logo": "logo.png",
+    "icone": "logo-icon.png",
+    "cnpj": "",
+    "endereco": "",
+    "telefone": "",
+    "email": "",
+    "redes": [
+      { "tipo": "youtube", "url": "" },
+      { "tipo": "instagram", "url": "" }
+    ]
+  },
+
+  "cores": {
+    "primaria": "#107078",
+    "destaque": "#98c810"
+  },
+
+  "api": {
+    "base": "https://transparencia.SEU-DOMINIO.gov.br",
+    "urlTransparencia": "",
+    "urlMenu": "",
+    "paginaOficial": "",
+    "dominioLinks": "",
+    "atualizarMinutos": 5,
+    "cacheSegundos": 60
+  },
+
+  "seo": {
+    "url": "",
+    "descricao": ""
+  },
+
+  "textos": {
+    "titulo": "Acesso à Informação",
+    "subtitulo": "Todas as categorias em uma página só. Use a busca ou o índice ao lado para ir direto ao que precisa.",
+    "placeholderBusca": "Ex.: licitações, folha de pagamento, atas, ouvidoria..."
+  },
+
+  "grupos": {
+    "ordemAutomatica": true,
+    "ordem": [],
+    "ordemItens": {},
+    "ocultar": [],
+    "icones": {},
+    "descricoes": {}
+  },
+
+  "itensExtras": [],
+  "descricoesItens": {},
+  "amparos": {},
+  "glossario": {},
+  "sinonimos": {},
+
+  "acessibilidade": { "vlibras": true },
+  "recursos": { "feedback": true, "linksNovaAba": false }
+}

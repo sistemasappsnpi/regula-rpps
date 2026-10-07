@@ -33,6 +33,8 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/api/dist /app/apps/api/dist
 COPY --from=build /app/apps/api/prisma /app/apps/api/prisma
+# Arquivos-modelo do Gerador de Portal da Transparência (lidos em runtime, nao fazem parte do dist)
+COPY --from=build /app/apps/api/assets /app/apps/api/assets
 COPY --from=build /app/apps/api/package.json /app/apps/api/package.json
 COPY --from=build /app/knowledge-base /app/knowledge-base
 

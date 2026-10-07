@@ -5,6 +5,7 @@ import { requireAuth, requireSuperAdmin } from "../../middleware/auth";
 import { requireAdminFeature } from "../../middleware/features";
 import { HttpError } from "../../middleware/errorHandler";
 import { adminRepository } from "./admin.repository";
+import { transparenciaGeradorRouter } from "../transparencia-gerador/transparencia-gerador.routes";
 import { extrairTextoPorPagina } from "../uploads/pdf-extraction";
 import { isAiConfigured, sugerirChecklistDePdf } from "../ai/anthropic.client";
 
@@ -26,6 +27,7 @@ adminRouter.use("/construtor-tipos", requireAdminFeature("admin_parametrizacoes"
 adminRouter.use("/construtor-catalogo", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/documentos-personalizados", requireAdminFeature("admin_parametrizacoes"));
 adminRouter.use("/portal-documentos", requireAdminFeature("admin_parametrizacoes"));
+adminRouter.use("/transparencia-gerador", requireAdminFeature("admin_parametrizacoes"), transparenciaGeradorRouter);
 adminRouter.use("/auditoria", requireAdminFeature("admin_auditoria"));
 adminRouter.use("/relatorios", requireAdminFeature("admin_relatorios"));
 
