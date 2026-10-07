@@ -16,5 +16,5 @@ echo json_encode(array(
     'background_color' => '#f4f6f9',
     'theme_color' => $colors['primary'],
     'lang' => 'pt-BR',
-    'icons' => array(array('src' => $icone, 'sizes' => '260x260', 'type' => 'image/png', 'purpose' => 'any')),
+    'icons' => array(array('src' => $icone, 'sizes' => '260x260', 'type' => preg_match('/\.svg$/i', $icone) ? 'image/svg+xml' : (preg_match('/\.jpe?g$/i', $icone) ? 'image/jpeg' : (preg_match('/\.webp$/i', $icone) ? 'image/webp' : 'image/png')), 'purpose' => 'any')),
 ), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

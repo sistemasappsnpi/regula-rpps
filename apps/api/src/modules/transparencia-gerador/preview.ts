@@ -59,6 +59,10 @@ export function coresDoPortal(config: Cfg): Record<string, string> {
 
 /* ---------- index.php ---------- */
 
+// tipo da imagem pela extensão (o navegador ignora o favicon se o type não bate com o arquivo)
+function mimeDaImagem(nome: string): string {
+  return /\.svg$/i.test(nome) ? "image/svg+xml" : /\.jpe?g$/i.test(nome) ? "image/jpeg" : /\.webp$/i.test(nome) ? "image/webp" : /\.gif$/i.test(nome) ? "image/gif" : "image/png";
+}
 const REDES_ICONES: Record<string, string> = { youtube: "i-youtube", x: "i-x", twitter: "i-x", instagram: "i-instagram", facebook: "i-facebook" };
 const REDES_NOMES: Record<string, string> = { youtube: "YouTube", x: "X (Twitter)", twitter: "X (Twitter)", instagram: "Instagram", facebook: "Facebook" };
 
@@ -73,7 +77,8 @@ export function renderIndex(config: Cfg, opcoes: { versao: string; sprite: strin
   const descricao = cfg("seo.descricao", `Portal da Transparência do ${nome} — contas públicas, licitações, folha de pagamento, atas, relatórios e dados abertos, conforme a Lei de Acesso à Informação.`);
   const titulo = cfg("textos.titulo", "Acesso à Informação");
   const colors = coresDoPortal(config);
-  const absIcon = ok(urlPortal) ? String(urlPortal).replace(/\/+$/, "") + "/" + icone : icone;
+  const mimeIcone = mimeDaImagem(icone);
+const absIcon = ok(urlPortal) ? String(urlPortal).replace(/\/+$/, "") + "/" + icone : icone;
 
   const redesCfg = cfg("cliente.redes", []);
   const redes = (Array.isArray(redesCfg) ? redesCfg : Object.values(redesCfg ?? {})).filter((r: any) => ok(r?.url));
@@ -101,7 +106,7 @@ ${ok(urlPortal) ? `<link rel="canonical" href="${h(urlPortal)}">\n<meta property
 <meta property="og:description" content="${h(descricao)}">
 <meta property="og:image" content="${h(absIcon)}">
 <meta name="twitter:card" content="summary">
-<link rel="icon" type="image/png" href="${h(icone)}">
+<link rel="icon" type="${mimeIcone}" href="${h(icone)}">
 <link rel="apple-touch-icon" href="${h(icone)}">
 <link rel="manifest" href="manifest.php">
 <meta name="theme-color" content="${h(colors.primary)}">
@@ -244,7 +249,7 @@ export function renderManifest(config: Cfg): string {
       background_color: "#f4f6f9",
       theme_color: coresDoPortal(config).primary,
       lang: "pt-BR",
-      icons: [{ src: icone, sizes: "260x260", type: "image/png", purpose: "any" }],
+      icons: [{ src: icone, sizes: "260x260", type: mimeDaImagem(icone), purpose: "any" }],
     },
     null,
     4,

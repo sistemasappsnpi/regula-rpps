@@ -11,6 +11,7 @@ $urlPortal    = cfg('seo.url', '');
 $descricao    = cfg('seo.descricao', "Portal da Transparência do $nome — contas públicas, licitações, folha de pagamento, atas, relatórios e dados abertos, conforme a Lei de Acesso à Informação.");
 $titulo       = cfg('textos.titulo', 'Acesso à Informação');
 $colors       = portal_colors();
+$mimeIcone   = preg_match('/\.svg$/i', $icone) ? 'image/svg+xml' : (preg_match('/\.jpe?g$/i', $icone) ? 'image/jpeg' : (preg_match('/\.webp$/i', $icone) ? 'image/webp' : (preg_match('/\.gif$/i', $icone) ? 'image/gif' : 'image/png')));
 $absIcon      = $urlPortal ? rtrim($urlPortal, '/') . '/' . $icone : $icone;
 
 $redesIcones = array('youtube' => 'i-youtube', 'x' => 'i-x', 'twitter' => 'i-x', 'instagram' => 'i-instagram', 'facebook' => 'i-facebook');
@@ -43,7 +44,7 @@ $v = @filemtime(__DIR__ . '/assets/app.js') . '-' . @filemtime(__DIR__ . '/asset
 <meta property="og:description" content="<?= h($descricao) ?>">
 <meta property="og:image" content="<?= h($absIcon) ?>">
 <meta name="twitter:card" content="summary">
-<link rel="icon" type="image/png" href="<?= h($icone) ?>">
+<link rel="icon" type="<?= $mimeIcone ?>" href="<?= h($icone) ?>">
 <link rel="apple-touch-icon" href="<?= h($icone) ?>">
 <link rel="manifest" href="manifest.php">
 <meta name="theme-color" content="<?= h($colors['primary']) ?>">
