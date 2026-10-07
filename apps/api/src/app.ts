@@ -13,6 +13,7 @@ import { portalIndicadoresRouter } from "./modules/portal-indicadores/portal-ind
 import { transparenciaPublicRouter } from "./modules/transparencia/transparencia.routes";
 import { portalPrevidenciarioPublicRouter } from "./modules/portal-previdenciario/portal-previdenciario.routes";
 import { adminRouter } from "./modules/admin/admin.routes";
+import { portalPreviewRouter } from "./modules/transparencia-gerador/preview";
 import { errorHandler } from "./middleware/errorHandler";
 
 export function createApp() {
@@ -38,6 +39,7 @@ export function createApp() {
   app.use("/portal-indicadores", portalIndicadoresRouter);
   app.use("/public/transparencia", transparenciaPublicRouter);
   app.use("/public/portal-previdenciario", portalPrevidenciarioPublicRouter);
+  app.use("/public/transparencia-portal", portalPreviewRouter);
   app.use("/admin", adminRouter);
 
   app.use(errorHandler);

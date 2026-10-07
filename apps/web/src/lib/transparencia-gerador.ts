@@ -165,6 +165,8 @@ export const geradorApi = {
   // Cadastra um portal que já existe fora do gerador só pelo link (o servidor lê página, logo, cores, dados e API).
   importarLink: (url: string, pasta?: string) =>
     chamar<ResultadoGerar & { resumo: ResumoLink }>("/importar-link", { method: "POST", body: JSON.stringify({ url, pasta: pasta || undefined }) }),
+  // Link público de visualização do portal gerado (a barra final é necessária para os links relativos do portal)
+  urlVisualizacao: (pasta: string) => `${window.location.origin}/api/public/transparencia-portal/${encodeURIComponent(pasta)}/`,
   excluir: (pasta: string) => chamar<{ ok: boolean }>(`/clientes/${encodeURIComponent(pasta)}`, { method: "DELETE" }),
 
   async baixarZip(pasta: string): Promise<void> {

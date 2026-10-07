@@ -620,8 +620,16 @@ export async function importarPortal(imp: ImportacaoPortal) {
   return { pasta, novo: !existente, avisos };
 }
 
+/** Arquivo do modelo (assets, sw.js, partes/...) para a pré-visualização; null se não existir ou fugir da pasta. */
+export function lerArquivoModelo(rel: string): { dados: Buffer; mtimeMs: number } | null {
+  const raiz = path.join(pastaAssets(), "modelo");
+  const full = path.resolve(raiz, rel);
+  if (!full.startsWith(raiz + path.sep) || !fs.existsSync(full) || !fs.statSync(full).isFile()) return null;
+  return { dados: fs.readFileSync(full), mtimeMs: fs.statSync(full).mtimeMs };
+}
+
 // URL já configurada para um conjunto, seja completa (urlX) ou montada a partir de api.base.
-function apiUrlDe(api: Cfg, d: string): string {
+export function apiUrlDe(api: Cfg, d: string): string {
   const k = "url" + d[0].toUpperCase() + d.slice(1);
   if (!vazio(api[k])) return api[k];
   if (vazio(api.base) || api[d] === false) return "";

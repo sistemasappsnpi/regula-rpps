@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { unzipSync } from "fflate";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 // Banco em memória: só o que o gerador usa (findUnique / upsert / deleteMany em transparenciaPortal).
 const store: Record<string, any> = {};
@@ -22,6 +26,7 @@ vi.mock("../src/db/prisma", () => ({
 const svc = await import("../src/modules/transparencia-gerador/gerador.service");
 const { parseOrdemHtml } = await import("../src/modules/transparencia-gerador/ordem");
 const { hostPermitido } = await import("../src/modules/transparencia-gerador/http");
+const { renderIndex, renderManifest } = await import("../src/modules/transparencia-gerador/preview");
 const { extrairDaPagina, listaEmbutida, normalizarLinkPortal } = await import("../src/modules/transparencia-gerador/importar-link");
 
 describe("gerador de transparência — normalização de URL", () => {
@@ -96,6 +101,47 @@ describe("gerador de transparência — cadastro por link", () => {
   it("recusa endereços internos", () => {
     expect(() => normalizarLinkPortal("http://127.0.0.1/x")).toThrow();
     expect(normalizarLinkPortal("previspa.rj.gov.br/transparencia/")).toBe("https://previspa.rj.gov.br/transparencia/");
+  });
+});
+
+describe("gerador de transparência — link de visualização", () => {
+  const cfgTeste = {
+    cliente: {
+      nome: "Órgão <Teste> & Cia", nomeCompleto: "Instituto \"de\" Previdência", site: "https://x.gov.br/", logo: "logo.png", icone: "logo-icon.png",
+      cnpj: "11.111.111/0001-11", endereco: "Rua A, 1 — Centro", telefone: "", email: "a@x.gov.br",
+      redes: [{ tipo: "youtube", url: "https://youtube.com/x" }, { tipo: "tiktok", url: "https://t.com/x" }, { tipo: "x", url: "" }],
+    },
+    cores: { primaria: "#004080", destaque: "#c99a3a" },
+    api: { base: "https://x.gov.br" }, seo: { url: "https://x.gov.br/transparencia/", descricao: "Aspas 'simples' e \"duplas\"" },
+    textos: { titulo: "Acesso à Informação" }, acessibilidade: { vlibras: false }, recursos: { feedback: true },
+  };
+  const php = (() => {
+    try {
+      execFileSync("php", ["-v"], { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  const modelo = path.resolve(process.cwd(), "assets/transparencia-gerador/modelo");
+  const linhas = (s: string) => s.split("\n").map((l) => l.trim()).filter((l) => l !== "" && !l.includes("window.PORTAL_CONFIG"));
+
+  it.skipIf(!php)("index e manifest saem iguais aos do PHP", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "portal-"));
+    fs.cpSync(modelo, dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "config.json"), JSON.stringify(cfgTeste));
+    const saidaPhp = execFileSync("php", [path.join(dir, "index.php")], { cwd: dir, encoding: "utf8" });
+    const versao = saidaPhp.match(/app\.css\?v=([^"]+)"/)![1];
+    const sprite = fs.readFileSync(path.join(modelo, "partes/icones.svg"), "utf8");
+    const saidaTs = renderIndex(cfgTeste, { versao, sprite });
+    expect(linhas(saidaTs)).toEqual(linhas(saidaPhp));
+    const cfgJs = saidaTs.match(/window\.PORTAL_CONFIG = (.*);<\/script>/)![1];
+    expect(JSON.parse(cfgJs)).toEqual(cfgTeste);
+    expect(cfgJs).not.toMatch(/[<>&]/);
+
+    const manPhp = execFileSync("php", [path.join(dir, "manifest.php")], { cwd: dir, encoding: "utf8" });
+    expect(JSON.parse(renderManifest(cfgTeste))).toEqual(JSON.parse(manPhp));
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 });
 

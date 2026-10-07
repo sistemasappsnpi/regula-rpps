@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Download, Link2, Trash2, Upload } from "lucide-react";
+import { Download, ExternalLink, Link2, Trash2, Upload } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { useConfirm } from "../../components/ui/confirm-context";
@@ -872,6 +872,14 @@ export function AdminTransparenciaGeradorPage() {
             </Button>
             {editando && (
               <>
+                <a
+                  href={geradorApi.urlVisualizacao(pastaEdit)}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold hover:border-petrol"
+                >
+                  <ExternalLink size={16} /> Ver portal
+                </a>
                 <Button type="button" variant="ghost" onClick={() => baixarZip(pastaEdit)} disabled={baixando}>
                   <Download size={16} /> Baixar ZIP
                 </Button>
@@ -904,7 +912,17 @@ export function AdminTransparenciaGeradorPage() {
                         ))}
                       </ul>
                     )}
-                    <div className="mt-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {resultado.pasta && (
+                        <a
+                          href={geradorApi.urlVisualizacao(resultado.pasta)}
+                          target="_blank"
+                          rel="noopener"
+                          className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold hover:border-petrol"
+                        >
+                          <ExternalLink size={16} /> Ver portal
+                        </a>
+                      )}
                       <Button type="button" onClick={() => resultado.pasta && baixarZip(resultado.pasta)} disabled={baixando}>
                         <Download size={16} /> Baixar ZIP para publicar
                       </Button>
