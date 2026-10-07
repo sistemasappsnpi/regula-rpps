@@ -23,7 +23,7 @@ const ENTIDADES: Record<string, string> = {
   ordm: "º", ordf: "ª", ndash: "–", mdash: "—", hellip: "…", laquo: "«", raquo: "»",
 };
 
-function decodificarEntidades(s: string): string {
+export function decodificarEntidades(s: string): string {
   return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (todo, ent: string) => {
     if (ent[0] === "#") {
       const n = ent[1].toLowerCase() === "x" ? parseInt(ent.slice(2), 16) : parseInt(ent.slice(1), 10);
@@ -33,7 +33,7 @@ function decodificarEntidades(s: string): string {
   });
 }
 
-function limparTexto(s: string): string {
+export function limparTexto(s: string): string {
   return decodificarEntidades(s.replace(/<[^>]*>/g, ""))
     .replace(/ /g, " ")
     .replace(/\s+/g, " ")

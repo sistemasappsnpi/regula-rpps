@@ -70,6 +70,14 @@ $v = @filemtime(__DIR__ . '/assets/app.js') . '-' . @filemtime(__DIR__ . '/asset
   </div>
 </nav>
 
+<div class="dock-search" id="dockSearch" aria-hidden="true">
+  <div class="search-box">
+    <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+    <input id="dockInput" type="text" placeholder="<?= h(cfg('textos.placeholderDock', 'Pesquisar em toda a transparência…')) ?>" aria-label="Pesquisar em toda a transparência">
+    <button type="button" class="clear-btn" id="dockClear" aria-label="Limpar busca"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+</div>
+
 <section id="transparencia">
   <div class="hero">
     <div class="hero-panel">
@@ -78,7 +86,7 @@ $v = @filemtime(__DIR__ . '/assets/app.js') . '-' . @filemtime(__DIR__ . '/asset
       <form class="search-form" id="searchForm">
         <div class="search-box">
           <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
-          <input id="searchInput" type="text" placeholder="<?= h(cfg('textos.placeholderBusca', 'Ex.: licitações, folha de pagamento, atas, ouvidoria...')) ?>" aria-label="Pesquisar item de transparência">
+          <input id="searchInput" type="text" placeholder="<?= h(cfg('textos.placeholderBusca', 'Ex.: licitações, folha de pagamento, atas, ouvidoria...')) ?>" data-placeholder-curto="<?= h(cfg('textos.placeholderCurto', 'Pesquisar na transparência…')) ?>" aria-label="Pesquisar item de transparência">
           <button type="button" class="clear-btn" id="clearSearch" aria-label="Limpar busca"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
         <button class="search-submit" type="submit">Buscar <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
@@ -97,11 +105,17 @@ $v = @filemtime(__DIR__ . '/assets/app.js') . '-' . @filemtime(__DIR__ . '/asset
         </div>
         <p class="content-sub" id="contentSub"></p>
         <div class="feedback-row" id="feedbackRow" hidden></div>
-        <div id="cardGrid"></div>
+        <div class="profile-hint" id="profileHint" hidden></div>
+        <div class="card-grid" id="cardGrid"></div>
         <div class="empty-state" id="emptyState">
           <svg class="icon" aria-hidden="true"><use href="#i-question"/></svg>
           <p>Nenhum item encontrado para esta busca.</p>
         </div>
+        <section class="related-block" id="relatedBlock" hidden>
+          <h3>Itens relacionados</h3>
+          <p class="content-sub" id="relatedSub"></p>
+          <div class="card-grid" id="relatedGrid"></div>
+        </section>
       </div>
       <div id="allGroups"></div>
     </main>
@@ -151,7 +165,8 @@ $v = @filemtime(__DIR__ . '/assets/app.js') . '-' . @filemtime(__DIR__ . '/asset
 </script>
 <?php endif; ?>
 
-<div class="a11y-toolbar" role="group" aria-label="Acessibilidade">
+<button type="button" class="a11y-toggle" id="a11yToggle" aria-expanded="false" aria-controls="a11yTools" aria-label="Opções de acessibilidade">Aa</button>
+<div class="a11y-toolbar" id="a11yTools" role="group" aria-label="Acessibilidade">
   <button class="a11y-btn" id="a11yContrast" aria-label="Alternar alto contraste" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-contrast"/></svg></button>
   <button class="a11y-btn" id="a11yFontDown" aria-label="Diminuir fonte">A-</button>
   <button class="a11y-btn" id="a11yFontUp" aria-label="Aumentar fonte">A+</button>

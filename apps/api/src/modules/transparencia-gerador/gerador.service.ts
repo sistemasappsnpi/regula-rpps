@@ -26,6 +26,11 @@ function pastaAssets(): string {
   return achado;
 }
 
+/** config.json do modelo (valores padrão de um portal novo). */
+export function configModelo(): Cfg {
+  return lerJsonArquivo(path.join(pastaAssets(), "modelo", "config.json")) ?? {};
+}
+
 function lerJsonArquivo(file: string): Cfg | null {
   if (!fs.existsSync(file)) return null;
   try {
@@ -353,10 +358,14 @@ const PRESET_ARQUIVOS = ["transparencia.local.json", "menu.local.json"];
 
 export async function listarClientes() {
   const rows = await prisma.transparenciaPortal.findMany({
-    select: { pasta: true, nome: true, updatedAt: true },
+    select: { pasta: true, nome: true, updatedAt: true, config: true },
     orderBy: { nome: "asc" },
   });
-  return rows.map((r) => ({ pasta: r.pasta, nome: r.nome, atualizadoEm: r.updatedAt }));
+  // `externo` = portal que já existia fora do gerador e foi cadastrado pelo link (ver importar-link.ts)
+  return rows.map((r) => ({
+    pasta: r.pasta, nome: r.nome, atualizadoEm: r.updatedAt,
+    externo: str((r.config as Cfg | null)?.externo?.url) || null,
+  }));
 }
 
 function dataUrl(mime: string | null, dados: Uint8Array | null): string | null {

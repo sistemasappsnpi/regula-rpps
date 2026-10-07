@@ -30,8 +30,159 @@
     "bi bi-database-fill-gear":"i-database","bi bi-file-earmark-code-fill":"i-database",
     "bi bi-diagram-3-fill":"i-sitemap","bi bi-map-fill":"i-sitemap","bi bi-briefcase-fill":"i-briefcase",
     "bi bi-hammer":"i-scale","bi bi-unlock-fill":"i-lock","bi bi-question-circle-fill":"i-question",
-    "bi bi-award-fill":"i-award","bi bi-mortarboard":"i-graduation","bi bi-telephone":"i-phone"
+    "bi bi-award-fill":"i-award","bi bi-mortarboard":"i-graduation","bi bi-telephone":"i-phone",
+    // nomes sem o prefixo "bi " / FontAwesome 4, como aparecem em alguns cadastros
+    "fa fa-info-circle":"i-info","fa fa-comments":"i-message","bi-file-earmark-text-fill":"i-document",
+    "fa fa-newspaper-o":"i-document","bi-file-earmark-ruled-fill":"i-document","bi-journal-richtext":"i-document",
+    "bi-journal-bookmark-fill":"i-document","bi-file-earmark-bar-graph-fill":"i-chart","bi-clipboard-data-fill":"i-chart",
+    "bi-file-earmark-check-fill":"i-doc-check","bi-clipboard-check-fill":"i-doc-check","bi-cash-stack":"i-coins",
+    "bi-cash-coin":"i-coins","fa fa-money":"i-coins","bi-piggy-bank-fill":"i-piggy","bi-graph-up":"i-chart",
+    "bi-graph-up-arrow":"i-chart","bi-bar-chart-fill":"i-chart","fa fa-plane":"i-plane","fa fa-certificate":"i-award",
+    "bi-award-fill":"i-award","fa fa-folder-open":"i-folder","fa fa-handshake-o":"i-link2","fa fa-balance-scale":"i-scale",
+    "fa fa-gavel":"i-scale","fa fa-book":"i-book","fa fa-calendar":"i-calendar","fa fa-sitemap":"i-sitemap",
+    "fa fa-database":"i-database","fa fa-shield":"i-shield","fa fa-lock":"i-lock",
+    "bi-person-workspace":"i-users","bi-person-badge-fill":"i-users","bi-person-vcard-fill":"i-users",
+    "bi-mortarboard-fill":"i-graduation","bi-easel2-fill":"i-graduation","fa fa-bullseye":"i-target",
+    "fa fa-bullhorn":"i-megaphone","fa fa-star":"i-star","fa fa-university":"i-landmark",
+    "fa fa-external-link":"i-external","fa fa-question-circle":"i-question","fa fa-briefcase":"i-briefcase"
   }, obj(C.icones));
+
+  // ícone de grupos comuns em portais de RPPS (o config.json em grupos.icones tem prioridade)
+  var GROUP_ICON_DEFAULT = {
+    "Canais de Atendimento":"i-message", "Institucional":"i-landmark", "Contas Públicas":"i-coins",
+    "Compras e Convênios":"i-briefcase", "Recursos Humanos":"i-users", "Controles Internos":"i-shield",
+    "Governança Corporativa":"i-scale", "LRF e Prestação de Contas":"i-chart", "Educação Previdenciária":"i-graduation",
+    "Comitê de Investimentos":"i-target", "Conselho de Administração":"i-sitemap", "Conselho Fiscal":"i-doc-check",
+    "Diretoria Executiva":"i-award", "Comitê de Ética":"i-star", "Regulamentações":"i-book"
+  };
+
+  // descrição de grupos comuns (o config.json em grupos.descricoes tem prioridade)
+  var GROUP_DESC_DEFAULT = {
+    "Canais de Atendimento": "Formas de contato direto com o órgão — ouvidoria, atendimento ao cidadão e pesquisa de satisfação.",
+    "Institucional": "Informações gerais sobre o órgão, sua estrutura, legislação, dados abertos e canais de transparência.",
+    "Contas Públicas": "Receitas, despesas e execução orçamentária, conforme a Lei de Acesso à Informação.",
+    "Compras e Convênios": "Licitações, contratos, convênios e o plano anual de contratações firmados pelo órgão.",
+    "Recursos Humanos": "Folha de pagamento, diárias, passagens e portarias relacionadas aos servidores do órgão.",
+    "Controles Internos": "Estrutura, manuais e certificações da área responsável por fiscalizar a conformidade da gestão.",
+    "Governança Corporativa": "Atas, documentos, legislação e demonstrativos dos órgãos colegiados e da gestão de investimentos.",
+    "LRF e Prestação de Contas": "Relatórios fiscais e orçamentários exigidos pela Lei de Responsabilidade Fiscal — RGF, RREO, LDO, LOA e PPA.",
+    "Educação Previdenciária": "Materiais, audiências públicas e ações voltadas à orientação previdenciária dos segurados e servidores.",
+    "Comitê de Investimentos": "Atas, atos e documentos das reuniões do comitê responsável por acompanhar a carteira de investimentos.",
+    "Conselho de Administração": "Atas, atos, legislação e documentos das deliberações do órgão máximo de administração.",
+    "Conselho Fiscal": "Atas, atos e documentos das reuniões do órgão responsável por fiscalizar as contas.",
+    "Diretoria Executiva": "Atas, diplomas e relatórios mensais da diretoria responsável pela gestão executiva.",
+    "Comitê de Ética": "Notas públicas, portarias e regimento do comitê responsável por zelar pela conduta ética.",
+    "Regulamentações": "Leis, diárias e a Lei de Acesso à Informação que regulam o funcionamento do órgão."
+  };
+
+  // descrição de itens comuns (o config.json em descricoesItens tem prioridade)
+  var ITEM_DESC_DEFAULT = {
+    "Acompanhamento dos Programas de Governo": "Avaliação do cumprimento das metas físicas do Plano Plurianual (PPA).",
+    "Atividades Previdenciárias": "Publicações sobre as atividades previdenciárias desenvolvidas pelo órgão.",
+    "Análises de Investimentos": "Estudos técnicos que embasam as decisões de aplicação dos recursos previdenciários.",
+    "Atas": "Registros das reuniões e deliberações do órgão.",
+    "Atos": "Atos administrativos formalizados pelo órgão colegiado.",
+    "Atos Normativos": "Resoluções, portarias e demais normas internas publicadas pelo órgão.",
+    "Audiências Públicas": "Publicações e materiais das audiências públicas realizadas pelo órgão.",
+    "Audiências Públicas – Vídeos": "Gravações em vídeo das audiências públicas realizadas pelo órgão.",
+    "Autorização de Aplicação e Resgate (APR)": "Documentos que formalizam movimentações na carteira de investimentos.",
+    "Avaliação Atuarial": "Estudo técnico que calcula o equilíbrio financeiro e atuarial do regime próprio de previdência.",
+    "Avaliação do Passivo Judicial": "Levantamento das obrigações decorrentes de processos judiciais em curso.",
+    "Ações de Diálogo": "Iniciativas de comunicação e diálogo do órgão com segurados e servidores.",
+    "Benefícios Concedidos": "Relação dos benefícios previdenciários já concedidos pelo órgão.",
+    "Capacitação de Gestores e Servidores": "Ações de capacitação voltadas a gestores e servidores do órgão.",
+    "Certificado Pró Gestão": "Certificado que atesta a adesão do órgão às boas práticas do Pró-Gestão RPPS.",
+    "CRP": "Certificado de Regularidade Previdenciária vigente do órgão.",
+    "CRP – CadPrev": "Consulta ao Certificado de Regularidade Previdenciária no sistema CadPrev do Governo Federal.",
+    "Calendário Anual de Pagamentos": "Datas previstas para pagamento de benefícios e salários ao longo do ano.",
+    "Carteira de Investimentos": "Composição e valores dos recursos aplicados pelo regime próprio de previdência.",
+    "Cartilha Previdenciária": "Material explicativo sobre regras e direitos previdenciários dos segurados.",
+    "Censo Previdenciário": "Levantamento cadastral dos segurados vinculados ao regime próprio de previdência.",
+    "Certidões": "Certidões emitidas pelo órgão para comprovação de situação regular.",
+    "Certificações": "Certificações obtidas pelo órgão relacionadas à gestão previdenciária.",
+    "Comparativo de Despesa": "Comparativo entre despesas previstas e realizadas pelo órgão.",
+    "Contratos e Aditivos": "Contratos administrativos firmados pelo órgão e seus respectivos aditivos.",
+    "Convênios": "Convênios e parcerias celebrados pelo órgão com outras entidades.",
+    "Cronograma – Política de Investimentos": "Calendário das etapas de definição e revisão da política de investimentos.",
+    "Código de Ética": "Diretrizes de conduta ética aplicáveis a gestores, servidores e conselheiros.",
+    "Dados Abertos": "Base de dados públicos do órgão disponibilizada em formato aberto.",
+    "Decretos": "Decretos relacionados ao funcionamento do órgão.",
+    "Demonstrativo Anual de Despesa": "Consolidado anual das despesas realizadas pelo órgão.",
+    "Despesas": "Registro detalhado das despesas executadas pelo órgão.",
+    "Diplomas": "Diplomas de posse dos membros dos órgãos colegiados.",
+    "Diárias": "Valores pagos a título de diárias a servidores e conselheiros em viagens a serviço.",
+    "Diárias e Passagens": "Gastos com diárias e passagens de servidores e conselheiros em viagens a serviço.",
+    "Documentos": "Documentos diversos publicados pelo órgão colegiado.",
+    "E-sic": "Sistema Eletrônico do Serviço de Informação ao Cidadão para solicitar informações ao órgão.",
+    "Estrutura de Controle Interno": "Descrição da estrutura responsável pelo controle interno.",
+    "Entidades Credenciadas": "Instituições financeiras credenciadas para operar com os recursos do órgão.",
+    "Estagiários": "Relação de estagiários vinculados ao órgão.",
+    "Estrutura Administrativa": "Organização e divisão das áreas administrativas do órgão.",
+    "Estudo de ALM": "Estudo de Asset Liability Management sobre o casamento entre ativos e obrigações do plano.",
+    "Execução Orçamentária de Despesa": "Acompanhamento da execução orçamentária das despesas.",
+    "Execução Orçamentária de Receita": "Acompanhamento da execução orçamentária das receitas.",
+    "Folha de Pagamento e Pessoal": "Detalhamento da folha de pagamento e do quadro de pessoal.",
+    "Gestor de Recursos": "Identificação do responsável pela gestão dos recursos previdenciários investidos.",
+    "Gestão de Pessoas": "Políticas e práticas de gestão de pessoas adotadas pelo órgão.",
+    "Gestão e Controle de Bases Cadastrais": "Procedimentos de atualização e controle das bases cadastrais dos segurados.",
+    "Glossário": "Explicação de termos técnicos usados na área previdenciária.",
+    "Informações sobre Benefícios": "Regras e informações gerais sobre os benefícios previdenciários oferecidos.",
+    "Investimentos": "Política de investimentos adotada pelo órgão para aplicação dos recursos previdenciários.",
+    "LAI": "Regulamentação da Lei de Acesso à Informação no âmbito do órgão.",
+    "Lei de Diretrizes Orçamentárias (LDO)": "Lei que define as prioridades e metas para o orçamento do exercício seguinte.",
+    "Lei Orçamentária Anual (LOA)": "Lei que estima as receitas e fixa as despesas para o exercício.",
+    "LGPD": "Regulamentação interna sobre proteção de dados pessoais conforme a Lei Geral de Proteção de Dados.",
+    "Legislação": "Normas e legislação aplicáveis ao funcionamento do órgão.",
+    "Leis": "Leis que regem o funcionamento do órgão.",
+    "Licitações": "Processos licitatórios realizados pelo órgão para aquisição de bens e serviços.",
+    "Limite de alçadas": "Valores e competências de decisão delegadas a cada nível de gestão.",
+    "Mandato, Representação e Recondução": "Regras sobre mandato, representação e recondução dos membros dos órgãos colegiados.",
+    "Manuais e Mapeamentos": "Manuais de procedimentos e mapeamento dos processos internos do órgão.",
+    "Notas Públicas": "Comunicados oficiais emitidos pelo comitê de ética.",
+    "Organograma": "Estrutura hierárquica e organizacional do órgão.",
+    "Orçamento Anual de Despesas": "Previsão das despesas do órgão para o exercício orçamentário.",
+    "Orçamento Anual de Receitas": "Previsão das receitas do órgão para o exercício orçamentário.",
+    "Ouvidoria": "Canal para registrar manifestações, dúvidas, elogios ou reclamações.",
+    "Plano Plurianual (PPA)": "Planejamento das metas e prioridades da administração para um período de quatro anos.",
+    "Política de Segurança da Informação": "Diretrizes adotadas para proteger as informações e sistemas do órgão.",
+    "Perguntas Frequentes": "Respostas às dúvidas mais comuns sobre os serviços do órgão.",
+    "Pesquisa de Satisfação": "Avaliação da satisfação dos usuários com os serviços prestados.",
+    "Planejamento Estratégico": "Diretrizes e metas de longo prazo definidas pelo órgão.",
+    "Plano Anual de Contratações": "Planejamento das contratações previstas pelo órgão para o exercício.",
+    "Plano de Ação e Capacitação de Servidores": "Cronograma de ações de capacitação voltadas aos servidores.",
+    "Portarias": "Portarias administrativas expedidas pelo órgão.",
+    "Prestação de Contas": "Demonstrativos de prestação de contas da gestão do órgão.",
+    "Prestação de contas Anual TCE": "Prestação de contas anual encaminhada ao Tribunal de Contas.",
+    "Publicações": "Repositório geral de publicações oficiais do órgão.",
+    "Relatório de Gestão Atuarial": "Relatório com os resultados da avaliação atuarial do regime próprio de previdência.",
+    "Relatório de Gestão Fiscal (RGF)": "Demonstrativo quadrimestral de limites de despesa exigido pela Lei de Responsabilidade Fiscal.",
+    "Relatório de Governança": "Relatório sobre as práticas de governança corporativa adotadas pelo órgão.",
+    "Relatório Resumido da Execução Orçamentária – RREO": "Demonstrativo bimestral da execução orçamentária exigido pela Lei de Responsabilidade Fiscal.",
+    "Recadastramento Anual": "Procedimento anual de atualização cadastral obrigatório para aposentados e pensionistas.",
+    "Receitas": "Registro detalhado das receitas arrecadadas pelo órgão.",
+    "Regimento Interno": "Normas internas que organizam o funcionamento do órgão colegiado.",
+    "Relatório Anual de Investimentos": "Consolidado anual dos resultados da carteira de investimentos.",
+    "Relatório Mensal": "Relatório mensal de atividades da diretoria executiva.",
+    "Relatório Mensal de Investimentos": "Acompanhamento mensal dos resultados da carteira de investimentos.",
+    "Relatório de Controle Interno": "Relatório produzido pela área de controle interno do órgão.",
+    "Relatório semestral de diligências": "Relatório semestral sobre as diligências realizadas na gestão dos investimentos.",
+    "Segregação das Atividades": "Documento que define a separação de funções na gestão dos investimentos.",
+    "Tabela de Valores de Diárias": "Valores de referência pagos a título de diárias.",
+    "Transparência do Ministério da Previdência": "Acesso ao portal da transparência do Ministério da Previdência Social."
+  };
+
+  // temas: palavras que costumam andar juntas na transparência; ligam itens por assunto, não só por texto
+  // (config.json: "temas": ["palavra palavra ...", ...] substitui esta lista)
+  var CLUSTERS_DEFAULT = [
+    "licitacao contrato aditivo compra dispensa inexigibilidade pregao convenio fornecedor empenho contratacao terceirizado ata registro preco edital",
+    "folha pagamento salario remuneracao servidor cargo concurso quadro diaria terceirizado estagiario aposentadoria pensao beneficio calendario",
+    "orcamento receita despesa ldo loa ppa balanco balancete rreo rgf lrf empenho prestacao conta fiscal execucao tribunal",
+    "investimento aplicacao apr alm carteira comite politica credenciamento rentabilidade",
+    "atuarial avaliacao draa calculo reserva passivo",
+    "ouvidoria sic atendimento satisfacao lai lgpd informacao carta servico manifestacao",
+    "governanca conselho comite reuniao etica controle interno risco compliance certificado crp",
+    "ato resolucao portaria lei decreto normativo legislacao"
+  ];
 
   // ícone do grupo quando o config não define: adivinha pelo nome
   var GROUP_ICON_GUESS = [
@@ -47,35 +198,96 @@
   var AMPARO_LABELS = merge({
     "Lei Nº 12.527 (Acesso a Informação) - Lei Complementar Nº 131 (Transparência)": "Lei Nº 12.527/2011 – Lei Complementar Nº 131/2009 (Transparência)",
     "Lei Nº 12.527 (Acesso a Informação)": "Lei Nº 12.527/2011 (Acesso à Informação)",
-    "Lei complementar Nº 101 (Transparência)": "Lei Complementar Nº 101/2000 (LRF)"
+    "Lei complementar Nº 101 (Transparência)": "Lei Complementar Nº 101/2000 (LRF)",
+    "Lei Nº 12.527/2011 (Acesso a Informação)": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "Lei Nº 12.527/2011 (Acesso a Informação)–Lei Complementar Nº 131/2009 (Transparência)": "Lei Nº 12.527/2011 – Lei Complementar Nº 131/2009 (Transparência)",
+    "Lei complementar Nº 101/2000 (Transparência)": "Lei Complementar Nº 101/2000 (LRF)"
   }, obj(C.amparos));
 
+  // sinônimos: termo digitado -> termos que também devem ser procurados (config.json: "sinonimos" soma/sobrescreve)
   var SYNONYMS = merge({
     "lrf": "lei de responsabilidade fiscal",
     "lai": "lei de acesso a informacao",
-    "lgpd": "regulamentacao do governo digital lgpd",
+    "lgpd": "lei geral de protecao de dados regulamentacao do governo digital",
     "sic": "e-sic",
     "faq": "perguntas frequentes faq",
     "licitacao": "licitacoes portal de compras",
-    "folha": "quadro de pessoal"
+    "folha": "folha de pagamento quadro de pessoal",
+    "crp": "certificado de regularidade previdenciaria",
+    "draa": "avaliacao atuarial relatorio de gestao atuarial",
+    "13": "decimo terceiro calendario anual de pagamentos",
+    "decimo terceiro": "calendario anual de pagamentos",
+    "13o salario": "calendario anual de pagamentos",
+    "rgf": "relatorio de gestao fiscal",
+    "rreo": "relatorio resumido da execucao orcamentaria",
+    "ppa": "plano plurianual",
+    "ldo": "lei de diretrizes orcamentarias",
+    "loa": "lei orcamentaria anual",
+    "alm": "estudo de alm",
+    "pca": "plano anual de contratacoes",
+    "apr": "autorizacao de aplicacao e resgate",
+    "aposentadoria": "beneficios concedidos informacoes sobre beneficios calendario anual de pagamentos",
+    "pensao": "beneficios concedidos informacoes sobre beneficios",
+    "balancete": "prestacao de contas execucao orcamentaria",
+    "balanco": "prestacao de contas demonstrativo anual",
+    "salario": "folha de pagamento e pessoal",
+    "remuneracao": "folha de pagamento e pessoal",
+    "contrato": "contratos e aditivos",
+    "pregao": "licitacoes",
+    "edital": "licitacoes",
+    "compras": "licitacoes contratos e aditivos plano anual de contratacoes",
+    "concurso": "gestao de pessoas quadro de pessoal",
+    "ouvidor": "ouvidoria",
+    "reclamacao": "ouvidoria pesquisa de satisfacao",
+    "denuncia": "ouvidoria",
+    "privacidade": "lei geral de protecao de dados",
+    "investimentos": "carteira de investimentos politica de investimentos",
+    "rentabilidade": "relatorio mensal de investimentos relatorio anual de investimentos",
+    "carteira": "carteira de investimentos",
+    "conselho": "conselho de administracao conselho fiscal",
+    "reuniao": "atas",
+    "ata": "atas",
+    "lei": "atos normativos legislacao",
+    "portaria": "atos normativos portarias",
+    "dados": "dados abertos"
   }, obj(C.sinonimos));
 
   var GLOSSARY = merge({
     "LRF": "Lei de Responsabilidade Fiscal (Lei Complementar nº 101/2000).",
     "LAI": "Lei de Acesso à Informação (Lei nº 12.527/2011).",
-    "LGPD": "Lei Geral de Proteção de Dados (Lei nº 13.709/2018)."
+    "LGPD": "Lei Geral de Proteção de Dados (Lei nº 13.709/2018).",
+    "CRP": "Certificado de Regularidade Previdenciária — comprova que o regime está em dia com as obrigações previdenciárias.",
+    "RREO": "Relatório Resumido da Execução Orçamentária — demonstrativo bimestral exigido pela LRF.",
+    "RGF": "Relatório de Gestão Fiscal — demonstrativo quadrimestral de limites de despesa exigido pela LRF.",
+    "PPA": "Plano Plurianual — planejamento das metas e prioridades da administração para 4 anos.",
+    "LDO": "Lei de Diretrizes Orçamentárias — define prioridades e metas para o orçamento do ano seguinte.",
+    "LOA": "Lei Orçamentária Anual — estima receitas e fixa despesas do exercício.",
+    "APR": "Autorização de Aplicação e Resgate — formaliza movimentações na carteira de investimentos.",
+    "ALM": "Asset Liability Management — estudo de casamento entre ativos e obrigações do plano previdenciário.",
+    "PCA": "Plano Anual de Contratações."
   }, obj(C.glossario));
 
+  // atalhos por perfil: "match" = itens do perfil (lista curada); "words" = palavras que ligam a busca ao perfil
+  // (config.json: "perfis": [...] no mesmo formato substitui esta lista; o perfil só aparece se algum item combinar)
   var PROFILES = Array.isArray(C.perfis) ? C.perfis : [
+    { id:"segurado", label:"Sou segurado/aposentado", icon:"i-piggy", match:[
+      "calendario anual de pagamentos","informacoes sobre beneficios","beneficios concedidos","cartilha previdenciaria",
+      "glossario","perguntas frequentes","censo previdenciario","recadastramento anual","acoes de dialogo"
+    ], words:"segurado aposentado aposentadoria pensionista pensao beneficiario beneficio previdencia recadastramento" },
     { id:"fornecedor", label:"Sou fornecedor/interessado em licitar", icon:"i-briefcase", match:[
-      "licitacoes","contratos","convenios","terceirizados","portal de compras"
-    ] },
+      "licitacoes","contratos","convenios","terceirizados","portal de compras","plano anual de contratacoes"
+    ], words:"fornecedor licitar licitante licitacao empresa contratar contrato compra pregao edital convenio prestador" },
     { id:"fiscalizador", label:"Sou jornalista/pesquisador/fiscalizador", icon:"i-database", match:[
-      "dados abertos","atas","prestacao de contas","demonstrativos","relatorio","receitas","despesas","execucao orcamentaria"
-    ] },
+      "dados abertos","atas","prestacao de contas","demonstrativos","relatorio","receitas","despesas","execucao orcamentaria",
+      "avaliacao atuarial","estudo de alm","carteira de investimentos"
+    ], words:"jornalista pesquisador fiscalizador fiscalizar auditoria auditor controle social dados abertos relatorio imprensa" },
+    { id:"servidor", label:"Sou servidor do órgão", icon:"i-landmark", match:[
+      "portarias","estrutura administrativa","organograma","codigo de etica","gestao de pessoas",
+      "segregacao das atividades","limite de alcadas"
+    ], words:"servidor funcionario colaborador interno portaria organograma etica" },
     { id:"cidadao", label:"Quero falar com o órgão", icon:"i-message", match:[
       "ouvidoria","e-sic","contatos","perguntas frequentes","carta de servicos"
-    ] }
+    ], words:"ouvidoria contato atendimento reclamacao denuncia duvida pergunta" }
   ];
 
   var ICON_COLORS = {
@@ -127,9 +339,9 @@
   function slugify(s){ return norm(s).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
 
   var GRUPOS = obj(C.grupos);
-  var groupIconOf = lookup(GRUPOS.icones);
-  var groupDescOf = lookup(GRUPOS.descricoes);
-  var itemDescOf = lookup(C.descricoesItens);
+  var groupIconOf = lookup(merge(GROUP_ICON_DEFAULT, obj(GRUPOS.icones)));
+  var groupDescOf = lookup(merge(GROUP_DESC_DEFAULT, obj(GRUPOS.descricoes)));
+  var itemDescOf = lookup(merge(ITEM_DESC_DEFAULT, obj(C.descricoesItens)));
   var HIDDEN_GROUPS = (Array.isArray(GRUPOS.ocultar) ? GRUPOS.ocultar : []).map(key);
 
   /* Ordem de exibição. A API de dados abertos não tem campo de ordem, então o proxy lê a ordem oficial
@@ -194,9 +406,308 @@
     return (LINK_BASE + "/" + raw).replace(/([^:])\/{2,}/g, "$1/");
   }
 
+  /* ---------- motor de busca por similaridade ----------
+     Reindexado a cada sincronização com a API (todos os itens, grupos, descrições, palavras do link e perfis).
+     Tolera erro de digitação (distância de edição + fonética), prefixos, sinônimos, termos relacionados
+     montados automaticamente e aprende com os cliques do próprio usuário. Resultado vem ordenado por relevância. */
+  var SearchEngine = (function(){
+    var STOP = { "de":1, "da":1, "do":1, "e":1, "a":1, "o":1, "as":1, "os":1, "em":1, "para":1, "por":1, "com":1, "no":1, "na":1, "um":1, "uma":1, "ao":1, "que":1, "sou":1 };
+    var FIELDS = ["title", "group", "desc", "extra", "link"];
+    var FIELD_W = { title: 6, group: 2.5, desc: 2, extra: 1.5, link: 1 };
+    var LINK_NOISE = { "http":1, "https":1, "www":1, "com":1, "br":1, "gov":1, "pdf":1, "php":1, "html":1, "htm":1, "index":1, "publicacoe":1, "publicacao":1, "arquivo":1, "upload":1, "download":1 };
+    // pedaços do endereço do próprio portal não dizem nada sobre o item
+    [LINK_BASE, location.hostname].forEach(function(u){
+      String(u || "").replace(/^https?:\/\//i, "").split(/[^a-z0-9]+/i).forEach(function(p){ if (p) LINK_NOISE[canon(p)] = 1; });
+    });
+    var LEARN_KEY = "search_learn_v1";
+    var docs = [], vocab = {}, vocabList = [], disp = {}, related = {}, idf = {}, synKeys = [];
+    var learned = {};
+    var CLUSTERS = (Array.isArray(C.temas) && C.temas.length ? C.temas : CLUSTERS_DEFAULT).map(function(c){
+      return String(c).split(" ").filter(Boolean).map(canon);
+    });
+    try { learned = JSON.parse(localStorage.getItem(LEARN_KEY) || "{}") || {}; } catch (e) { learned = {}; }
+
+    function wordsOf(s){
+      return (s || "").toLowerCase().split(/[^a-z0-9à-ÿ]+/).filter(Boolean).map(function(w){
+        return { raw: w, tok: canon(w) };
+      }).filter(function(w){ return w.tok && !STOP[w.tok]; });
+    }
+    function phon(t){
+      return t.replace(/ph/g, "f").replace(/ch/g, "x").replace(/h/g, "").replace(/qu/g, "k")
+        .replace(/c(?=[ei])/g, "s").replace(/c/g, "k").replace(/ss/g, "s").replace(/[zx]/g, "s")
+        .replace(/y/g, "i").replace(/w/g, "v").replace(/g(?=[ei])/g, "j").replace(/(.)\1+/g, "$1");
+    }
+    /* distância de Damerau-Levenshtein com corte em "max" */
+    function dist(a, b, max){
+      var la = a.length, lb = b.length, i, j;
+      if (Math.abs(la - lb) > max) return max + 1;
+      var prev2 = null, prev = [], cur;
+      for (j = 0; j <= lb; j++) prev[j] = j;
+      for (i = 1; i <= la; i++){
+        cur = [i];
+        var rowMin = i;
+        for (j = 1; j <= lb; j++){
+          var c = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+          var v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + c);
+          if (prev2 && i > 1 && j > 1 && a.charCodeAt(i - 1) === b.charCodeAt(j - 2) && a.charCodeAt(i - 2) === b.charCodeAt(j - 1)) v = Math.min(v, prev2[j - 2] + 1);
+          cur[j] = v;
+          if (v < rowMin) rowMin = v;
+        }
+        if (rowMin > max) return max + 1;
+        prev2 = prev; prev = cur;
+      }
+      return prev[lb];
+    }
+    function grams(s){
+      var t = "  " + s.replace(/[^a-z0-9]/g, "") + " ", g = {}, n = 0;
+      for (var i = 0; i < t.length - 2; i++){ var k = t.substr(i, 3); if (!g[k]){ g[k] = 1; n++; } }
+      return { set: g, n: n };
+    }
+    function unique(arr){ var seen = {}; return arr.filter(function(x){ return seen[x] ? false : (seen[x] = true); }); }
+
+    /* pertencimento de um item a um perfil: lista curada + palavras do perfil em título/descrição/link (itens novos entram sozinhos) */
+    function profileScore(p, item, titFlat, f){
+      var s = 0;
+      (p.match || []).forEach(function(term){
+        var c = canon(term);
+        if (titFlat.indexOf(c) !== -1) s = Math.max(s, 3);
+        else if (item._search.indexOf(c) !== -1) s = Math.max(s, 1.5);
+      });
+      wordsOf(p.words || "").forEach(function(w){
+        if (f.title.indexOf(w.tok) !== -1) s += 1.5;
+        else if (f.desc.indexOf(w.tok) !== -1 || f.link.indexOf(w.tok) !== -1 || f.group.indexOf(w.tok) !== -1) s += 0.5;
+      });
+      return s;
+    }
+    function profileItems(id){
+      var arr = [];
+      docs.forEach(function(doc, idx){ var s = doc.prof[id] || 0; if (s >= 1.5) arr.push({ item: doc.item, score: s, idx: idx }); });
+      arr.sort(function(a, b){ return b.score - a.score || a.idx - b.idx; });
+      return { items: arr.map(function(a){ return a.item; }), related: relatedTo(arr, arr, []) };
+    }
+    function profilesFor(qc){
+      var hit = {};
+      qc.forEach(function(list){ list.forEach(function(c){ if (c.qual >= 0.75) hit[c.t] = c.qual; }); });
+      return PROFILES.filter(function(p){
+        return wordsOf(p.words || "").some(function(w){ return hit[w.tok]; });
+      }).map(function(p){ return p.id; });
+    }
+
+    function build(items){
+      docs = []; vocab = {}; disp = {}; related = {}; idf = {};
+      items.forEach(function(item){
+        var f = { title: [], group: [], desc: [], extra: [], link: [] };
+        function add(field, text, keepDisp){
+          wordsOf(text).forEach(function(w){
+            f[field].push(w.tok);
+            if (keepDisp && !disp[w.tok]) disp[w.tok] = w.raw;
+          });
+        }
+        add("title", item.Descricao, true);
+        add("group", item.Grupo, true);
+        add("desc", (item.MaisInformacoes || "") + " " + (itemDescOf(item.Descricao) || ""), true);
+        var titFlat = f.title.join(" "), prof = {};
+        PROFILES.forEach(function(p){
+          var sc = profileScore(p, item, titFlat, f);
+          prof[p.id] = sc;
+          if (sc >= 1.5) add("extra", (p.label || "") + " " + (p.words || ""), false);
+        });
+        var ln = item.Link || "";
+        try { ln = decodeURIComponent(ln); } catch (e) {}
+        wordsOf(ln.replace(/^https?:\/\/[^\/]+/i, "")).forEach(function(w){
+          if (w.tok.length < 3 || w.tok.length > 20 || LINK_NOISE[w.tok] || (w.tok.length > 8 && /\d/.test(w.tok))) return;
+          f.link.push(w.tok);
+        });
+        var sets = {};
+        FIELDS.forEach(function(k){ var s = {}; f[k].forEach(function(t){ s[t] = 1; }); sets[k] = s; });
+        var tit = unique(f.title);
+        tit.forEach(function(t){
+          related[t] = related[t] || {};
+          tit.forEach(function(u){ if (u !== t) related[t][u] = (related[t][u] || 0) + 1; });
+        });
+        var all = {};
+        FIELDS.forEach(function(k){ Object.keys(sets[k]).forEach(function(t){ all[t] = 1; }); });
+        Object.keys(all).forEach(function(t){
+          if (!vocab[t]) vocab[t] = { df: 0, p: phon(t) };
+          vocab[t].df++;
+        });
+        docs.push({ item: item, prof: prof, sets: sets, titleFlat: f.title.join(" "), grams: grams(f.title.join(" ")) });
+      });
+      vocabList = Object.keys(vocab);
+      vocabList.forEach(function(t){ idf[t] = Math.log(1 + docs.length / vocab[t].df); });
+      synKeys = Object.keys(SYNONYMS).map(function(k){ return { key: canon(k), terms: wordsOf(SYNONYMS[k]).map(function(w){ return w.tok; }) }; });
+    }
+
+    /* variações possíveis de uma palavra digitada: exata, prefixo, parte da palavra, erro de digitação, fonética */
+    function candidates(q){
+      var seen = {}, L = q.length, pq = phon(q), max = L <= 3 ? 0 : (L <= 5 ? 1 : 2);
+      var exact = !!vocab[q], fuzzyBest = null, fuzzyQual = 0;
+      if (exact) seen[q] = 1;
+      vocabList.forEach(function(t){
+        if (t === q) return;
+        var v = vocab[t], qual = 0, fuzzy = false;
+        if (L >= 2 && t.indexOf(q) === 0) qual = L >= 3 ? 0.85 : 0.5;
+        else if (L >= 4 && t.indexOf(q) > 0) qual = 0.55;
+        if (!qual && L >= 3 && pq === v.p){ qual = 0.8; fuzzy = true; }
+        if (!qual && max){
+          var d = dist(q, t, max);
+          if (d <= max){ qual = d === 1 ? 0.75 : 0.6; fuzzy = true; }
+          else if (L >= 6 && dist(pq, v.p, 1) <= 1){ qual = 0.65; fuzzy = true; }
+          else if (L >= 4 && t.length > L && dist(q, t.slice(0, L), 1) <= 1){ qual = 0.6; fuzzy = true; }
+        }
+        if (qual){
+          if (!seen[t] || seen[t] < qual) seen[t] = qual;
+          if (fuzzy && (qual > fuzzyQual || (qual === fuzzyQual && vocab[t].df > (vocab[fuzzyBest] || {}).df))){ fuzzyQual = qual; fuzzyBest = t; }
+        }
+      });
+      return {
+        list: Object.keys(seen).map(function(t){ return { t: t, qual: seen[t] }; }),
+        corr: (!exact && fuzzyBest) ? (disp[fuzzyBest] || fuzzyBest) : null
+      };
+    }
+    function synonymTerms(qw, full){
+      var out = [];
+      synKeys.forEach(function(s){
+        var k = s.key, tol = k.length >= 7 ? 2 : 1, hit = false;
+        if (full === k) hit = true;
+        else if (k.length >= 4 && dist(full, k, tol) <= tol) hit = true;
+        else if (k.indexOf(" ") < 0 && qw.some(function(w){ return w.tok === k || (k.length >= 4 && dist(w.tok, k, 1) <= 1); })) hit = true;
+        if (hit) out = out.concat(s.terms);
+      });
+      return unique(out);
+    }
+    function tokenScore(doc, cands){
+      var sum = 0, best = 0;
+      FIELDS.forEach(function(field){
+        var s = 0;
+        cands.forEach(function(c){
+          if (doc.sets[field][c.t]) s = Math.max(s, FIELD_W[field] * c.qual * (idf[c.t] || 1));
+        });
+        sum += s; if (s > best) best = s;
+      });
+      return best + 0.25 * (sum - best);
+    }
+
+    function search(query){
+      var qw = wordsOf(query);
+      if (!qw.length || !docs.length) return { items: [], related: [], profiles: [], corrected: null, similar: false };
+      var full = qw.map(function(w){ return w.tok; }).join(" ");
+      var corrected = [], anyCorr = false;
+      var qc = qw.map(function(w){
+        var c = candidates(w.tok);
+        if (c.corr){ anyCorr = true; corrected.push(c.corr); } else corrected.push(w.raw);
+        return c.list;
+      });
+      var extras = synonymTerms(qw, full).map(function(t){ return { t: t, qual: 0.8 }; });
+      var rel = {};
+      qw.forEach(function(w){
+        var r = related[w.tok];
+        if (!r) return;
+        Object.keys(r).sort(function(a, b){ return r[b] - r[a]; }).slice(0, 4).forEach(function(u){
+          if (vocab[u] && vocab[u].df <= docs.length / 3) rel[u] = 1;
+        });
+      });
+      var relCands = Object.keys(rel).map(function(t){ return { t: t, qual: 0.2 }; });
+      var qg = grams(full);
+
+      var scored = docs.map(function(doc, idx){
+        var main = 0, hit = 0;
+        qc.forEach(function(c){ var s = tokenScore(doc, c); if (s > 0){ main += s; hit++; } });
+        var cov = hit / qw.length;
+        var extra = 0;
+        extras.forEach(function(c){ extra += tokenScore(doc, [c]) * 0.8; });
+        relCands.forEach(function(c){ extra += tokenScore(doc, [c]); });
+        var phrase = 0;
+        if (full.length >= 3 && doc.titleFlat.indexOf(full) !== -1) phrase = doc.titleFlat.indexOf(full) === 0 ? 6 : 4;
+        var inter = 0;
+        if (qg.n >= 3) Object.keys(qg.set).forEach(function(k){ if (doc.grams.set[k]) inter++; });
+        var triCov = qg.n >= 3 ? inter / qg.n : 0;
+        var tri = triCov >= 0.5 ? 5 * triCov * triCov : 0;
+        var learn = 0;
+        qw.forEach(function(w){ var l = learned[w.tok]; if (l && l[doc.item.Descricao]) learn += Math.min(2, l[doc.item.Descricao] * 0.7); });
+        learn = Math.min(3, learn);
+        var total = main * (0.4 + 0.6 * cov) + extra + phrase + tri + (main + extra + phrase + tri > 0 ? learn : 0);
+        return { item: doc.item, score: total, triCov: triCov, idx: idx };
+      });
+      scored.sort(function(a, b){ return b.score - a.score || a.idx - b.idx; });
+      var top = scored[0].score, items, similar = false;
+      if (top > 0){
+        var cut = Math.max(0.8, top * 0.18);
+        items = scored.filter(function(s){ return s.score >= cut; });
+      } else {
+        items = scored.filter(function(s){ return s.triCov >= 0.4 && qg.n >= 4; }).sort(function(a, b){ return b.triCov - a.triCov || a.idx - b.idx; }).slice(0, 5);
+        similar = items.length > 0;
+      }
+      var relatedItems = similar ? [] : relatedTo(scored, items, qc);
+      return { items: items.map(function(s){ return s.item; }), related: relatedItems, profiles: profilesFor(qc), corrected: (anyCorr && !(extras.length && qw.length > 1)) ? corrected.join(" ") : null, similar: similar };
+    }
+
+    /* itens fora do resultado, mas do mesmo assunto: temas em comum, mesma categoria e termos que andam juntos */
+    function relatedTo(scored, hits, qc){
+      if (!hits.length) return [];
+      var inHits = {};
+      hits.forEach(function(s){ inHits[s.idx] = 1; });
+      var seeds = hits.slice(0, 3);
+      var qTok = {};
+      qc.forEach(function(list){ list.forEach(function(c){ if (c.qual >= 0.75) qTok[c.t] = 1; }); });
+      var tTok = {};
+      seeds.forEach(function(s){ Object.keys(docs[s.idx].sets.title).forEach(function(t){ if (vocab[t].df <= docs.length / 8) tTok[t] = (tTok[t] || 0) + 1; }); });
+      var groups = {};
+      seeds.forEach(function(s){ groups[docs[s.idx].item.Grupo] = 1; });
+      var weights = CLUSTERS.map(function(c){
+        var w = 0;
+        c.forEach(function(k){ if (qTok[k]) w += 2; if (tTok[k]) w += 1; });
+        return w;
+      });
+      var out = [];
+      docs.forEach(function(doc, idx){
+        if (inHits[idx]) return;
+        var s = 0;
+        CLUSTERS.forEach(function(c, ci){
+          if (!weights[ci]) return;
+          var h = 0;
+          c.forEach(function(k){ if (doc.sets.title[k]) h += 2; else if (doc.sets.desc[k] || doc.sets.group[k] || doc.sets.link[k]) h += 1; });
+          s += Math.min(h, 4) * Math.min(weights[ci], 4) / 4;
+        });
+        Object.keys(tTok).forEach(function(t){
+          if (doc.sets.title[t]) s += 0.6 * (idf[t] || 1) / 2;
+        });
+        if (groups[doc.item.Grupo]) s += 0.8;
+        if (s >= 1.8) out.push({ item: doc.item, score: s, idx: idx });
+      });
+      if (out.length < 4){
+        var have = {};
+        out.forEach(function(o){ have[o.idx] = 1; });
+        docs.forEach(function(doc, idx){
+          if (inHits[idx] || have[idx]) return;
+          var s = 0;
+          if (groups[doc.item.Grupo]) s += 1;
+          Object.keys(tTok).forEach(function(t){ if (doc.sets.title[t] || doc.sets.desc[t]) s += 0.5; });
+          Object.keys(qTok).forEach(function(t){ if (doc.sets.desc[t] || doc.sets.group[t] || doc.sets.link[t]) s += 0.5; });
+          if (s > 0) out.push({ item: doc.item, score: s * 0.5, idx: idx });
+        });
+      }
+      out.sort(function(a, b){ return b.score - a.score || a.idx - b.idx; });
+      var seenT = {}, res = [];
+      out.forEach(function(o){ if (!seenT[o.item.Descricao] && res.length < 6){ seenT[o.item.Descricao] = 1; res.push(o.item); } });
+      return res;
+    }
+
+    /* aprendizado local: associa as palavras buscadas ao item que a pessoa abriu */
+    function record(query, item){
+      if (!item) return;
+      wordsOf(query).forEach(function(w){
+        learned[w.tok] = learned[w.tok] || {};
+        learned[w.tok][item.Descricao] = (learned[w.tok][item.Descricao] || 0) + 1;
+      });
+      try { localStorage.setItem(LEARN_KEY, JSON.stringify(learned)); } catch (e) {}
+    }
+    return { build: build, search: search, record: record, profile: profileItems };
+  })();
+
   /* ---------- estado ---------- */
   var groupsOrder = [], groupsMap = {}, allItems = [];
-  var uiState = { query: "", profile: null, profileCategory: null };
+  var uiState = { query: "", profile: null };
   var dataState = { live: false, lastSync: null };
 
   /* ---------- transparência: parse + render ---------- */
@@ -235,6 +746,10 @@
         return ia - ib || a._pos - b._pos;
       });
     });
+    // a busca desempata pela ordem de exibição (a mesma que o visitante vê na página)
+    var ordenados = [];
+    groupsOrder.forEach(function(g){ ordenados = ordenados.concat(groupsMap[g]); });
+    SearchEngine.build(ordenados);
   }
 
   var sidebarEl = document.getElementById("sidebar");
@@ -268,9 +783,13 @@
   var gridEl = document.getElementById("cardGrid");
   var emptyEl = document.getElementById("emptyState");
   var feedbackRowEl = document.getElementById("feedbackRow");
+  var relatedBlockEl = document.getElementById("relatedBlock");
+  var profileHintEl = document.getElementById("profileHint");
+  var relatedGridEl = document.getElementById("relatedGrid");
+  var relatedSub = document.getElementById("relatedSub");
   var FEEDBACK_ON = !(C.recursos && C.recursos.feedback === false);
   var FEEDBACK_URL = "feedback.php";
-  function votedKey(group){ return "feedback_voted_" + group; }
+  var votedNow = {}; /* voto vale só até recarregar a página */
 
   /* cor vinda da própria API (campo "Cor"); ICON_COLORS só entra como reserva se o item não tiver cor */
   function hexToRgb(hex){
@@ -305,8 +824,7 @@
 
   /* ---------- feedback: "essa informação foi útil?" por categoria ---------- */
   function feedbackHTML(group){
-    var voted = null;
-    try { voted = localStorage.getItem(votedKey(group)); } catch (e) {}
+    var voted = votedNow[group] || null;
     if (voted) return '<span class="feedback-thanks">Obrigado pelo retorno sobre “' + esc(group) + '”.</span>';
     return '<span>Essa informação foi útil?</span>' +
       '<button type="button" class="feedback-btn" data-vote="up"><svg class="icon" aria-hidden="true"><use href="#i-thumb-up"/></svg>Sim</button>' +
@@ -334,7 +852,7 @@
     var row = btn.closest(".feedback-row");
     var group = row.getAttribute("data-group");
     var vote = btn.getAttribute("data-vote");
-    try { localStorage.setItem(votedKey(group), vote); } catch (e) {}
+    votedNow[group] = vote;
     fetch(FEEDBACK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -343,76 +861,58 @@
     row.innerHTML = feedbackHTML(group);
   });
 
-  /* ---------- busca e perfis ---------- */
-  function itemMatchesProfile(profile, item){
-    var s = item._search;
-    return (profile.match || []).some(function(t){ return s.indexOf(canon(t)) !== -1; });
-  }
+  /* ---------- busca e perfis: resultado único, some com a listagem corrida ---------- */
   function activeProfiles(){
-    return PROFILES.filter(function(p){ return allItems.some(function(item){ return itemMatchesProfile(p, item); }); });
-  }
-  function foundText(n){
-    var q = esc(uiState.query.trim());
-    return n + (n === 1 ? " item encontrado para “" + q + "”" : " itens encontrados para “" + q + "”");
+    return PROFILES.filter(function(p){ return SearchEngine.profile(p.id).items.length > 0; });
   }
   function renderResults(){
     feedbackRowEl.hidden = true; feedbackRowEl.innerHTML = "";
+    relatedBlockEl.hidden = true; relatedGridEl.innerHTML = "";
+    profileHintEl.hidden = true; profileHintEl.innerHTML = "";
     var q = canon(uiState.query.trim());
-    var profile = uiState.profile ? (PROFILES.filter(function(p){ return p.id === uiState.profile; })[0] || null) : null;
     if (q){
-      var terms = [q];
-      if (SYNONYMS[q]) terms.push(canon(SYNONYMS[q]));
-      var matches = allItems.filter(function(item){
-        return terms.some(function(t){ return item._search.indexOf(t) !== -1; });
-      });
+      var res = SearchEngine.search(uiState.query);
+      var matches = res.items;
       titleEl.textContent = "Resultados da busca";
       basisEl.textContent = "";
-      if (profile){
-        var inProfile = matches.filter(function(item){ return itemMatchesProfile(profile, item); });
-        var rest = matches.filter(function(item){ return !itemMatchesProfile(profile, item); });
-        subEl.innerHTML = foundText(matches.length) + " — priorizando " + esc(profile.label) + ".";
-        var html = "";
-        if (inProfile.length){
-          html += '<div class="result-group"><div class="result-group-label">' + esc(profile.label) + '</div><div class="card-grid">' +
-            inProfile.map(function(item){ return cardHTML(item, true); }).join("") + '</div></div>';
+      var msg = matches.length + (matches.length === 1 ? " item" : " itens") + " para “" + uiState.query.trim() + "”";
+      if (res.corrected) msg += " — mostrando resultados para “" + res.corrected + "”";
+      msg += res.similar ? " — nenhum resultado exato, estes são os mais parecidos." : (matches.length > 1 ? " — ordenados do mais ao menos parecido." : ".");
+      subEl.textContent = msg;
+      if (res.profiles && res.profiles.length){
+        var hints = res.profiles.map(function(id){
+          var p = PROFILES.filter(function(x){ return x.id === id; })[0];
+          return p && SearchEngine.profile(id).items.length ? '<button type="button" class="profile-pill" data-hint="' + esc(id) + '"><svg class="icon" aria-hidden="true"><use href="#' + esc(p.icon || "i-users") + '"/></svg>' + esc(p.label) + '</button>' : "";
+        }).join("");
+        if (hints){
+          profileHintEl.innerHTML = "<span>Perfis que combinam com a busca:</span>" + hints;
+          profileHintEl.hidden = false;
         }
-        if (rest.length){
-          html += '<div class="result-group"><div class="result-group-label is-other">Outras categorias</div><div class="card-grid">' +
-            rest.map(function(item){ return cardHTML(item, true); }).join("") + '</div></div>';
-        }
-        gridEl.innerHTML = html;
-      } else {
-        subEl.innerHTML = foundText(matches.length);
-        gridEl.innerHTML = '<div class="card-grid">' + matches.map(function(item){ return cardHTML(item, true); }).join("") + '</div>';
       }
+      if (res.related && res.related.length){
+        relatedSub.textContent = "Outros itens do mesmo assunto da sua busca.";
+        relatedGridEl.innerHTML = res.related.map(function(item){ return cardHTML(item, true); }).join("");
+        relatedBlockEl.hidden = false;
+      }
+      gridEl.innerHTML = matches.map(function(item){ return cardHTML(item, true); }).join("");
       emptyEl.style.display = matches.length === 0 ? "block" : "none";
-    } else if (profile){
-      var pmatches = allItems.filter(function(item){ return itemMatchesProfile(profile, item); });
-      var categories = [];
-      pmatches.forEach(function(item){ if (categories.indexOf(item.Grupo) === -1) categories.push(item.Grupo); });
-      if (uiState.profileCategory && categories.indexOf(uiState.profileCategory) === -1) uiState.profileCategory = null;
-      var shown = uiState.profileCategory ? pmatches.filter(function(item){ return item.Grupo === uiState.profileCategory; }) : pmatches;
-      titleEl.textContent = profile.label;
+    } else if (uiState.profile){
+      var profile = PROFILES.filter(function(p){ return p.id === uiState.profile; })[0];
+      var pres = profile ? SearchEngine.profile(profile.id) : { items: [], related: [] };
+      var pmatches = pres.items;
+      titleEl.textContent = profile ? profile.label : "";
       basisEl.textContent = "";
-      subEl.textContent = "Seleção de itens relevantes para esse perfil — o índice completo continua disponível ao lado.";
-      var filterHtml = categories.length > 1 ? (
-        '<div class="category-filter"><label for="profileCategorySelect">Categoria</label><select id="profileCategorySelect">' +
-        '<option value="">Todas as categorias</option>' +
-        categories.map(function(g){
-          return '<option value="' + esc(g) + '"' + (uiState.profileCategory === g ? ' selected' : '') + '>' + esc(g) + '</option>';
-        }).join("") +
-        '</select></div>'
-      ) : "";
-      gridEl.innerHTML = filterHtml + '<div class="card-grid">' + shown.map(function(item){ return cardHTML(item, true); }).join("") + '</div>';
-      emptyEl.style.display = shown.length === 0 ? "block" : "none";
-      var catSelect = document.getElementById("profileCategorySelect");
-      if (catSelect) catSelect.addEventListener("change", function(){
-        uiState.profileCategory = catSelect.value || null;
-        renderResults();
-      });
+      subEl.textContent = "Itens mais relevantes para esse perfil, do mais ao menos importante — o índice completo continua disponível ao lado.";
+      if (pres.related.length){
+        relatedSub.textContent = "Outros itens do mesmo assunto que podem interessar a esse perfil.";
+        relatedGridEl.innerHTML = pres.related.map(function(item){ return cardHTML(item, true); }).join("");
+        relatedBlockEl.hidden = false;
+      }
+      gridEl.innerHTML = pmatches.map(function(item){ return cardHTML(item, true); }).join("");
+      emptyEl.style.display = pmatches.length === 0 ? "block" : "none";
     }
-  }
-  function updateViewMode(){
+  }  function updateViewMode(){
+    syncDock();
     var active = !!(uiState.query || uiState.profile);
     resultsViewEl.hidden = !active;
     allGroupsEl.style.display = active ? "none" : "";
@@ -456,7 +956,6 @@
     if (!btn) return;
     var id = btn.getAttribute("data-profile");
     uiState.profile = uiState.profile === id ? null : id;
-    uiState.profileCategory = null;
     uiState.query = "";
     searchInput.value = "";
     clearBtn.style.display = "none";
@@ -467,9 +966,89 @@
   document.getElementById("searchForm").addEventListener("submit", function(e){ e.preventDefault(); });
   searchInput.addEventListener("input", function(){
     uiState.query = searchInput.value;
+    uiState.profile = null;
     clearBtn.style.display = uiState.query ? "inline-flex" : "none";
     renderProfileRow(); updateViewMode();
   });
+
+  /* ---------- busca fixa: acompanha a rolagem para pesquisar de qualquer ponto da página ---------- */
+  var dockEl = document.getElementById("dockSearch");
+  var dockInput = document.getElementById("dockInput");
+  var dockClear = document.getElementById("dockClear");
+  var dockTick = false;
+  function updateDock(){
+    dockTick = false;
+    var nav = document.getElementById("navbar");
+    var navH = nav ? nav.offsetHeight : 0;
+    document.documentElement.style.setProperty("--nav-h", navH + "px");
+    var show = document.getElementById("searchForm").getBoundingClientRect().bottom < navH || document.activeElement === dockInput;
+    dockEl.classList.toggle("show", show);
+    dockEl.setAttribute("aria-hidden", show ? "false" : "true");
+  }
+  function syncDock(){
+    if (dockInput.value !== searchInput.value) dockInput.value = searchInput.value;
+    dockClear.style.display = searchInput.value ? "inline-flex" : "none";
+  }
+  window.addEventListener("scroll", function(){ if (!dockTick){ dockTick = true; requestAnimationFrame(updateDock); } }, { passive: true });
+  window.addEventListener("resize", updateDock);
+  dockInput.addEventListener("input", function(){
+    var had = !!uiState.query;
+    searchInput.value = dockInput.value;
+    searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+    if (!had && dockInput.value) resultsViewEl.scrollIntoView({ block: "start" });
+  });
+  dockInput.addEventListener("blur", function(){ setTimeout(updateDock, 0); });
+  dockClear.addEventListener("click", function(){
+    searchInput.value = "";
+    searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+    dockInput.focus();
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable) return;
+    e.preventDefault();
+    (dockEl.classList.contains("show") ? dockInput : searchInput).focus();
+  });
+
+  /* ---------- celular: acessibilidade recolhida num botão e placeholder curto ---------- */
+  var a11yToggle = document.getElementById("a11yToggle");
+  var a11yTools = document.getElementById("a11yTools");
+  if (a11yToggle && a11yTools){
+    a11yToggle.addEventListener("click", function(e){
+      e.stopPropagation();
+      var open = a11yTools.classList.toggle("open");
+      a11yToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("click", function(e){
+      if (!a11yTools.classList.contains("open") || e.target.closest("#a11yTools")) return;
+      a11yTools.classList.remove("open");
+      a11yToggle.setAttribute("aria-expanded", "false");
+    });
+  }
+  var phLong = searchInput.getAttribute("placeholder");
+  var phShort = searchInput.getAttribute("data-placeholder-curto") || phLong;
+  var phMq = window.matchMedia("(max-width: 520px)");
+  function applyPlaceholder(){ searchInput.setAttribute("placeholder", phMq.matches ? phShort : phLong); }
+  applyPlaceholder();
+  if (phMq.addEventListener) phMq.addEventListener("change", applyPlaceholder);
+  updateDock();
+
+  /* aprendizado local da busca: o item aberto depois de uma busca sobe nas próximas buscas parecidas */
+  function learnClick(e){
+    var a = e.target.closest("a.card");
+    if (!a || !uiState.query) return;
+    var href = a.getAttribute("href");
+    SearchEngine.record(uiState.query, allItems.filter(function(i){ return safeHrefRaw(i._href) === href; })[0]);
+  }
+  function safeHrefRaw(u){ return /^\s*javascript:/i.test(u || "") ? "#" : (u || "#"); }
+  profileHintEl.addEventListener("click", function(e){
+    var b = e.target.closest("[data-hint]");
+    var pill = b && profileRowEl.querySelector('[data-profile="' + b.getAttribute("data-hint") + '"]');
+    if (pill) pill.click();
+  });
+  gridEl.addEventListener("click", learnClick);
+  relatedGridEl.addEventListener("click", learnClick);
   clearBtn.addEventListener("click", function(){
     searchInput.value = ""; uiState.query = "";
     clearBtn.style.display = "none";

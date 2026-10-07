@@ -1,0 +1,6 @@
+# Serve /robots.txt e /sitemap.xml a partir do config.json. Em servidores sem Apache/mod_rewrite, ignore este arquivo.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^robots\.txt$ robots.php [L]
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+</IfModule>

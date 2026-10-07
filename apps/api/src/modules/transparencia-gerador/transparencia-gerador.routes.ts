@@ -5,6 +5,7 @@ import {
   LIMITE_IMAGEM, calcularSugestoes, carregarCliente, excluirCliente, gerarCliente, iconesDoModelo,
   importarPortal, listarClientes, montarZip, slug, testarMenu, testarTransparencia, type ArquivoEnviado,
 } from "./gerador.service";
+import { importarPorLink } from "./importar-link";
 
 // Gerador de Portal da Transparência. Montado em /admin/transparencia-gerador (ver admin.routes.ts,
 // que já exige Super Admin + a permissão admin_parametrizacoes).
@@ -119,6 +120,15 @@ transparenciaGeradorRouter.post(
     }
   },
 );
+
+// Cadastra um portal que já existe fora do gerador só pelo link (lê página, logo, cores, dados e API).
+transparenciaGeradorRouter.post("/importar-link", async (req, res, next) => {
+  try {
+    res.json({ ok: true, ...(await importarPorLink(q(req.body?.url), q(req.body?.pasta))) });
+  } catch (err) {
+    next(err);
+  }
+});
 
 transparenciaGeradorRouter.post(
   "/gerar",

@@ -32,16 +32,23 @@ function decodificar(buf: ArrayBuffer): string {
   }
 }
 
-/** Devolve o corpo como texto, ou null se não houve resposta. Qualquer status HTTP conta como resposta. */
-export async function fetchTexto(url: string, timeoutMs = 20000): Promise<string | null> {
+interface Resposta {
+  status: number;
+  mime: string;
+  corpo: ArrayBuffer;
+  /** URL final, depois dos redirecionamentos (serve de base para links relativos). */
+  url: string;
+}
+
+// redirecionamentos seguidos à mão: cada destino passa pela mesma checagem de host
+async function buscar(url: string, timeoutMs: number, maxBytes: number): Promise<Resposta | null> {
   try {
     const signal = AbortSignal.timeout(timeoutMs);
     let atual = url;
-    // redirecionamentos seguidos à mão: cada destino passa pela mesma checagem de host
     for (let i = 0; i < 5; i++) {
       if (!hostPermitido(atual)) return null;
       const res = await fetch(atual, {
-        headers: { "User-Agent": USER_AGENT, Accept: "application/json, text/html;q=0.9, */*;q=0.5" },
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json, text/html;q=0.9, image/*;q=0.8, */*;q=0.5" },
         signal,
         redirect: "manual",
       });
@@ -50,10 +57,32 @@ export async function fetchTexto(url: string, timeoutMs = 20000): Promise<string
         atual = new URL(destino, atual).toString();
         continue;
       }
-      return decodificar(await res.arrayBuffer());
+      const tamanho = Number(res.headers.get("content-length") ?? 0);
+      if (tamanho > maxBytes) return null;
+      const corpo = await res.arrayBuffer();
+      if (corpo.byteLength > maxBytes) return null;
+      return { status: res.status, mime: (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase(), corpo, url: atual };
     }
     return null;
   } catch {
     return null;
   }
+}
+
+/** Devolve o corpo como texto, ou null se não houve resposta. Qualquer status HTTP conta como resposta. */
+export async function fetchTexto(url: string, timeoutMs = 20000): Promise<string | null> {
+  const r = await buscar(url, timeoutMs, 50 * 1024 * 1024);
+  return r ? decodificar(r.corpo) : null;
+}
+
+/** Página HTML com a URL final (após redirecionamentos). Só devolve se o status for 2xx. */
+export async function fetchPagina(url: string, timeoutMs = 20000): Promise<{ html: string; url: string } | null> {
+  const r = await buscar(url, timeoutMs, 10 * 1024 * 1024);
+  return r && r.status >= 200 && r.status < 300 ? { html: decodificar(r.corpo), url: r.url } : null;
+}
+
+/** Baixa um arquivo binário (logo/ícone). Só devolve se o status for 2xx e o tamanho couber em `maxBytes`. */
+export async function fetchBytes(url: string, maxBytes: number, timeoutMs = 15000): Promise<{ buffer: Buffer; mime: string } | null> {
+  const r = await buscar(url, timeoutMs, maxBytes);
+  return r && r.status >= 200 && r.status < 300 && r.corpo.byteLength > 0 ? { buffer: Buffer.from(r.corpo), mime: r.mime } : null;
 }

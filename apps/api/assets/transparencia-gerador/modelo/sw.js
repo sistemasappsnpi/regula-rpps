@@ -1,5 +1,5 @@
 // Troque a versão ao publicar mudanças em assets/ para forçar a atualização nos navegadores.
-const CACHE_NAME = "portal-transparencia-v1";
+const CACHE_NAME = "portal-transparencia-v2";
 const APP_SHELL = ["./", "./assets/app.css", "./assets/app.js"];
 
 self.addEventListener("install", function (event) {

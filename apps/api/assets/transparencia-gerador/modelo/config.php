@@ -1,6 +1,12 @@
 <?php
 // Lê o config.json do cliente. Único lugar que conhece o formato do arquivo.
 
+/* Chaves opcionais do config.json (além das de config.json de exemplo). Todas têm padrão genérico:
+   textos.placeholderDock / textos.placeholderCurto  texto da busca fixa e da busca no celular
+   perfis    [{id,label,icon,match:[termos],words:"palavras"}]  substitui os atalhos por perfil
+   temas     ["palavra palavra ...", ...]  assuntos que ligam itens relacionados na busca
+   sinonimos / glossario / amparos / icones / descricoesItens / grupos.descricoes / grupos.icones  somam aos padrões
+   recursos.linksNovaAba  abre os cartões em nova aba (true no portal do PREVISPA) */
 function portal_config() {
     static $cfg = null;
     if ($cfg !== null) return $cfg;

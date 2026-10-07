@@ -10,6 +10,18 @@ export interface ClienteResumo {
   pasta: string;
   nome: string;
   atualizadoEm?: string;
+  /** Link do portal original, quando foi cadastrado pelo link (e não criado no gerador). */
+  externo?: string | null;
+}
+
+export interface ResumoLink {
+  nome: string;
+  itens: number;
+  grupos: number;
+  menu: number;
+  api: string;
+  logo: boolean;
+  cores: boolean;
 }
 
 export interface GrupoApi {
@@ -150,6 +162,9 @@ export const geradorApi = {
     }
     return chamar<ResultadoGerar>("/importar", { method: "POST", body: fd });
   },
+  // Cadastra um portal que já existe fora do gerador só pelo link (o servidor lê página, logo, cores, dados e API).
+  importarLink: (url: string, pasta?: string) =>
+    chamar<ResultadoGerar & { resumo: ResumoLink }>("/importar-link", { method: "POST", body: JSON.stringify({ url, pasta: pasta || undefined }) }),
   excluir: (pasta: string) => chamar<{ ok: boolean }>(`/clientes/${encodeURIComponent(pasta)}`, { method: "DELETE" }),
 
   async baixarZip(pasta: string): Promise<void> {

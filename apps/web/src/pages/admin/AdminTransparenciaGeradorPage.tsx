@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Download, Trash2, Upload } from "lucide-react";
+import { Download, Link2, Trash2, Upload } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { useConfirm } from "../../components/ui/confirm-context";
@@ -109,6 +109,9 @@ export function AdminTransparenciaGeradorPage() {
   const [erroForm, setErroForm] = useState<string | null>(null);
   const [baixando, setBaixando] = useState(false);
   const [importando, setImportando] = useState(false);
+  const [linkPortal, setLinkPortal] = useState("");
+  const [linkPasta, setLinkPasta] = useState("");
+  const [lendoLink, setLendoLink] = useState(false);
   const cfgRef = useRef<CfgHerdada>({ icones: {}, descs: {}, ocultos: [] });
   const topoResultado = useRef<HTMLDivElement>(null);
 
@@ -433,6 +436,30 @@ export function AdminTransparenciaGeradorPage() {
     }
   }
 
+  // Cadastra um portal que já existe fora do gerador: o servidor lê o link e preenche tudo.
+  async function cadastrarPorLink() {
+    if (!linkPortal.trim()) return;
+    setErroForm(null);
+    setResultado(null);
+    setLendoLink(true);
+    try {
+      const res = await geradorApi.importarLink(linkPortal.trim(), linkPasta.trim());
+      const r = res.resumo;
+      const lido = r
+        ? [`Lido de ${r.nome}: ${r.itens} itens em ${r.grupos} categorias, menu com ${r.menu} itens${r.api ? `, API ${r.api}` : ""}.`]
+        : [];
+      await listarClientes();
+      if (res.pasta) await carregarCliente(res.pasta);
+      setResultado({ ok: true, pasta: res.pasta, novo: res.novo, avisos: [...lido, ...(res.avisos ?? [])] });
+      setLinkPortal("");
+      setLinkPasta("");
+    } catch (e) {
+      setErroForm(e instanceof Error ? e.message : "Não foi possível cadastrar o portal por esse link.");
+    } finally {
+      setLendoLink(false);
+    }
+  }
+
   async function excluirCliente() {
     if (!editando) return;
     const ok = await confirmar({
@@ -569,15 +596,52 @@ export function AdminTransparenciaGeradorPage() {
             <option value="">— novo cliente —</option>
             {clientes.map((c) => (
               <option key={c.pasta} value={c.pasta}>
-                {c.nome} ({c.pasta})
+                {c.nome} ({c.pasta}){c.externo ? " · via link" : ""}
               </option>
             ))}
           </select>
         </label>
       </header>
 
+      <section className="rounded-xl border border-border bg-surface p-4 text-sm shadow-soft">
+        <h2 className="flex items-center gap-2 font-semibold text-ink">
+          <Link2 size={16} /> Cadastrar portal que já existe, pelo link
+        </h2>
+        <p className="mt-1 text-ink-muted">
+          Cole o endereço de um portal já publicado (ex.: <code>https://previspa.rj.gov.br/transparencia/</code>). O sistema lê a página e
+          preenche nome, logo, cores, contatos, menu, categorias e a API de dados abertos. Depois é só conferir e, se quiser, baixar o pacote.
+        </p>
+        <form
+          className="mt-3 flex flex-wrap gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            cadastrarPorLink();
+          }}
+        >
+          <input
+            type="url"
+            className={`${INPUT} min-w-[260px] flex-1`}
+            value={linkPortal}
+            placeholder="https://portal-do-cliente.gov.br/transparencia/"
+            aria-label="Link do portal"
+            onChange={(e) => setLinkPortal(e.target.value)}
+          />
+          <input
+            type="text"
+            className={`${INPUT} w-44`}
+            value={linkPasta}
+            placeholder="pasta (opcional)"
+            aria-label="Nome da pasta (opcional)"
+            onChange={(e) => setLinkPasta(e.target.value)}
+          />
+          <Button type="submit" disabled={lendoLink || !linkPortal.trim()}>
+            {lendoLink ? "Lendo o portal…" : "Cadastrar"}
+          </Button>
+        </form>
+      </section>
+
       <details className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm shadow-soft">
-        <summary className="cursor-pointer font-medium text-ink">Importar portal existente</summary>
+        <summary className="cursor-pointer font-medium text-ink">Importar portal do gerador antigo (arquivos)</summary>
         <p className="mt-2 text-ink-muted">
           Traz um portal do gerador antigo para cá. Escolha a pasta <code>clientes/&lt;nome&gt;</code> inteira (config.json, logo e
           <code> dados/cache_*.json</code> são localizados sozinhos) ou selecione os arquivos soltos.
