@@ -203,3 +203,20 @@ describe("gerador de transparência — importar e empacotar", () => {
     expect(await svc.excluirCliente("nao-existe")).toBe(false);
   });
 });
+
+describe("siteDoMenu (cadastro só pelas APIs)", () => {
+  it("usa o item Início do menu, mesmo com acento trocado", async () => {
+    const { siteDoMenu } = await import("../src/modules/transparencia-gerador/renovar");
+    const menu = [
+      { Id: "2", NMenu: null, Nome: "INSTITUCIONAL", Pagina: "", Ordem: "2" },
+      { Id: "1", NMenu: null, Nome: "Ínicio", Pagina: "https://orgao.gov.br/", Ordem: "1" },
+      { Id: "3", NMenu: "2", Nome: "Quem somos", Pagina: "https://orgao.gov.br/quem-somos/", Ordem: "1" },
+    ];
+    expect(siteDoMenu(menu)).toBe("https://orgao.gov.br/");
+  });
+  it("sem item Início, cai no site mais citado", async () => {
+    const { siteDoMenu } = await import("../src/modules/transparencia-gerador/renovar");
+    expect(siteDoMenu([{ Id: "1", Nome: "Sobre", Pagina: "https://x.gov.br/a" }, { Id: "2", Nome: "Contato", Pagina: "https://x.gov.br/b" }])).toBe("https://x.gov.br");
+    expect(siteDoMenu([])).toBe("");
+  });
+});

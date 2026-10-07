@@ -1,5 +1,5 @@
-﻿import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Download, ExternalLink, Link2, Trash2, Upload } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Download, ExternalLink, Link2, RefreshCw, Trash2, Upload } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { useConfirm } from "../../components/ui/confirm-context";
@@ -24,6 +24,7 @@ import {
   type ItemExtra,
   type OrdemGrupo,
   type ResultadoGerar,
+  type ResultadoRenovacao,
 } from "../../lib/transparencia-gerador";
 
 const FORM_INICIAL = {
@@ -108,10 +109,14 @@ export function AdminTransparenciaGeradorPage() {
   const [resultado, setResultado] = useState<ResultadoGerar | null>(null);
   const [erroForm, setErroForm] = useState<string | null>(null);
   const [baixando, setBaixando] = useState(false);
-  const [importando, setImportando] = useState(false);
+  const [modoCadastro, setModoCadastro] = useState<"apis" | "link">("apis");
   const [linkPortal, setLinkPortal] = useState("");
   const [linkPasta, setLinkPasta] = useState("");
+  const [apiT, setApiT] = useState("");
+  const [apiM, setApiM] = useState("");
   const [lendoLink, setLendoLink] = useState(false);
+  const [renovando, setRenovando] = useState<"" | "um" | "todos">("");
+  const [renovacoes, setRenovacoes] = useState<ResultadoRenovacao[] | null>(null);
   const cfgRef = useRef<CfgHerdada>({ icones: {}, descs: {}, ocultos: [] });
   const topoResultado = useRef<HTMLDivElement>(null);
 
@@ -390,60 +395,18 @@ export function AdminTransparenciaGeradorPage() {
     }
   }
 
-  // Importa um portal do gerador antigo (pasta clientes/<nome> inteira ou arquivos soltos).
-  async function importarPortal(lista: FileList | null) {
-    if (!lista || !lista.length) return;
-    setErroForm(null);
-    setImportando(true);
-    try {
-      const arquivos = Array.from(lista);
-      const configs = arquivos.filter((f) => f.name.toLowerCase() === "config.json");
-      if (configs.length !== 1) {
-        throw new Error(
-          configs.length ? "Foram encontrados vários config.json: escolha a pasta de um único cliente." : "Não encontrei o config.json: escolha a pasta clientes/<nome> do gerador antigo.",
-        );
-      }
-      let cfg: ConfigPortal = {};
-      try {
-        cfg = JSON.parse((await configs[0].text()).replace(/^﻿/, ""));
-      } catch {
-        throw new Error("O config.json não é um JSON válido.");
-      }
-      const porNome = (n: string) => arquivos.find((f) => f.name.toLowerCase() === n.toLowerCase());
-      const imagem = /\.(png|jpe?g|svg|webp|gif)$/i;
-      const nomeLogo = valor<string>(cfg, "cliente.logo", "");
-      const nomeIcone = valor<string>(cfg, "cliente.icone", "");
-      const logo =
-        (nomeLogo && porNome(nomeLogo)) || arquivos.find((f) => /^logo\.[a-z]+$/i.test(f.name) && imagem.test(f.name));
-      const icone =
-        (nomeIcone && nomeIcone !== nomeLogo && porNome(nomeIcone)) ||
-        arquivos.find((f) => /^logo-icon\.[a-z]+$/i.test(f.name) && imagem.test(f.name));
-      const res = await geradorApi.importar({
-        config: configs[0],
-        logo: logo || undefined,
-        icone: icone || undefined,
-        cacheTransparencia: porNome("cache_transparencia.json"),
-        cacheMenu: porNome("cache_menu.json"),
-        cacheOrdem: porNome("cache_ordem.json"),
-      });
-      await listarClientes();
-      if (res.pasta) await carregarCliente(res.pasta);
-      setResultado({ ok: true, pasta: res.pasta, novo: res.novo, avisos: res.avisos });
-    } catch (e) {
-      setErroForm(e instanceof Error ? e.message : "Não foi possível importar o portal.");
-    } finally {
-      setImportando(false);
-    }
-  }
-
   // Cadastra um portal que já existe fora do gerador: o servidor lê o link e preenche tudo.
-  async function cadastrarPorLink() {
-    if (!linkPortal.trim()) return;
+  async function cadastrar() {
+    const porApis = modoCadastro === "apis";
+    if (porApis ? !apiT.trim() && !apiM.trim() : !linkPortal.trim()) return;
     setErroForm(null);
     setResultado(null);
+    setRenovacoes(null);
     setLendoLink(true);
     try {
-      const res = await geradorApi.importarLink(linkPortal.trim(), linkPasta.trim());
+      const res = porApis
+        ? await geradorApi.importarApis({ urlTransparencia: apiT.trim(), urlMenu: apiM.trim(), pasta: linkPasta.trim() || undefined })
+        : await geradorApi.importarLink(linkPortal.trim(), linkPasta.trim());
       const r = res.resumo;
       const lido = r
         ? [`Lido de ${r.nome}: ${r.itens} itens em ${r.grupos} categorias, menu com ${r.menu} itens${r.api ? `, API ${r.api}` : ""}.`]
@@ -453,13 +416,39 @@ export function AdminTransparenciaGeradorPage() {
       setResultado({ ok: true, pasta: res.pasta, novo: res.novo, avisos: [...lido, ...(res.avisos ?? [])] });
       setLinkPortal("");
       setLinkPasta("");
+      setApiT("");
+      setApiM("");
     } catch (e) {
-      setErroForm(e instanceof Error ? e.message : "Não foi possível cadastrar o portal por esse link.");
+      setErroForm(e instanceof Error ? e.message : "Não foi possível cadastrar o portal.");
     } finally {
       setLendoLink(false);
     }
   }
 
+  // Consulta de novo a origem do portal (link ou APIs) e atualiza; "todos" faz isso para cada cliente em um clique.
+  async function renovar(todos: boolean) {
+    if (todos) {
+      const ok = await confirmar({
+        title: "Renovar todos os portais",
+        message: `Consultar de novo a origem de ${clientes.length} portais (links e APIs) e atualizar dados, identidade e modelo? Alterações feitas à mão em cores, nome e contatos de portais cadastrados por link ou APIs são substituídas pelo que o site de origem mostra.`,
+        confirmLabel: "Renovar todos",
+      });
+      if (!ok) return;
+    }
+    setErroForm(null);
+    setResultado(null);
+    setRenovando(todos ? "todos" : "um");
+    try {
+      const lista = todos ? (await geradorApi.renovarTodos()).resultados : [await geradorApi.renovar(pastaEdit)];
+      setRenovacoes(lista);
+      await listarClientes();
+      if (editando) await carregarCliente(pastaEdit);
+    } catch (e) {
+      setErroForm(e instanceof Error ? e.message : "Não foi possível renovar.");
+    } finally {
+      setRenovando("");
+    }
+  }
   async function excluirCliente() {
     if (!editando) return;
     const ok = await confirmar({
@@ -596,7 +585,7 @@ export function AdminTransparenciaGeradorPage() {
             <option value="">— novo cliente —</option>
             {clientes.map((c) => (
               <option key={c.pasta} value={c.pasta}>
-                {c.nome} ({c.pasta}){c.externo ? " · via link" : ""}
+                {c.nome} ({c.pasta}){c.externo ? " · importado" : ""}
               </option>
             ))}
           </select>
@@ -604,77 +593,93 @@ export function AdminTransparenciaGeradorPage() {
       </header>
 
       <section className="rounded-xl border border-border bg-surface p-4 text-sm shadow-soft">
-        <h2 className="flex items-center gap-2 font-semibold text-ink">
-          <Link2 size={16} /> Cadastrar portal que já existe, pelo link
-        </h2>
-        <p className="mt-1 text-ink-muted">
-          Cole o endereço de um portal já publicado (ex.: <code>https://previspa.rj.gov.br/transparencia/</code>). O sistema lê a página e
-          preenche nome, logo, cores, contatos, menu, categorias e a API de dados abertos. Depois é só conferir e, se quiser, baixar o pacote.
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 font-semibold text-ink">
+            <Link2 size={16} /> Cadastrar portal rapidamente
+          </h2>
+          <div className="flex gap-1 rounded-lg border border-border p-0.5" role="tablist">
+            {([["apis", "Pelas APIs (cliente novo)"], ["link", "Por link (portal já publicado)"]] as const).map(([m, rot]) => (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={modoCadastro === m}
+                onClick={() => setModoCadastro(m)}
+                className={`rounded-md px-3 py-1 text-xs font-semibold ${modoCadastro === m ? "bg-petrol text-on-petrol" : "text-ink-muted hover:text-ink"}`}
+              >
+                {rot}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-ink-muted">
+          {modoCadastro === "apis" ? (
+            <>
+              Cole as duas APIs de dados abertos do cliente (a do menu é opcional: se faltar, uso o mesmo servidor). O nome, a logo, as cores
+              e os contatos são lidos do site do órgão, que o item “Início” do menu aponta.
+            </>
+          ) : (
+            <>
+              Cole o endereço de um portal já publicado (ex.: <code>https://previspa.rj.gov.br/transparencia/</code>). Leio a página e
+              preencho nome, logo, cores, contatos, menu, categorias e a API.
+            </>
+          )}
         </p>
         <form
           className="mt-3 flex flex-wrap gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            cadastrarPorLink();
+            cadastrar();
           }}
         >
-          <input
-            type="url"
-            className={`${INPUT} min-w-[260px] flex-1`}
-            value={linkPortal}
-            placeholder="https://portal-do-cliente.gov.br/transparencia/"
-            aria-label="Link do portal"
-            onChange={(e) => setLinkPortal(e.target.value)}
-          />
-          <input
-            type="text"
-            className={`${INPUT} w-44`}
-            value={linkPasta}
-            placeholder="pasta (opcional)"
-            aria-label="Nome da pasta (opcional)"
-            onChange={(e) => setLinkPasta(e.target.value)}
-          />
-          <Button type="submit" disabled={lendoLink || !linkPortal.trim()}>
-            {lendoLink ? "Lendo o portal…" : "Cadastrar"}
+          {modoCadastro === "apis" ? (
+            <>
+              <input type="text" className={`${INPUT} min-w-[260px] flex-1`} value={apiT} placeholder="API da transparência (d=transparencia)" aria-label="API da transparência" onChange={(e) => setApiT(e.target.value)} />
+              <input type="text" className={`${INPUT} min-w-[260px] flex-1`} value={apiM} placeholder="API do menu (d=menu), opcional" aria-label="API do menu" onChange={(e) => setApiM(e.target.value)} />
+            </>
+          ) : (
+            <input type="url" className={`${INPUT} min-w-[260px] flex-1`} value={linkPortal} placeholder="https://portal-do-cliente.gov.br/transparencia/" aria-label="Link do portal" onChange={(e) => setLinkPortal(e.target.value)} />
+          )}
+          <input type="text" className={`${INPUT} w-44`} value={linkPasta} placeholder="pasta (opcional)" aria-label="Nome da pasta (opcional)" onChange={(e) => setLinkPasta(e.target.value)} />
+          <Button type="submit" disabled={lendoLink || (modoCadastro === "apis" ? !apiT.trim() && !apiM.trim() : !linkPortal.trim())}>
+            {lendoLink ? "Lendo…" : "Cadastrar"}
           </Button>
         </form>
+        {clientes.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <Button type="button" variant="ghost" onClick={() => renovar(true)} disabled={renovando !== ""}>
+              <RefreshCw size={16} className={renovando === "todos" ? "animate-spin" : ""} /> {renovando === "todos" ? "Renovando todos…" : "Renovar todos os portais"}
+            </Button>
+            <span className="text-xs text-ink-muted">Consulta de novo cada origem e aplica dados, identidade e a versão mais recente do modelo, em um clique.</span>
+          </div>
+        )}
       </section>
 
-      <details className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm shadow-soft">
-        <summary className="cursor-pointer font-medium text-ink">Importar portal do gerador antigo (arquivos)</summary>
-        <p className="mt-2 text-ink-muted">
-          Traz um portal do gerador antigo para cá. Escolha a pasta <code>clientes/&lt;nome&gt;</code> inteira (config.json, logo e
-          <code> dados/cache_*.json</code> são localizados sozinhos) ou selecione os arquivos soltos.
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <label className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 font-semibold hover:border-petrol ${importando ? "pointer-events-none opacity-50" : ""}`}>
-            <Upload size={16} /> {importando ? "Importando…" : "Escolher pasta"}
-            <input
-              type="file"
-              hidden
-              multiple
-              {...({ webkitdirectory: "" } as object)}
-              onChange={(e) => {
-                importarPortal(e.target.files);
-                e.target.value = "";
-              }}
-            />
-          </label>
-          <label className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 font-semibold hover:border-petrol ${importando ? "pointer-events-none opacity-50" : ""}`}>
-            <Upload size={16} /> Escolher arquivos soltos
-            <input
-              type="file"
-              hidden
-              multiple
-              onChange={(e) => {
-                importarPortal(e.target.files);
-                e.target.value = "";
-              }}
-            />
-          </label>
-        </div>
-      </details>
-
+      {renovacoes && (
+        <Card className="space-y-2 p-4 text-sm">
+          <h2 className="font-semibold text-ink">
+            Renovação: {renovacoes.filter((r) => r.ok && r.alterado).length} com mudanças, {renovacoes.filter((r) => r.ok && !r.alterado).length} sem mudanças
+            {renovacoes.some((r) => !r.ok) ? `, ${renovacoes.filter((r) => !r.ok).length} com erro` : ""}
+          </h2>
+          <ul className="space-y-1.5">
+            {renovacoes.map((r) => (
+              <li key={r.pasta}>
+                <b className="text-ink">{r.nome}</b>{" "}
+                {!r.ok ? (
+                  <span className="text-crit">— {r.erro}</span>
+                ) : r.alterado ? (
+                  <span className="text-ink-muted">— {r.mudancas.join("; ")}</span>
+                ) : (
+                  <span className="text-ink-muted">— já estava atualizado</span>
+                )}
+                {r.avisos.map((a, i) => (
+                  <span key={i} className="block text-xs text-warn">{a}</span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-4">
           <Passo n={1} titulo="APIs de dados abertos" dica={<>Cole a URL de cada API. Pode ser a URL completa, só o endereço do portal (<code>transparencia.cliente.gov.br</code>) ou deixar em branco se não houver.</>}>
@@ -880,6 +885,9 @@ export function AdminTransparenciaGeradorPage() {
                 >
                   <ExternalLink size={16} /> Ver portal
                 </a>
+                <Button type="button" variant="ghost" onClick={() => renovar(false)} disabled={renovando !== ""}>
+                  <RefreshCw size={16} className={renovando === "um" ? "animate-spin" : ""} /> Renovar
+                </Button>
                 <Button type="button" variant="ghost" onClick={() => baixarZip(pastaEdit)} disabled={baixando}>
                   <Download size={16} /> Baixar ZIP
                 </Button>

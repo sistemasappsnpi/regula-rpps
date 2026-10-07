@@ -176,7 +176,7 @@ async function primeiroValido(bases: string[], valida: (d: unknown) => boolean):
 }
 
 // hosts citados nos links dos itens, do mais frequente ao menos (o último http(s):// da string vence: links "grudados")
-function hostsCitados(...listas: unknown[][]): string[] {
+export function hostsCitados(...listas: unknown[][]): string[] {
   const cont = new Map<string, number>();
   for (const lista of listas) {
     for (const it of lista as Cfg[]) {
@@ -232,15 +232,8 @@ export function normalizarLinkPortal(entrada: string): string {
   return u;
 }
 
-export async function importarPorLink(entrada: string, pastaOpc?: string): Promise<ResultadoLink> {
-  const link = normalizarLinkPortal(entrada);
-  const pagina = await fetchPagina(link);
-  if (!pagina) throw new HttpError(400, "Não consegui abrir esse link. Confira o endereço e se o portal está no ar.");
-  const avisos: string[] = [];
-  const x = extrairDaPagina(pagina.html, pagina.url);
-  if (x.nome === "") throw new HttpError(400, "Abri a página, mas não achei o nome do órgão nela. Cadastre este portal manualmente.");
-
-  // folhas de estilo ligadas à página (cores definidas fora do HTML)
+/** Cores (inclusive das folhas de estilo ligadas) e imagens de uma página já lida. */
+export async function lerIdentidade(x: PaginaExtraida) {
   let { corPrimaria, corDestaque } = x;
   if (!corPrimaria || !corDestaque) {
     for (const f of x.folhas.slice(0, 3)) {
@@ -251,6 +244,27 @@ export async function importarPorLink(entrada: string, pastaOpc?: string): Promi
       if (corPrimaria && corDestaque) break;
     }
   }
+  return { corPrimaria, corDestaque, logo: await imagem(x.logoUrl, "logo"), icone: await imagem(x.iconeUrl, "logo-icon") };
+}
+
+/** Estado já gravado de um portal, usado na renovação para não perder o que a origem não devolveu. */
+export interface Anterior {
+  logo?: ArquivoEnviado;
+  icone?: ArquivoEnviado;
+  cacheTransparencia?: string | null;
+  cacheMenu?: string | null;
+  cacheOrdem?: string | null;
+}
+
+export async function importarPorLink(entrada: string, pastaOpc?: string, base?: Cfg, anterior?: Anterior): Promise<ResultadoLink> {
+  const link = normalizarLinkPortal(entrada);
+  const pagina = await fetchPagina(link);
+  if (!pagina) throw new HttpError(400, "Não consegui abrir esse link. Confira o endereço e se o portal está no ar.");
+  const avisos: string[] = [];
+  const x = extrairDaPagina(pagina.html, pagina.url);
+  if (x.nome === "") throw new HttpError(400, "Abri a página, mas não achei o nome do órgão nela. Cadastre este portal manualmente.");
+
+  const { corPrimaria, corDestaque, logo: logoLido, icone: iconeLido } = await lerIdentidade(x);
 
   // dados: do próprio portal (proxy / cache), senão do snapshot embutido na página
   const dir = pagina.url.replace(/[?#].*$/, "").replace(/[^/]*$/, "");
@@ -273,7 +287,7 @@ export async function importarPorLink(entrada: string, pastaOpc?: string): Promi
   const menu = cacheMenu ? (JSON.parse(cacheMenu) as unknown[]) : [];
 
   // API oficial: o host mais citado nos links que responda como a API de transparência
-  const config: Cfg = structuredClone(configModelo());
+  const config: Cfg = structuredClone(base ?? configModelo());
   config.api ??= {};
   let api = "";
   for (const origem of hostsCitados(transp, menu).slice(0, 3)) {
@@ -295,14 +309,21 @@ export async function importarPorLink(entrada: string, pastaOpc?: string): Promi
     }
     break;
   }
-  if (api === "") {
-    config.api.base = "";
+  if (api === "" && !config.api.base) {
     avisos.push("Não encontrei a API oficial de dados abertos: o portal usará apenas os dados copiados agora (não atualizam sozinhos).");
+  } else if (api === "") {
+    avisos.push("Não consegui consultar a API oficial agora: mantive a configuração anterior.");
   }
   if (!cacheTransparencia) avisos.push("Não consegui copiar a lista de itens da transparência desse portal.");
 
-  const logo = await imagem(x.logoUrl, "logo");
-  const icone = await imagem(x.iconeUrl, "logo-icon");
+  // renovação: o que a página não devolveu agora continua como estava
+  const logo = logoLido ?? anterior?.logo;
+  const icone = iconeLido ?? anterior?.icone;
+  if (anterior) {
+    cacheTransparencia ??= anterior.cacheTransparencia ?? null;
+    cacheMenu ??= anterior.cacheMenu ?? null;
+    cacheOrdem ??= anterior.cacheOrdem ?? null;
+  }
 
   config.cliente = {
     ...config.cliente,

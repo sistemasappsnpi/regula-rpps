@@ -3,9 +3,10 @@ import multer from "multer";
 import { HttpError } from "../../middleware/errorHandler";
 import {
   LIMITE_IMAGEM, calcularSugestoes, carregarCliente, excluirCliente, gerarCliente, iconesDoModelo,
-  importarPortal, listarClientes, montarZip, slug, testarMenu, testarTransparencia, type ArquivoEnviado,
+  listarClientes, montarZip, slug, testarMenu, testarTransparencia, type ArquivoEnviado,
 } from "./gerador.service";
 import { importarPorLink } from "./importar-link";
+import { importarPorApis, renovarPortal, renovarTodos } from "./renovar";
 
 // Gerador de Portal da Transparência. Montado em /admin/transparencia-gerador (ver admin.routes.ts,
 // que já exige Super Admin + a permissão admin_parametrizacoes).
@@ -82,45 +83,6 @@ transparenciaGeradorRouter.get("/icones", (_req, res, next) => {
   }
 });
 
-// Importa um portal existente do gerador antigo (pasta clientes/<nome>): config.json + logo + dados/cache_*.
-const uploadImportacao = multer({ storage: multer.memoryStorage(), limits: { fileSize: 12 * 1024 * 1024, files: 6 } });
-transparenciaGeradorRouter.post(
-  "/importar",
-  (req, res, next) =>
-    uploadImportacao.fields([
-      { name: "config", maxCount: 1 }, { name: "logo", maxCount: 1 }, { name: "icone", maxCount: 1 },
-      { name: "cacheTransparencia", maxCount: 1 }, { name: "cacheMenu", maxCount: 1 }, { name: "cacheOrdem", maxCount: 1 },
-    ])(req, res, (err) => next(err instanceof multer.MulterError ? new HttpError(400, "Falha no envio dos arquivos.") : err)),
-  async (req, res, next) => {
-    try {
-      const files = (req.files ?? {}) as Record<string, Express.Multer.File[]>;
-      const arq = (campo: string) => files[campo]?.[0];
-      const texto = (campo: string) => arq(campo)?.buffer.toString("utf8");
-      const configTxt = texto("config");
-      if (!configTxt) throw new HttpError(400, "Envie o config.json do portal.");
-      let config: Record<string, unknown>;
-      try {
-        config = JSON.parse(configTxt.replace(/^﻿/, ""));
-      } catch {
-        throw new HttpError(400, "config.json não é um JSON válido.");
-      }
-      const imagem = (campo: string): ArquivoEnviado | undefined => {
-        const f = arq(campo);
-        return f ? { buffer: f.buffer, nome: f.originalname } : undefined;
-      };
-      res.json({
-        ok: true,
-        ...(await importarPortal({
-          pasta: q(req.body?.pasta), config, logo: imagem("logo"), icone: imagem("icone"),
-          cacheTransparencia: texto("cacheTransparencia"), cacheMenu: texto("cacheMenu"), cacheOrdem: texto("cacheOrdem"),
-        })),
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
 // Cadastra um portal que já existe fora do gerador só pelo link (lê página, logo, cores, dados e API).
 transparenciaGeradorRouter.post("/importar-link", async (req, res, next) => {
   try {
@@ -130,6 +92,34 @@ transparenciaGeradorRouter.post("/importar-link", async (req, res, next) => {
   }
 });
 
+// Cadastra um portal novo só com as APIs de dados abertos (transparência + menu): nome, logo e cores vêm do site do órgão.
+transparenciaGeradorRouter.post("/importar-apis", async (req, res, next) => {
+  try {
+    const b = req.body ?? {};
+    res.json({ ok: true, ...(await importarPorApis({
+      urlTransparencia: q(b.urlTransparencia), urlMenu: q(b.urlMenu), pasta: q(b.pasta), nome: q(b.nome), site: q(b.site),
+    })) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Renova um portal (consulta de novo a origem e atualiza) ou todos de uma vez.
+transparenciaGeradorRouter.post("/renovar-todos", async (_req, res, next) => {
+  try {
+    res.json({ ok: true, resultados: await renovarTodos() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+transparenciaGeradorRouter.post("/clientes/:pasta/renovar", async (req, res, next) => {
+  try {
+    res.json(await renovarPortal(req.params.pasta));
+  } catch (err) {
+    next(err);
+  }
+});
 transparenciaGeradorRouter.post(
   "/gerar",
   (req, res, next) =>

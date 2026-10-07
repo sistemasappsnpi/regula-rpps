@@ -24,6 +24,16 @@ export interface ResumoLink {
   cores: boolean;
 }
 
+export interface ResultadoRenovacao {
+  pasta: string;
+  nome: string;
+  ok: boolean;
+  alterado: boolean;
+  mudancas: string[];
+  avisos: string[];
+  erro?: string;
+}
+
 export interface GrupoApi {
   nome: string;
   itens: number;
@@ -106,16 +116,6 @@ export interface ResultadoGerar {
   avisos?: string[];
 }
 
-export interface ArquivosImportacao {
-  config: File;
-  pasta?: string;
-  logo?: File;
-  icone?: File;
-  cacheTransparencia?: File;
-  cacheMenu?: File;
-  cacheOrdem?: File;
-}
-
 async function chamar<T>(path: string, init: RequestInit = {}, jsonBody = true): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = { ...(init.headers as Record<string, string> | undefined) };
@@ -151,20 +151,15 @@ export const geradorApi = {
     if (icone) fd.append("icone", icone);
     return chamar<ResultadoGerar>("/gerar", { method: "POST", body: fd });
   },
-  // Este endpoint devolve {error} (HttpError padrão do Regula), tratado por `chamar` como exceção.
-  importar: (arq: ArquivosImportacao) => {
-    const fd = new FormData();
-    fd.append("config", arq.config);
-    if (arq.pasta) fd.append("pasta", arq.pasta);
-    for (const k of ["logo", "icone", "cacheTransparencia", "cacheMenu", "cacheOrdem"] as const) {
-      const f = arq[k];
-      if (f) fd.append(k, f);
-    }
-    return chamar<ResultadoGerar>("/importar", { method: "POST", body: fd });
-  },
   // Cadastra um portal que já existe fora do gerador só pelo link (o servidor lê página, logo, cores, dados e API).
   importarLink: (url: string, pasta?: string) =>
     chamar<ResultadoGerar & { resumo: ResumoLink }>("/importar-link", { method: "POST", body: JSON.stringify({ url, pasta: pasta || undefined }) }),
+  // Cadastra um portal novo só com as APIs de dados abertos; nome, logo e cores vêm do site do órgão.
+  importarApis: (d: { urlTransparencia: string; urlMenu?: string; pasta?: string; nome?: string; site?: string }) =>
+    chamar<ResultadoGerar & { resumo: ResumoLink }>("/importar-apis", { method: "POST", body: JSON.stringify(d) }),
+  // Consulta de novo a origem do portal (link ou APIs) e atualiza dados, identidade e modelo.
+  renovar: (pasta: string) => chamar<ResultadoRenovacao>(`/clientes/${encodeURIComponent(pasta)}/renovar`, { method: "POST" }),
+  renovarTodos: () => chamar<{ ok: boolean; resultados: ResultadoRenovacao[] }>("/renovar-todos", { method: "POST" }),
   // Link público de visualização do portal gerado (a barra final é necessária para os links relativos do portal)
   urlVisualizacao: (pasta: string) => `${window.location.origin}/api/public/transparencia-portal/${encodeURIComponent(pasta)}/`,
   excluir: (pasta: string) => chamar<{ ok: boolean }>(`/clientes/${encodeURIComponent(pasta)}`, { method: "DELETE" }),
