@@ -84,7 +84,8 @@ export function normalizarApiUrl(entrada: unknown, d: string): string {
   let pathname = p.pathname.replace(/\/+$/, "");
   if (pathname === "" || /\/(acessoainformacao|index\.\w+)$/i.test(pathname)) pathname = "/dadosabertosexportar";
   // completa o que faltar; sem itens_por_pagina a API devolve só a primeira página (10 itens)
-  const q = new URLSearchParams(p.search);
+  const q = new URLSearchParams();
+  for (const [k, v] of new URLSearchParams(p.search)) if (!q.has(k)) q.set(k, v); // cola com f=json repetido? fica um só
   if (!q.has("d")) q.set("d", d);
   if (!q.has("a")) q.set("a", "");
   if (!q.has("f")) q.set("f", "json");

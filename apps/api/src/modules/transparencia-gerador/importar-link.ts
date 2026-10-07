@@ -93,7 +93,7 @@ export function extrairDaPagina(html: string, base: string): PaginaExtraida {
   // o modelo usa alt="Sigla — Nome completo"; em outros sites o alt costuma ser só o nome
   const [altCurto, ...altResto] = altLogo.split(/\s+[—–-]\s+/);
   const titulo = limparTexto(sem.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "");
-  const nome = m["og:site_name"] || altCurto || titulo.split(/\s+[—–|-]\s+/).pop() || "";
+  const nome = (/^https?:\/\//i.test(m["og:site_name"] ?? "") ? "" : m["og:site_name"]) || altCurto || titulo.split(/\s+[—–|-]\s+/).pop() || "";
   const nomeCompleto = altResto.join(" — ") || limparTexto(sem.match(/class="footer-brand-name"[^>]*>([\s\S]*?)<\/p>/i)?.[1] ?? "").replace(new RegExp(`^${nome.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[-—–]\\s*`, "i"), "") || nome;
 
   const logoLink = header.match(/<a\b[^>]*class="[^"]*logo-link[^"]*"[^>]*>/i)?.[0] ?? header.match(/<a\b[^>]*>/i)?.[0] ?? "";
@@ -244,6 +244,9 @@ export async function lerIdentidade(x: PaginaExtraida) {
       if (corPrimaria && corDestaque) break;
     }
   }
+  // azul padrão do Bootstrap (--primary de quase todo site feito com ele) não é cor de marca
+  if (corPrimaria && /^#(007bff|0d6efd)$/.test(corPrimaria)) corPrimaria = null;
+  if (corDestaque && /^#(007bff|0d6efd|6c757d)$/.test(corDestaque)) corDestaque = null;
   return { corPrimaria, corDestaque, logo: await imagem(x.logoUrl, "logo"), icone: await imagem(x.iconeUrl, "logo-icon") };
 }
 

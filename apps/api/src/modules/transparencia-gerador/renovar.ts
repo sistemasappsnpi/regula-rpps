@@ -11,6 +11,7 @@ import {
 } from "./gerador.service";
 import { extrairDaPagina, hostsCitados, importarPorLink, lerIdentidade, type Anterior, type ResultadoLink } from "./importar-link";
 import { fetchPagina, hostPermitido } from "./http";
+import { coresDaLogo } from "./cores-logo";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Cfg = Record<string, any>;
@@ -54,33 +55,49 @@ export async function importarPorApis(
   const cacheTransparencia = JSON.stringify(itens);
   const cacheMenu = menuOk ? JSON.stringify(menu) : (anterior?.cacheMenu ?? undefined);
 
-  // identidade (nome, logo, cores, contatos): vem do site do órgão, que o menu aponta
-  let siteUrl = (entrada.site ?? "").trim() || siteDoMenu(menu);
-  if (siteUrl && !/^https?:\/\//i.test(siteUrl)) siteUrl = `https://${siteUrl}`;
+  // identidade (nome, logo, cores, contatos): vem do site do órgão (item "Início" do menu) ou, se ele não
+  // trouxer nome e logo, da própria página de acesso à informação do servidor da API
+  const origemApi = t.url!.replace(/^(https?:\/\/[^/]+).*$/, "$1");
+  const siteMenu = (entrada.site ?? "").trim() || siteDoMenu(menu);
+  const candidatos = [siteMenu, t.paginaOficial, `${origemApi}/acessoainformacao`]
+    .map((u) => (u && !/^https?:\/\//i.test(u) ? `https://${u}` : u))
+    .filter((u, i, a) => u && hostPermitido(u) && a.indexOf(u) === i);
+  let siteUrl = siteMenu;
   let x = null as ReturnType<typeof extrairDaPagina> | null;
-  let ident: Awaited<ReturnType<typeof lerIdentidade>> | null = null;
-  if (siteUrl && hostPermitido(siteUrl)) {
-    const pagina = await fetchPagina(siteUrl);
-    if (pagina) {
-      x = extrairDaPagina(pagina.html, pagina.url);
-      ident = await lerIdentidade(x);
+  let melhor = -1;
+  for (const u of candidatos) {
+    const pagina = await fetchPagina(u);
+    if (!pagina) continue;
+    const e = extrairDaPagina(pagina.html, pagina.url);
+    const pontos = (e.nome ? 1 : 0) + (e.logoUrl ? 2 : 0);
+    if (pontos > melhor) {
+      melhor = pontos;
+      x = e;
+      siteUrl = u === siteMenu ? u : siteMenu || u;
     }
+    if (pontos >= 3) break;
   }
-  if (!x) avisos.push("Não consegui abrir o site do órgão (o link \"Início\" do menu): nome, logo e cores precisam ser conferidos no portal.");
+  const ident = x ? await lerIdentidade(x) : null;
+  if (!x) avisos.push("Não consegui abrir o site do órgão nem a página de acesso à informação: nome, logo e cores precisam ser conferidos no portal.");
 
-  let nome = (entrada.nome ?? "").trim() || x?.nome || (typeof base?.cliente?.nome === "string" ? base.cliente.nome : "");
-  let nomeCompleto = x?.nomeCompleto ?? "";
-  // título de site costuma ser "SIGLA - Nome por extenso": a sigla vira o nome e o resto o nome completo
+  let nome: string = (entrada.nome ?? "").trim() || x?.nome || (typeof base?.cliente?.nome === "string" ? base.cliente.nome : "");
+  let nomeCompleto: string = x?.nomeCompleto ?? "";
+  // "Nome por extenso - SIGLA" ou "SIGLA - Nome por extenso": a sigla vira o nome curto
+  const ehSigla = (s: string) => /^[A-Z0-9][A-Z0-9.]{1,11}$/.test(s.trim());
+  if (!(entrada.nome ?? "").trim() && x && ehSigla(x.nomeCompleto) && x.nomeCompleto !== x.nome) {
+    nomeCompleto = x.nome; // o alt veio "Nome por extenso - SIGLA": a ordem é a inversa da esperada
+    nome = x.nomeCompleto;
+  }
   const partes = nome.split(/\s+[—–-]\s+/);
-  if (partes.length > 1 && partes[0].length <= 20) {
-    nomeCompleto = nomeCompleto && nomeCompleto !== nome ? nomeCompleto : partes.slice(1).join(" — ");
-    nome = partes[0];
+  const sigla = partes.length > 1 ? partes.find(ehSigla) : undefined;
+  if (sigla) {
+    nomeCompleto = nomeCompleto && nomeCompleto !== nome ? nomeCompleto : partes.filter((p) => p !== sigla).join(" — ");
+    nome = sigla.trim();
   }
   if (nome === "") throw new HttpError(400, "Não consegui descobrir o nome do órgão pelo site. Informe o nome para cadastrar.");
-
   const config: Cfg = structuredClone(base ?? configModelo());
   config.api = {
-    ...(config.api ?? {}), base: t.url!.replace(/^(https?:\/\/[^/]+).*$/, "$1"), urlTransparencia: urlT, urlMenu: urlM,
+    ...(config.api ?? {}), base: origemApi, urlTransparencia: urlT, urlMenu: urlM,
     transparencia: true, menu: menuOk, dominioLinks: t.dominioLinks, paginaOficial: t.paginaOficial,
   };
   const cacheOrdem = t.paginaOficial ? JSON.stringify(t.ordem) : (anterior?.cacheOrdem ?? undefined);
@@ -90,13 +107,15 @@ export async function importarPorApis(
     ...config.cliente,
     nome,
     nomeCompleto: nomeCompleto || config.cliente?.nomeCompleto || nome,
-    site: x?.site || siteUrl || config.cliente?.site || "",
+    site: siteMenu || x?.site || config.cliente?.site || "",
     cnpj: x?.cnpj || config.cliente?.cnpj || "", endereco: x?.endereco || config.cliente?.endereco || "",
     telefone: x?.telefone || config.cliente?.telefone || "", email: x?.email || config.cliente?.email || "",
     redes: x?.redes.length ? x.redes : (config.cliente?.redes ?? []),
   };
+  const daLogo = !ident?.corPrimaria && ident?.logo ? coresDaLogo(ident.logo.buffer) : null;
   if (ident?.corPrimaria) config.cores = { ...config.cores, primaria: ident.corPrimaria, destaque: ident.corDestaque ?? config.cores?.destaque };
-  else if (x) avisos.push("Não consegui ler as cores do site: foram mantidas as cores padrão.");
+  else if (daLogo) config.cores = { ...config.cores, ...daLogo };
+  else if (x) avisos.push("Não consegui ler as cores do site nem da logo: foram mantidas as cores padrão.");
   if (x) {
     config.seo = { ...(config.seo ?? {}), url: x.seoUrl || siteUrl, descricao: x.descricao || config.seo?.descricao || "" };
     if (x.titulo) config.textos = { ...config.textos, titulo: x.titulo };
@@ -116,7 +135,7 @@ export async function importarPorApis(
   const grupos = new Set(itens.map((i) => i?.Grupo)).size;
   return {
     pasta: r.pasta, novo: r.novo, avisos: [...avisos, ...r.avisos],
-    resumo: { nome, itens: itens.length, grupos, menu: menu.length, api: config.api.base, logo: !!logo, cores: !!ident?.corPrimaria },
+    resumo: { nome, itens: itens.length, grupos, menu: menu.length, api: config.api.base, logo: !!logo, cores: !!(ident?.corPrimaria || daLogo) },
   };
 }
 
