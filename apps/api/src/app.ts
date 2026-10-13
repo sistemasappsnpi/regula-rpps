@@ -15,6 +15,7 @@ import { portalPrevidenciarioPublicRouter } from "./modules/portal-previdenciari
 import { adminRouter } from "./modules/admin/admin.routes";
 import { portalPreviewRouter } from "./modules/transparencia-gerador/preview";
 import { errorHandler } from "./middleware/errorHandler";
+import { limitarPorIp } from "./middleware/publicProtect";
 
 export function createApp() {
   const app = express();
@@ -37,9 +38,12 @@ export function createApp() {
   app.use("/uploads", uploadsRouter);
   app.use("/construtor", construtorRouter);
   app.use("/portal-indicadores", portalIndicadoresRouter);
-  app.use("/public/transparencia", transparenciaPublicRouter);
-  app.use("/public/portal-previdenciario", portalPrevidenciarioPublicRouter);
-  app.use("/public/transparencia-portal", portalPreviewRouter);
+  // Rotas públicas: qualquer visitante ou robô chega aqui sem login — limite por IP pra uma
+  // aba/robô descontrolado não derrubar o servidor (o portal gerado carrega ~10 arquivos por visita).
+  const limitePublico = limitarPorIp(600);
+  app.use("/public/transparencia", limitePublico, transparenciaPublicRouter);
+  app.use("/public/portal-previdenciario", limitePublico, portalPrevidenciarioPublicRouter);
+  app.use("/public/transparencia-portal", limitePublico, portalPreviewRouter);
   app.use("/admin", adminRouter);
 
   app.use(errorHandler);

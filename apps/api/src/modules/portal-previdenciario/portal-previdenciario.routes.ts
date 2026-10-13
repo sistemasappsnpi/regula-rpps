@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
+import { criarCache } from "../../middleware/publicProtect";
 
 // Rota pública (sem requireAuth), mesmo padrão de /public/transparencia: o Portal
 // Previdenciário deste RPPS é público por definição. Diferente da Transparência, aqui não há
@@ -63,11 +64,20 @@ function montarArvoreMenu(bruto: MenuBruto[]): PortalPrevidenciarioMenuItem[] {
   return raizes;
 }
 
+// Menu/rodapé mudam raramente: uma busca real por URL a cada 5 min, não uma por visita (antes cada
+// carga de página e cada refresh automático chamava a API externa do cliente).
+const cacheExterno = criarCache<unknown | null>(5 * 60_000);
+// Resposta pronta dos indicadores (várias consultas ao banco por chamada): 30s é o bastante pra
+// absorver picos e ainda mostrar uma aprovação recente quase na hora.
+const cacheIndicadores = criarCache<unknown>(30_000);
+
 async function buscarJson(url: string): Promise<unknown | null> {
   try {
-    const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!resp.ok) return null;
-    return await resp.json();
+    return await cacheExterno(url, async () => {
+      const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return await resp.json();
+    });
   } catch {
     return null;
   }
@@ -246,23 +256,29 @@ portalPrevidenciarioPublicRouter.get("/:slug/indicadores", async (req, res, next
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
     if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
 
-    const documentos = await prisma.portalDocumento.findMany({
-      where: { ativo: true },
-      orderBy: { sortOrder: "asc" },
-      include: { indicadores: { orderBy: { sortOrder: "asc" }, include: { subcampos: { orderBy: { sortOrder: "asc" } } } } },
+    const corpo = await cacheIndicadores(`ind|${tenant.id}`, async () => {
+      const documentos = await prisma.portalDocumento.findMany({
+        where: { ativo: true },
+        orderBy: { sortOrder: "asc" },
+        include: { indicadores: { orderBy: { sortOrder: "asc" }, include: { subcampos: { orderBy: { sortOrder: "asc" } } } } },
+      });
+
+      // um documento por vez: Promise.all abria todas as consultas ao mesmo tempo e esgotava o pool do banco
+      const documentosComValores = [];
+      for (const doc of documentos) {
+        documentosComValores.push({
+          id: doc.id,
+          nome: doc.nome,
+          indicadores: await indicadoresParaPublico(doc.indicadores, tenant.id),
+        });
+      }
+
+      return {
+        documentos: documentosComValores.filter((doc) => doc.indicadores.some((i) => i.valores.length > 0 || (i.instancias?.length ?? 0) > 0)),
+      };
     });
 
-    const documentosComValores = await Promise.all(
-      documentos.map(async (doc) => ({
-        id: doc.id,
-        nome: doc.nome,
-        indicadores: await indicadoresParaPublico(doc.indicadores, tenant.id),
-      })),
-    );
-
-    res.json({
-      documentos: documentosComValores.filter((doc) => doc.indicadores.some((i) => i.valores.length > 0 || (i.instancias?.length ?? 0) > 0)),
-    });
+    res.json(corpo);
   } catch (err) {
     next(err);
   }
@@ -290,14 +306,15 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, re
     });
     if (!documento || !documento.ativo) throw new HttpError(404, "Documento não encontrado.");
 
-    res.json({
+    const corpo = await cacheIndicadores(`doc|${tenant.id}|${documento.id}`, async () => ({
       documento: {
         id: documento.id,
         nome: documento.nome,
         codigo: docPersonalizado.codigo,
         indicadores: await indicadoresParaPublico(documento.indicadores, tenant.id),
       },
-    });
+    }));
+    res.json(corpo);
   } catch (err) {
     next(err);
   }

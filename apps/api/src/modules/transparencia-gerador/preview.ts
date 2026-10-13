@@ -4,6 +4,7 @@
 
 import { Router, type Response } from "express";
 import { prisma } from "../../db/prisma";
+import { criarCache } from "../../middleware/publicProtect";
 import { apiUrlDe, baixarJson, lerArquivoModelo, slug } from "./gerador.service";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -266,6 +267,7 @@ const CONTENT_TYPES: Record<string, string> = {
 
 // cópia ao vivo da API do cliente, guardada por api.cacheSegundos (como o proxy.php)
 const vivo = new Map<string, { em: number; raw: string }>();
+const cachePortal = criarCache<Awaited<ReturnType<typeof prisma.transparenciaPortal.findUnique>>>(30_000);
 
 async function dadosDe(pasta: string, d: "transparencia" | "menu", p: { config: unknown; cacheTransparencia: string | null; cacheMenu: string | null }) {
   const config = p.config as Cfg;
@@ -299,7 +301,9 @@ portalPreviewRouter.use(async (req, res, next) => {
     if (m[2] === undefined) return void res.redirect(302, `${m[1]}/`); // links relativos do portal precisam da barra final
     const arq = decodeURIComponent(m[3] ?? "");
 
-    const p = await prisma.transparenciaPortal.findUnique({ where: { pasta } });
+    // a linha traz logo, ícone e cópias dos dados (blobs): 30s em memória em vez de ler tudo isso do
+    // banco a cada um dos ~10 arquivos de cada visita
+    const p = await cachePortal(pasta, () => prisma.transparenciaPortal.findUnique({ where: { pasta } }));
     if (!p) return naoEncontrado(res);
     const config = p.config as Cfg;
     res.setHeader("X-Robots-Tag", "noindex, nofollow");

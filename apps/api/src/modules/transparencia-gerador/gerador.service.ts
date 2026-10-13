@@ -622,11 +622,26 @@ export async function importarPortal(imp: ImportacaoPortal) {
 }
 
 /** Arquivo do modelo (assets, sw.js, partes/...) para a pré-visualização; null se não existir ou fugir da pasta. */
+// Os arquivos do modelo só mudam com um novo deploy: guarda o conteúdo em memória (revalidado pelo
+// mtime) em vez de reler o disco a cada visita ao portal.
+const modeloEmMemoria = new Map<string, { dados: Buffer; mtimeMs: number }>();
+
 export function lerArquivoModelo(rel: string): { dados: Buffer; mtimeMs: number } | null {
   const raiz = path.join(pastaAssets(), "modelo");
   const full = path.resolve(raiz, rel);
-  if (!full.startsWith(raiz + path.sep) || !fs.existsSync(full) || !fs.statSync(full).isFile()) return null;
-  return { dados: fs.readFileSync(full), mtimeMs: fs.statSync(full).mtimeMs };
+  if (!full.startsWith(raiz + path.sep)) return null;
+  let st: fs.Stats;
+  try {
+    st = fs.statSync(full);
+  } catch {
+    return null;
+  }
+  if (!st.isFile()) return null;
+  const guardado = modeloEmMemoria.get(full);
+  if (guardado && guardado.mtimeMs === st.mtimeMs) return guardado;
+  const novo = { dados: fs.readFileSync(full), mtimeMs: st.mtimeMs };
+  modeloEmMemoria.set(full, novo);
+  return novo;
 }
 
 // URL já configurada para um conjunto, seja completa (urlX) ou montada a partir de api.base.
