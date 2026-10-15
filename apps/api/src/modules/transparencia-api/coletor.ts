@@ -104,6 +104,35 @@ export async function coletarEndpoint(tenantId: string, chave: string, ep: Endpo
   }
 }
 
+const INTERVALO_COLETA_MS = 20 * 60_000;
+let coletaEmAndamento = false;
+
+// Coleta automática: a cada 20 min, para todo RPPS que tem chave cadastrada. Roda dentro do próprio
+// processo da API (um container só), por isso o trava-repetição: se uma rodada demorar mais que o
+// intervalo, a seguinte espera em vez de empilhar.
+export function iniciarColetaAgendada(): void {
+  const rodar = async () => {
+    if (coletaEmAndamento) return;
+    coletaEmAndamento = true;
+    try {
+      const tenants = await prisma.tenant.findMany({ where: { transparenciaApiChave: { not: null } }, select: { id: true, slug: true } });
+      for (const t of tenants) {
+        const resultados = await coletarTudo(t.id);
+        const falhas = resultados.filter((r) => !r.ok).length;
+        const novos = resultados.reduce((s, r) => s + (r.novos ?? 0), 0);
+        console.log(`[transparencia-api] ${t.slug}: ${resultados.length - falhas}/${resultados.length} endpoints, ${novos} novos`);
+      }
+    } catch (err) {
+      console.error("[transparencia-api] coleta agendada falhou:", err instanceof Error ? err.message : err);
+    } finally {
+      coletaEmAndamento = false;
+    }
+  };
+  // primeira rodada 1 min depois de subir (deixa a API estabilizar e não atrasa o start)
+  setTimeout(rodar, 60_000).unref();
+  setInterval(rodar, INTERVALO_COLETA_MS).unref();
+}
+
 // Um endpoint por vez (mesma lição do pool de conexões em portal-previdenciario.routes.ts).
 export async function coletarTudo(tenantId: string): Promise<ResultadoColeta[]> {
   const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { transparenciaApiChave: true } });
