@@ -50,6 +50,8 @@ export const adminRepository = {
       nivelProGestaoAlvo: t.nivelProGestaoAlvo,
       seguradosCount: t.seguradosCount,
       centralClientCode: t.centralClientCode,
+      // a chave em si nunca sai da API — só se ela existe (a tela mostra "cadastrada")
+      transparenciaApiChaveConfigurada: Boolean(t.transparenciaApiChave),
       createdAt: t.createdAt,
       membros: t.memberships.map((m) => ({
         membershipId: m.id,
@@ -115,6 +117,7 @@ export const adminRepository = {
       plan: Plan;
       nivelProGestaoAlvo: NivelAderencia | null;
       centralClientCode: string | null;
+      transparenciaApiChave: string | null;
     }>,
   ) {
     const tenant = await prisma.tenant.findUnique({ where: { id } });

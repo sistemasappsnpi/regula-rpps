@@ -119,6 +119,9 @@ model Tenant {
   // Previdenciário deste RPPS — mesmo papel de --nav-active/--footer-bg no modelo de referência
   // (uma cor só, reaproveitada nos dois lugares). Nulo cai na cor padrão do modelo (petróleo).
   portalCorPrimaria  String?
+  // Chave (`?chave=`) da API Nexa de Transparência deste órgão — é credencial, nunca vai pro
+  // frontend nem pras rotas públicas; só o coletor (transparencia-api) lê.
+  transparenciaApiChave String?
   observacao         String?         @db.Text
   plan               Plan            @default(ESSENCIAL)
   seguradosCount     Int             @default(0)
@@ -146,6 +149,7 @@ model Tenant {
   featureOverrides          TenantFeature[]
   portalIndicadorValores    TenantPortalIndicadorValor[]
   portalIndicadorInstancias TenantPortalIndicadorInstancia[]
+  transparenciaApiRegistros TransparenciaApiRegistro[]
 
   @@map("tenants")
 }
@@ -784,6 +788,30 @@ model UserFeature {
 // config.json do portal, a logo/ícone enviados e a primeira cópia dos dados das APIs do cliente.
 // O pacote publicável (ZIP PHP) é montado na hora a partir disto + os arquivos-modelo versionados
 // em apps/api/assets/transparencia-gerador (nada disso é gravado em disco).
+// Cópia local de cada registro devolvido pela API Nexa de Transparência (um por item de cada
+// endpoint). Guardamos o JSON como veio — cada endpoint tem campos diferentes — e só extraímos
+// ano/referência pra filtro e ordenação. Registro que some da API NÃO é apagado (removidoEm): a
+// cópia existe justamente pra continuar valendo se o contrato com o fornecedor acabar.
+model TransparenciaApiRegistro {
+  id          String    @id @default(cuid())
+  tenantId    String
+  endpoint    String // código do catálogo (ex.: "entidades-credenciadas")
+  hash        String // sha1 do JSON — identifica o registro e evita duplicar a cada coleta
+  dados       Json
+  ano         Int?
+  referencia  DateTime?
+  coletadoEm  DateTime  @default(now())
+  vistoEm     DateTime  @default(now())
+  removidoEm  DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, endpoint, hash])
+  @@index([tenantId, endpoint])
+  @@map("transparencia_api_registros")
+}
+
 model TransparenciaPortal {
   id               String   @id @default(cuid())
   pasta            String   @unique // slug usado no nome do ZIP (portal-<pasta>.zip)

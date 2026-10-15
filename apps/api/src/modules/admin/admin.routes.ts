@@ -7,6 +7,7 @@ import { HttpError } from "../../middleware/errorHandler";
 import { adminRepository } from "./admin.repository";
 import { transparenciaGeradorRouter } from "../transparencia-gerador/transparencia-gerador.routes";
 import { extrairTextoPorPagina } from "../uploads/pdf-extraction";
+import { coletarTudo } from "../transparencia-api/coletor";
 import { isAiConfigured, sugerirChecklistDePdf } from "../ai/anthropic.client";
 
 // PDF de exemplo pro checklist (ver rota /campos/sugerir-de-pdf abaixo): nunca precisa ficar
@@ -90,6 +91,16 @@ const updateTenantSchema = z.object({
   plan: z.enum(["ESSENCIAL", "GESTAO", "PERFORMANCE"]).optional(),
   nivelProGestaoAlvo: z.enum(["I", "II", "III", "IV"]).nullable().optional(),
   centralClientCode: z.string().trim().min(1).max(32).nullable().optional(),
+  transparenciaApiChave: z.string().trim().min(4).max(100).nullable().optional(),
+});
+
+// Coleta (e copia pro nosso banco) tudo o que a API Nexa de Transparência entrega pra este RPPS.
+adminRouter.post("/tenants/:id/transparencia-api/coletar", async (req, res, next) => {
+  try {
+    res.json({ resultados: await coletarTudo(req.params.id) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // POST (não GET) porque grava o centralClientCode dos RPPS que ainda não tinham um.

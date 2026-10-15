@@ -339,6 +339,7 @@ export const api = {
       portalMenuApiUrl: string | null;
       portalRodapeApiUrl: string | null;
       portalCorPrimaria: string | null;
+      transparenciaApiChave: string | null;
       observacao: string | null;
       seguradosCount: number;
       plan: Tenant["plan"];
@@ -348,6 +349,17 @@ export const api = {
   ) => request<Tenant>(`/admin/tenants/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
 
   // Gera o JSON de importação em massa da Central (e grava o código dos RPPS que ainda não tinham).
+  adminColetarTransparenciaApi: (tenantId: string) =>
+    request<{ resultados: ResultadoColetaTransparenciaApi[] }>(`/admin/tenants/${tenantId}/transparencia-api/coletar`, { method: "POST" }),
+
+  // Página pública alimentada pela cópia local da API Nexa de Transparência.
+  portalPrevidenciarioTransparenciaApi: async (slug: string, codigo: string): Promise<TransparenciaApiConteudo> => {
+    const res = await fetch(`/api/public/portal-previdenciario/${slug}/transparencia-api/${codigo}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Página não encontrada.");
+    return data as TransparenciaApiConteudo;
+  },
+
   adminExportarCentral: () => request<unknown>("/admin/tenants/exportar-central", { method: "POST" }),
 
   adminDeleteTenant: (id: string) => request<unknown>(`/admin/tenants/${id}`, { method: "DELETE" }),
@@ -516,6 +528,25 @@ export interface TenantPermissao {
   efetivo: boolean;
 }
 
+export interface ResultadoColetaTransparenciaApi {
+  codigo: string;
+  ok: boolean;
+  total?: number;
+  novos?: number;
+  removidos?: number;
+  erro?: string;
+}
+
+// Cada endpoint da API Nexa tem seus próprios campos — a página de cada um sabe quais ler.
+export type RegistroTransparenciaApi = Record<string, unknown> & { _ano: number | null; _referencia: string | null };
+
+export interface TransparenciaApiConteudo {
+  codigo: string;
+  titulo: string;
+  atualizadoEm: string | null;
+  registros: RegistroTransparenciaApi[];
+}
+
 export interface AdminTenant {
   id: string;
   name: string;
@@ -535,6 +566,7 @@ export interface AdminTenant {
   nivelProGestaoAlvo: Nivel | null;
   seguradosCount: number;
   centralClientCode: string | null;
+  transparenciaApiChaveConfigurada: boolean;
   createdAt: string;
   membros: {
     membershipId: string;

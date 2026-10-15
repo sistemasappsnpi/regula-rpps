@@ -14,7 +14,7 @@ import { ConstrutorPage } from "./pages/ConstrutorPage";
 import { PortalIndicadoresLancamentoPage } from "./pages/PortalIndicadoresLancamentoPage";
 import { TransparenciaPublicaPage } from "./pages/TransparenciaPublicaPage";
 import { PortalPrevidenciarioPage } from "./pages/PortalPrevidenciarioPage";
-import { PortalPrevidenciarioDocumentoPage } from "./pages/PortalPrevidenciarioDocumentoPage";
+import { PortalPrevidenciarioRota } from "./pages/PortalPrevidenciarioApiPage";
 import { ContaNaoVinculadaPage } from "./pages/ContaNaoVinculadaPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminTenantsPage } from "./pages/admin/AdminTenantsPage";
@@ -83,7 +83,7 @@ export default function App() {
       <Route path="/sso-callback" element={<SsoCallbackPage />} />
       <Route path="/transparencia/:slug" element={<TransparenciaPublicaPage />} />
       <Route path="/portal-previdenciario/:slug" element={<PortalPrevidenciarioPage />} />
-      <Route path="/portal-previdenciario/:slug/:codigo" element={<PortalPrevidenciarioDocumentoPage />} />
+      <Route path="/portal-previdenciario/:slug/:codigo" element={<PortalPrevidenciarioRota />} />
 
       <Route
         path="/"

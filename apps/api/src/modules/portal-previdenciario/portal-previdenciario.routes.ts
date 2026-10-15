@@ -4,6 +4,7 @@ import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import { criarCache } from "../../middleware/publicProtect";
+import { endpointPorCodigo } from "../transparencia-api/catalogo";
 
 // Rota pública (sem requireAuth), mesmo padrão de /public/transparencia: o Portal
 // Previdenciário deste RPPS é público por definição. Diferente da Transparência, aqui não há
@@ -314,6 +315,35 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, re
         indicadores: await indicadoresParaPublico(documento.indicadores, tenant.id),
       },
     }));
+    res.json(corpo);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Páginas alimentadas pela API Nexa de Transparência (ex.: /portal-previdenciario/:slug/entidades-credenciadas).
+// Lê SEMPRE da cópia no nosso banco (TransparenciaApiRegistro), nunca da API do fornecedor — a coleta
+// roda à parte (ver transparencia-api/coletor.ts).
+portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/:codigo", async (req, res, next) => {
+  try {
+    const ep = endpointPorCodigo(req.params.codigo);
+    if (!ep) throw new HttpError(404, "Página não encontrada.");
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug }, select: { id: true } });
+    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+
+    const corpo = await cacheIndicadores(`napi|${tenant.id}|${ep.codigo}`, async () => {
+      const registros = await prisma.transparenciaApiRegistro.findMany({
+        where: { tenantId: tenant.id, endpoint: ep.codigo, removidoEm: null },
+        orderBy: [{ referencia: "desc" }, { coletadoEm: "asc" }],
+        select: { dados: true, ano: true, referencia: true, coletadoEm: true },
+      });
+      return {
+        codigo: ep.codigo,
+        titulo: ep.titulo,
+        atualizadoEm: registros.reduce<Date | null>((m, r) => (!m || r.coletadoEm > m ? r.coletadoEm : m), null),
+        registros: registros.map((r) => ({ ...(r.dados as Record<string, unknown>), _ano: r.ano, _referencia: r.referencia })),
+      };
+    });
     res.json(corpo);
   } catch (err) {
     next(err);

@@ -46,7 +46,11 @@ export function AdminTenantsPage() {
     nivelProGestaoAlvo: "" as Nivel | "",
     observacao: "",
     centralClientCode: "",
+    // campo só de escrita: a chave nunca volta do servidor; em branco = não altera a já cadastrada
+    transparenciaApiChave: "",
   });
+  const [coletando, setColetando] = useState(false);
+  const [resumoColeta, setResumoColeta] = useState<string | null>(null);
 
   const editando = tenants.find((t) => t.id === editandoId) ?? null;
 
@@ -92,7 +96,30 @@ export function AdminTenantsPage() {
       nivelProGestaoAlvo: t.nivelProGestaoAlvo ?? "",
       observacao: t.observacao ?? "",
       centralClientCode: t.centralClientCode ?? "",
+      transparenciaApiChave: "",
     });
+    setResumoColeta(null);
+  }
+
+  async function coletarTransparenciaApi() {
+    if (!editandoId) return;
+    setErro(null);
+    setResumoColeta(null);
+    setColetando(true);
+    try {
+      const { resultados } = await api.adminColetarTransparenciaApi(editandoId);
+      const ok = resultados.filter((r) => r.ok);
+      const falhas = resultados.filter((r) => !r.ok);
+      const novos = ok.reduce((s, r) => s + (r.novos ?? 0), 0);
+      setResumoColeta(
+        `${ok.length} de ${resultados.length} endpoints coletados, ${novos} registros novos.` +
+          (falhas.length ? ` Com erro: ${falhas.map((f) => `${f.codigo} (${f.erro})`).join("; ")}.` : ""),
+      );
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro ao coletar a API de Transparência.");
+    } finally {
+      setColetando(false);
+    }
   }
 
   async function exportarCentral() {
@@ -137,6 +164,7 @@ export function AdminTenantsPage() {
         plan: formEdicao.plan,
         nivelProGestaoAlvo: formEdicao.nivelProGestaoAlvo || null,
         centralClientCode: formEdicao.centralClientCode.trim() || null,
+        transparenciaApiChave: formEdicao.transparenciaApiChave.trim() || undefined,
       });
       await carregar();
       setEditandoId(null);
@@ -452,6 +480,37 @@ export function AdminTenantsPage() {
               </div>
               <span className="mt-1 block text-xs text-ink-muted">Em branco usa a cor padrão do modelo.</span>
             </label>
+            <div className="sm:col-span-2">
+              <p className="text-sm font-medium text-ink">API de Transparência (Nexa)</p>
+              <p className="mt-0.5 text-xs text-ink-muted">
+                Chave do órgão na API Nexa. Os dados são copiados para o nosso banco e as páginas do Portal Previdenciário
+                leem da cópia. Salve a chave antes de coletar.
+              </p>
+            </div>
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">
+                Chave {editando?.transparenciaApiChaveConfigurada && <span className="font-normal text-ok">· já cadastrada</span>}
+              </span>
+              <input
+                type="password"
+                autoComplete="off"
+                value={formEdicao.transparenciaApiChave}
+                onChange={(e) => setFormEdicao({ ...formEdicao, transparenciaApiChave: e.target.value })}
+                placeholder={editando?.transparenciaApiChaveConfigurada ? "Deixe em branco para manter a atual" : "Cole a chave aqui"}
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+              <button
+                type="button"
+                onClick={coletarTransparenciaApi}
+                disabled={coletando || !editando?.transparenciaApiChaveConfigurada}
+                className="rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:border-petrol disabled:opacity-50"
+              >
+                {coletando ? "Coletando…" : "Coletar agora"}
+              </button>
+              {resumoColeta && <span className="text-xs text-ink-muted">{resumoColeta}</span>}
+            </div>
           </div>
         )}
 
