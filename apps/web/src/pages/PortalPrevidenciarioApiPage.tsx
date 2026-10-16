@@ -5,6 +5,8 @@ import { api, type PortalPrevidenciario, type RegistroTransparenciaApi, type Tra
 import { Card } from "../components/ui/Card";
 import { PortalPrevidenciarioLayout } from "../components/layout/PortalPrevidenciarioLayout";
 import { EntidadesCredenciadasView } from "../components/portal-previdenciario/EntidadesCredenciadasView";
+import { ListaDocumentosView } from "../components/portal-previdenciario/ListaDocumentosView";
+import { CONFIGS_LISTA_DOCUMENTOS } from "../components/portal-previdenciario/listaDocumentosConfigs";
 import { PortalPrevidenciarioDocumentoPage } from "./PortalPrevidenciarioDocumentoPage";
 import { useAutoRefresh } from "../lib/useAutoRefresh";
 
@@ -13,6 +15,13 @@ import { useAutoRefresh } from "../lib/useAutoRefresh";
 // os que ainda não têm visão pronta não entram aqui e caem no comportamento antigo (documento).
 const VISOES: Record<string, ComponentType<{ registros: RegistroTransparenciaApi[] }>> = {
   "entidades-credenciadas": EntidadesCredenciadasView,
+  // páginas "lista de documentos": mesmo molde (ListaDocumentosView), cada uma com a sua config
+  ...Object.fromEntries(
+    Object.entries(CONFIGS_LISTA_DOCUMENTOS).map(([codigo, config]) => [
+      codigo,
+      ({ registros }: { registros: RegistroTransparenciaApi[] }) => <ListaDocumentosView registros={registros} config={config} />,
+    ]),
+  ),
 };
 
 // Mesma rota do DAIR/DPIN (/portal-previdenciario/:slug/:codigo): decide qual dos dois tipos de página é.

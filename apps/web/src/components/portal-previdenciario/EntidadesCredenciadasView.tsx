@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { BadgeCheck, Building, Landmark, Search, ShieldAlert, Vault } from "lucide-react";
+import { Building, CalendarCheck, Landmark, Search, Vault } from "lucide-react";
 import { Card, StatTile } from "../ui/Card";
 import type { RegistroTransparenciaApi } from "../../lib/api";
 
@@ -58,23 +58,15 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
     [registros],
   );
 
-  const hoje = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
-
   const resumo = useMemo(() => {
     const porTipo = new Map<string, number>();
     const renovacoesPorAno = new Map<number, number>();
-    let vigentes = 0;
-    let vencidas = 0;
+    let ultimaRenovacao: Date | null = null;
     for (const e of entidades) {
       const tipo = rotuloTipo(e.tipo);
       porTipo.set(tipo, (porTipo.get(tipo) ?? 0) + 1);
       if (e.renovacao) {
-        if (e.renovacao >= hoje) vigentes++;
-        else vencidas++;
+        if (!ultimaRenovacao || e.renovacao > ultimaRenovacao) ultimaRenovacao = e.renovacao;
         const ano = e.renovacao.getFullYear();
         renovacoesPorAno.set(ano, (renovacoesPorAno.get(ano) ?? 0) + 1);
       }
@@ -82,10 +74,9 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
     return {
       porTipo: [...porTipo.entries()].map(([nome, total]) => ({ nome, total })).sort((a, b) => b.total - a.total),
       renovacoesPorAno: [...renovacoesPorAno.entries()].map(([ano, total]) => ({ ano: String(ano), total })).sort((a, b) => a.ano.localeCompare(b.ano)),
-      vigentes,
-      vencidas,
+      ultimaRenovacao,
     };
-  }, [entidades, hoje]);
+  }, [entidades]);
 
   const tipos = resumo.porTipo.map((t) => t.nome);
 
@@ -127,11 +118,11 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
           tone="ok"
         />
         <StatTile
-          label="Renovação em dia"
-          value={`${resumo.vigentes}/${resumo.vigentes + resumo.vencidas}`}
-          hint={resumo.vencidas ? `${resumo.vencidas} com a data de renovação já passada` : "Todas com renovação vigente"}
-          icon={resumo.vencidas ? <ShieldAlert size={20} /> : <BadgeCheck size={20} />}
-          tone={resumo.vencidas ? "warn" : "ok"}
+          label="Última renovação registrada"
+          value={formatarData(resumo.ultimaRenovacao)}
+          hint="Data mais recente entre os credenciamentos"
+          icon={<CalendarCheck size={20} />}
+          tone="warn"
         />
       </div>
 
@@ -209,7 +200,6 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
             </thead>
             <tbody>
               {filtradas.map((e) => {
-                const vencida = e.renovacao ? e.renovacao < hoje : false;
                 return (
                   <tr key={`${e.cnpj}|${e.tipo}|${e.instituicao}`} className="border-b border-border/60 last:border-0">
                     <td className="py-2.5 pr-3 font-medium text-ink">{e.instituicao || "—"}</td>
@@ -217,7 +207,7 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
                     <td className="py-2.5 pr-3 text-ink">{rotuloTipo(e.tipo)}</td>
                     <td className="py-2.5 pr-3 tabular text-ink">{formatarData(e.credenciamento)}</td>
                     <td className="py-2.5 pr-3 tabular">
-                      <span className={vencida ? "text-warn" : "text-ink"}>{formatarData(e.renovacao)}</span>
+                      <span className="text-ink">{formatarData(e.renovacao)}</span>
                     </td>
                   </tr>
                 );
