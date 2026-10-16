@@ -179,9 +179,7 @@ export function PortalPrevidenciarioLayout({
             © {new Date().getFullYear()} {tenantNome}. Todos os direitos reservados.
           </p>
           <p className="mt-1">
-            {sincronizadoEm
-              ? `Sincronizado com a API às ${new Date(sincronizadoEm).toLocaleTimeString("pt-BR")}.`
-              : "Exibindo cópia local — API indisponível no momento."}
+            Página desenvolvida por <span className="font-semibold text-white/80">NPI BRASIL</span>
           </p>
         </div>
       </footer>
