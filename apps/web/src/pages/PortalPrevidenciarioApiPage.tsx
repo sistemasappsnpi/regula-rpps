@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ComponentType } from "react";
 import { useParams } from "react-router-dom";
-import { Building2, CalendarClock, ScrollText } from "lucide-react";
+import { Building2, CalendarClock } from "lucide-react";
 import { api, type PortalPrevidenciario, type RegistroTransparenciaApi, type TransparenciaApiConteudo } from "../lib/api";
 import { Card } from "../components/ui/Card";
 import { PortalPrevidenciarioLayout } from "../components/layout/PortalPrevidenciarioLayout";
@@ -79,15 +79,6 @@ function PortalPrevidenciarioApiPage() {
       <div className="mx-auto max-w-7xl">
         <div className="relative mb-2 overflow-hidden rounded-2xl border border-border bg-surface/80 px-5 py-6 shadow-lift sm:px-8 sm:py-8">
           <div className="flex items-start gap-4">
-            {dados?.tenant.logoUrl ? (
-              <div className="hidden h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lift sm:flex">
-                <img src={dados.tenant.logoUrl} alt={dados.tenant.name} className="h-full w-full object-cover object-left" />
-              </div>
-            ) : (
-              <div className="hidden h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-petrol to-gold shadow-lift sm:flex">
-                <ScrollText size={34} className="text-white" strokeWidth={2} />
-              </div>
-            )}
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-petrol">Transparência</p>
               <h1 className="mt-1 font-display text-2xl font-extrabold leading-tight text-ink sm:text-4xl">

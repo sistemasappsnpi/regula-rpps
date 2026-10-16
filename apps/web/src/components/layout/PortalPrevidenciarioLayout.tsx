@@ -52,11 +52,11 @@ export function PortalPrevidenciarioLayout({
 
   return (
     <div className="portal-publico-claro flex min-h-screen flex-col bg-bg">
-      <header className="border-b border-border bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center">
+      <header className="border-b border-border bg-white px-6 py-5">
+        <div className="mx-auto flex max-w-7xl items-center">
           <a href={slug ? `/portal-previdenciario/${slug}` : "#"} className="flex items-center gap-2">
             {tenantLogoUrl ? (
-              <img src={tenantLogoUrl} alt={tenantNome} className="h-10 w-auto" />
+              <img src={tenantLogoUrl} alt={tenantNome} className="h-14 w-auto sm:h-20" />
             ) : (
               <span className="font-display text-lg font-bold text-ink">{tenantNome}</span>
             )}
@@ -66,7 +66,7 @@ export function PortalPrevidenciarioLayout({
 
       {menu && menu.length > 0 && (
         <nav className="relative z-10 px-6" style={{ backgroundColor: cor }}>
-          <div className="mx-auto flex max-w-5xl flex-wrap items-center">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center">
             {menu.map((item) => {
               const ativo = item.id === itemAtivoId;
               return (
@@ -80,7 +80,7 @@ export function PortalPrevidenciarioLayout({
                     <button
                       type="button"
                       onClick={() => setAbertoId((atual) => (atual === item.id ? null : item.id))}
-                      className="flex items-center gap-1 px-4 py-3 text-xs font-bold uppercase tracking-wide text-white/90 hover:bg-white/10"
+                      className="flex items-center gap-1.5 px-5 py-4 text-sm font-bold uppercase tracking-wide text-white/90 hover:bg-white/10"
                       style={ativo ? { backgroundColor: "rgba(255,255,255,0.16)", color: "#fff" } : undefined}
                     >
                       {item.nome}
@@ -91,21 +91,21 @@ export function PortalPrevidenciarioLayout({
                       href={item.pagina}
                       target={item.novaPag === "_blank" ? "_blank" : undefined}
                       rel={item.novaPag === "_blank" ? "noreferrer" : undefined}
-                      className="block px-4 py-3 text-xs font-bold uppercase tracking-wide text-white/90 hover:bg-white/10"
+                      className="block px-5 py-4 text-sm font-bold uppercase tracking-wide text-white/90 hover:bg-white/10"
                       style={ativo ? { backgroundColor: "rgba(255,255,255,0.16)", color: "#fff" } : undefined}
                     >
                       {item.nome}
                     </a>
                   )}
                   {item.itens.length > 0 && abertoId === item.id && (
-                    <div className="absolute left-0 top-full min-w-[220px] rounded-b-lg border border-t-0 border-border bg-white py-1 shadow-lg">
+                    <div className="absolute left-0 top-full min-w-[260px] rounded-b-lg border border-t-0 border-border bg-white py-1 shadow-lg">
                       {item.itens.map((filho) => (
                         <a
                           key={filho.id}
                           href={filho.pagina}
                           target={filho.novaPag === "_blank" ? "_blank" : undefined}
                           rel={filho.novaPag === "_blank" ? "noreferrer" : undefined}
-                          className="block px-4 py-2 text-sm text-ink hover:bg-ink/5"
+                          className="block px-5 py-2.5 text-[15px] text-ink hover:bg-ink/5"
                         >
                           {filho.nome}
                         </a>
