@@ -149,6 +149,7 @@ portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
         slug: tenant.slug,
         logoUrl: tenant.logoUrl,
         corPrimaria: tenant.portalCorPrimaria,
+        site: tenant.site,
       },
       menu,
       menuConfigurado: Boolean(tenant.portalMenuApiUrl),

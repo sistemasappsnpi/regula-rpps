@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { CalendarRange, ExternalLink, FileText, Layers, Search } from "lucide-react";
 import { Card, StatTile } from "../ui/Card";
 import type { RegistroTransparenciaApi } from "../../lib/api";
+import { corDoGrafico } from "./paletaGraficos";
 
 // Molde das páginas "lista de documentos" da API Nexa (a maioria dos endpoints: cada registro é um
 // documento com ano/período, às vezes um grupo — colegiado, tipo — e um ou mais PDFs). Cada página só
@@ -37,7 +38,11 @@ const POR_PAGINA = 40;
 
 export function ListaDocumentosView({ registros, config }: { registros: RegistroTransparenciaApi[]; config: ConfigListaDocumentos }) {
   const [busca, setBusca] = useState("");
-  const [anoFiltro, setAnoFiltro] = useState("");
+  // abre já filtrado pelo exercício mais recente; o filtro troca de exercício (ou mostra todos)
+  const [anoFiltro, setAnoFiltro] = useState(() => {
+    const anos = registros.map((r) => config.ano(r)).filter((a): a is number => a !== null);
+    return anos.length ? String(Math.max(...anos)) : "";
+  });
   const [grupoFiltro, setGrupoFiltro] = useState("");
   const [visiveis, setVisiveis] = useState(POR_PAGINA);
 
@@ -132,7 +137,7 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
       <div className={`grid gap-4 ${config.grupo && resumo.porGrupo.length > 1 ? "lg:grid-cols-2" : ""}`}>
         {resumo.porAno.length > 0 && (
           <Card className="p-5">
-            <p className="text-sm font-semibold text-ink">{config.rotuloItens.charAt(0).toLocaleUpperCase("pt-BR") + config.rotuloItens.slice(1)} por ano</p>
+            <p className="text-sm font-semibold text-ink">{config.rotuloItens.charAt(0).toLocaleUpperCase("pt-BR") + config.rotuloItens.slice(1)} por exercício</p>
             <div className="mt-2 h-56">
               <ResponsiveContainer>
                 <BarChart data={resumo.porAno} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -140,7 +145,11 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
                   <XAxis dataKey="ano" stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
                   <Tooltip cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }} />
-                  <Bar dataKey="total" name="Quantidade" fill="rgb(var(--color-petrol))" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                  <Bar dataKey="total" name="Quantidade" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                    {resumo.porAno.map((a, i) => (
+                      <Cell key={a.ano} fill={corDoGrafico(i)} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -150,7 +159,7 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
           <Card className="p-5">
             <p className="text-sm font-semibold text-ink">Por {config.grupo.rotulo.toLocaleLowerCase("pt-BR")}</p>
             <div className="mt-4 space-y-3">
-              {resumo.porGrupo.map((g) => (
+              {resumo.porGrupo.map((g, i) => (
                 <button
                   key={g.nome}
                   type="button"
@@ -166,7 +175,7 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
                     <span className="tabular text-ink-muted">{g.total}</span>
                   </div>
                   <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-border/60">
-                    <div className="h-full rounded-full bg-petrol" style={{ width: `${(g.total / maxGrupo) * 100}%` }} />
+                    <div className="h-full rounded-full" style={{ width: `${(g.total / maxGrupo) * 100}%`, backgroundColor: corDoGrafico(i) }} />
                   </div>
                 </button>
               ))}
@@ -198,10 +207,10 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
               }}
               className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none"
             >
-              <option value="">Todos os anos</option>
+              <option value="">Todos os exercícios</option>
               {[...resumo.anos].reverse().map((a) => (
                 <option key={a} value={a}>
-                  {a}
+                  Exercício {a}
                 </option>
               ))}
             </select>
@@ -231,7 +240,9 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
         <div className="mt-4 space-y-6">
           {secoes.map((s) => (
             <section key={s.ano}>
-              <h3 className="mb-2 border-b border-border pb-1 text-sm font-bold text-petrol">{s.ano}</h3>
+              <h3 className="mb-2 border-b border-border pb-1 text-sm font-bold text-petrol">
+                {/^\d{4}$/.test(s.ano) ? `Exercício ${s.ano}` : s.ano}
+              </h3>
               <ul className="divide-y divide-border/60">
                 {s.itens.map((it, i) => (
                   <li key={`${s.ano}-${i}`} className="flex flex-wrap items-center justify-between gap-3 py-3">

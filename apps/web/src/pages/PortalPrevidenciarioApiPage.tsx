@@ -80,6 +80,7 @@ function PortalPrevidenciarioApiPage() {
       tenantNome={dados?.tenant.name ?? "Portal Previdenciário"}
       tenantLogoUrl={dados?.tenant.logoUrl}
       corPrimaria={dados?.tenant.corPrimaria}
+      siteUrl={dados?.tenant.site}
       slug={slug}
       menu={dados?.menu ?? null}
       rodape={dados?.rodape ?? null}

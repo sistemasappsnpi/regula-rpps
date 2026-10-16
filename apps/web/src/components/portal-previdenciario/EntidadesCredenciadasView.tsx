@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import { Building, CalendarCheck, Landmark, Search, Vault } from "lucide-react";
 import { Card, StatTile } from "../ui/Card";
 import type { RegistroTransparenciaApi } from "../../lib/api";
+import { corDoGrafico } from "./paletaGraficos";
 
 // Conteúdo da página "Entidades de investimento credenciadas" (API Nexa: EntidadeInvestimentoCredenciada).
 // Campos de cada registro: cnpj, instituicao, tipo, credenciamento (dd/mm/aaaa), renovacao (dd/mm/aaaa).
@@ -37,8 +38,6 @@ function rotuloTipo(tipo: string): string {
   const t = tipo.toLocaleLowerCase("pt-BR");
   return t.charAt(0).toLocaleUpperCase("pt-BR") + t.slice(1);
 }
-
-const CORES_TIPO = ["rgb(var(--color-petrol))", "rgb(var(--color-gold))", "rgb(var(--color-ok))", "rgb(var(--color-warn))"];
 
 export function EntidadesCredenciadasView({ registros }: { registros: RegistroTransparenciaApi[] }) {
   const [busca, setBusca] = useState("");
@@ -134,7 +133,7 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
               <PieChart>
                 <Pie data={resumo.porTipo} dataKey="total" nameKey="nome" innerRadius={52} outerRadius={88} paddingAngle={2} label={(p) => `${p.name}: ${p.value}`}>
                   {resumo.porTipo.map((t, i) => (
-                    <Cell key={t.nome} fill={CORES_TIPO[i % CORES_TIPO.length]} />
+                    <Cell key={t.nome} fill={corDoGrafico(i)} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -152,7 +151,11 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
                 <XAxis dataKey="ano" stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis allowDecimals={false} stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }} />
-                <Bar dataKey="total" name="Renovações" fill="rgb(var(--color-petrol))" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                <Bar dataKey="total" name="Renovações" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                  {resumo.renovacoesPorAno.map((a, i) => (
+                    <Cell key={a.ano} fill={corDoGrafico(i)} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>

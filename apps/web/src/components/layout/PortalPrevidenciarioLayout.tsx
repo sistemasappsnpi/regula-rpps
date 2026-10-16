@@ -30,6 +30,7 @@ export function PortalPrevidenciarioLayout({
   tenantNome,
   tenantLogoUrl,
   corPrimaria,
+  siteUrl,
   slug,
   itemAtivoId,
   menu,
@@ -40,6 +41,8 @@ export function PortalPrevidenciarioLayout({
   tenantNome: string;
   tenantLogoUrl?: string | null;
   corPrimaria?: string | null;
+  // site principal do órgão: a logo do topo leva pra lá (sem ele, cai no início do próprio portal)
+  siteUrl?: string | null;
   slug?: string;
   itemAtivoId?: string;
   menu: PortalPrevidenciarioMenuItem[] | null;
@@ -54,7 +57,11 @@ export function PortalPrevidenciarioLayout({
     <div className="portal-publico-claro flex min-h-screen flex-col bg-bg">
       <header className="border-b border-border bg-white px-6 py-5">
         <div className="mx-auto flex max-w-7xl items-center">
-          <a href={slug ? `/portal-previdenciario/${slug}` : "#"} className="flex items-center gap-2">
+          <a
+            href={siteUrl && /^https?:\/\//i.test(siteUrl) ? siteUrl : slug ? `/portal-previdenciario/${slug}` : "#"}
+            title={siteUrl ? "Ir para o site do órgão" : undefined}
+            className="flex items-center gap-2"
+          >
             {tenantLogoUrl ? (
               <img src={tenantLogoUrl} alt={tenantNome} className="h-14 w-auto sm:h-20" />
             ) : (

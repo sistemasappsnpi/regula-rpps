@@ -784,7 +784,7 @@ export interface PortalPrevidenciarioRodape {
 }
 
 export interface PortalPrevidenciario {
-  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null };
+  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null; site: string | null };
   menu: PortalPrevidenciarioMenuItem[] | null;
   menuConfigurado: boolean;
   rodape: PortalPrevidenciarioRodape | null;
