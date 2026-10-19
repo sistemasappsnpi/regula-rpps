@@ -108,14 +108,16 @@ export async function statusArquivos(tenantId: string): Promise<StatusArquivos> 
 export async function baixarArquivosPendentes(tenantId: string, orcamentoMs: number): Promise<{ baixados: number; falhas: string[] }> {
   const inicio = Date.now();
   const urls = await urlsDoTenant(tenantId);
-  const existentes = await prisma.transparenciaApiArquivo.findMany({ where: { tenantId }, select: { urlHash: true, status: true, tentativas: true } });
+  const existentes = await prisma.transparenciaApiArquivo.findMany({ where: { tenantId }, select: { urlHash: true, status: true, tentativas: true, updatedAt: true } });
   const porHash = new Map(existentes.map((e) => [e.urlHash, e]));
 
-  // nunca tentados primeiro, depois as falhas que ainda têm tentativa sobrando
+  // nunca tentados primeiro, depois as falhas que ainda têm tentativa sobrando. Quem esgotou as tentativas
+  // ainda é revisitado a cada 24h: se a fonte consertar o arquivo no mesmo endereço, ele volta sozinho.
+  const UM_DIA = 24 * 60 * 60_000;
   const novos = urls.filter((u) => !porHash.has(hashUrl(u)));
   const repetir = urls.filter((u) => {
     const e = porHash.get(hashUrl(u));
-    return e && e.status === "FALHA" && e.tentativas < MAX_TENTATIVAS;
+    return e && e.status === "FALHA" && (e.tentativas < MAX_TENTATIVAS || Date.now() - e.updatedAt.getTime() > UM_DIA);
   });
 
   let baixados = 0;
