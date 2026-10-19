@@ -48,6 +48,8 @@ export function iniciarColetaAgendada(): void {
         where: { OR: [{ transparenciaApiChave: { not: null } }, { portalMenuApiUrl: { contains: "dadosabertosexportar" } }] },
         select: { id: true, slug: true },
       });
+      // FASE 1 — dados de todos os clientes (rápido). Os PDFs vêm só depois, para que um cliente com milhares de
+      // arquivos para baixar nunca atrase a coleta dos dados dos outros.
       for (const t of tenants) {
         try {
           const resultados = await coletarTudo(t.id);
@@ -55,13 +57,20 @@ export function iniciarColetaAgendada(): void {
           const novos = resultados.reduce((s, r) => s + (r.novos ?? 0), 0);
           console.log(`[transparencia-api] ${t.slug}: ${resultados.length - falhas.length}/${resultados.length} conjuntos, ${novos} novos`);
           for (const f of falhas.slice(0, 10)) console.log(`[transparencia-api]   ${f.codigo}: ${f.erro}`);
-          // PDFs/anexos: baixa o que falta, aos poucos (a primeira carga leva algumas rodadas)
-          const arq = await baixarArquivosPendentes(t.id, 4 * 60_000);
+        } catch (err) {
+          // um cliente com problema não pode impedir a coleta dos outros
+          console.error(`[transparencia-api] ${t.slug}: coleta falhou:`, err instanceof Error ? err.message : err);
+        }
+      }
+      // FASE 2 — PDFs/anexos: baixa o que falta, aos poucos (a primeira carga leva várias rodadas), dividindo o
+      // tempo entre os clientes.
+      for (const t of tenants) {
+        try {
+          const arq = await baixarArquivosPendentes(t.id, 3 * 60_000);
           console.log(`[transparencia-api] ${t.slug}: ${arq.baixados} arquivos baixados, ${arq.falhas.length} com problema`);
           for (const f of arq.falhas.slice(0, 15)) console.log(`[transparencia-api]   ${f}`);
         } catch (err) {
-          // um cliente com problema não pode impedir a coleta dos outros
-          console.error(`[transparencia-api] ${t.slug}: falhou:`, err instanceof Error ? err.message : err);
+          console.error(`[transparencia-api] ${t.slug}: download de arquivos falhou:`, err instanceof Error ? err.message : err);
         }
       }
     } catch (err) {
