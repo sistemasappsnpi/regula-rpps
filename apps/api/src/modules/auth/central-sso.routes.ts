@@ -90,6 +90,17 @@ centralSsoRouter.get("/login", async (req, res) => {
   }
 });
 
+// Sair do sistema também encerra a sessão do APP CENTRAL: o frontend manda o navegador pra cá e daqui ele
+// segue pro end_session_endpoint dela (sem id_token_hint e sem post_logout_redirect_uri — a Central limpa a
+// sessão e cai no login dela). Sem a Central configurada (ex.: ambiente de desenvolvimento), volta pro /login.
+centralSsoRouter.get("/logout", (_req, res) => {
+  if (!isCentralSsoConfigured()) {
+    res.redirect(`${env.webUrl}/login`);
+    return;
+  }
+  res.redirect(`${env.central.issuer.replace(/\/+$/, "")}/oauth/logout`);
+});
+
 centralSsoRouter.get("/callback", async (req, res) => {
   if (!isCentralSsoConfigured()) {
     redirectComErro(res, "Login com o APP CENTRAL não está disponível neste ambiente.");
@@ -158,6 +169,13 @@ centralSsoRouter.get("/callback", async (req, res) => {
           lastLoginAt: new Date(),
         },
       });
+    }
+
+    // Usuário desativado aqui não entra, mesmo com sessão válida na Central. (Só vale pra quem já existe:
+    // a criação automática segue como antes, sempre ativo.)
+    if (!user.ativo) {
+      redirectComErro(res, "Seu acesso a este sistema está desativado. Fale com o administrador.");
+      return;
     }
 
     let memberships: (Membership & { tenant: Tenant })[] = [];

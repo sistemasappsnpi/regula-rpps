@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { ShieldCheck, LogIn, ArrowRight, ClipboardCheck, FileSearch, History, Lock } from "lucide-react";
 import { api } from "../lib/api";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import { marcarTentativaCentral, saidaRecente, tentativaCentralRecente } from "../lib/sessao";
 
 const DESTAQUES = [
   { icon: ClipboardCheck, titulo: "CRP e Pró-Gestão", texto: "Critérios e ações acompanhados do preenchimento à comprovação." },
@@ -23,7 +24,30 @@ export function LoginPage() {
     api.ssoProviders().then(setProviders).catch(() => setProviders({ central: false, microsoft: false, govbr: false }));
   }, []);
 
+  // Entrada direta: com o APP CENTRAL configurado, esta tela só aparece quando há motivo pra ficar nela —
+  //   ?erro= (o login falhou e a pessoa precisa ver por quê), ?manual=1 (quem quer Microsoft/gov.br),
+  //   acabou de sair, ou o redirect acabou de acontecer e voltou (anti-loop). Nos demais casos vai direto
+  //   pro login da Central, que volta em silêncio se a sessão dela estiver ativa.
+  const manual = searchParams.get("manual") === "1";
+  const entradaDireta = !!providers?.central && !erro && !manual && !saidaRecente() && !tentativaCentralRecente();
+
+  useEffect(() => {
+    if (!entradaDireta) return;
+    marcarTentativaCentral();
+    window.location.replace("/api/auth/central/login");
+  }, [entradaDireta]);
+
   const temOutros = !!providers && (providers.microsoft || providers.govbr);
+
+  // enquanto descobre os provedores (ou já está indo pra Central), nada de piscar a tela de botões
+  if (providers === null || entradaDireta) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-bg px-4 text-center">
+        <img src="/logo-npi.png" alt="NPI Brasil" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow-soft" />
+        <p className="text-sm font-medium text-ink-muted">{entradaDireta ? "Redirecionando para o login do APP CENTRAL…" : "Carregando…"}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">

@@ -7,9 +7,9 @@ import { useAuth } from "../lib/auth-context";
 export function ContaNaoVinculadaPage() {
   const { user, logout } = useAuth();
 
+  // logout() já leva o navegador pro logout do APP CENTRAL (e de lá pro login dela)
   function sair() {
     logout();
-    window.location.replace("/login");
   }
 
   return (

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, clearToken, getToken, type Tenant } from "./api";
+import { marcarSaida } from "./sessao";
 
 interface AuthUser {
   id: string;
@@ -48,12 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bootstrap();
   }, [bootstrap]);
 
+  // Sair daqui também derruba a sessão do APP CENTRAL: o navegador vai pro logout dela (via nosso backend,
+  // que conhece o endereço), e ela mesma cai na tela de login. A marca de saída evita que a tela /login
+  // daqui jogue o usuário de volta pra Central caso ele volte por este endereço logo em seguida.
   const logout = useCallback(() => {
     clearToken();
     setUser(null);
     setTenant(null);
     setIsSuperAdmin(false);
     setFeatures([]);
+    marcarSaida();
+    window.location.href = "/api/auth/central/logout";
   }, []);
 
   const hasFeature = useCallback((key: string) => features.includes(key), [features]);
