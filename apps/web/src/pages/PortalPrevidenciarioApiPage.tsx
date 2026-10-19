@@ -6,7 +6,7 @@ import { Card } from "../components/ui/Card";
 import { PortalPrevidenciarioLayout } from "../components/layout/PortalPrevidenciarioLayout";
 import { EntidadesCredenciadasView } from "../components/portal-previdenciario/EntidadesCredenciadasView";
 import { ListaDocumentosView } from "../components/portal-previdenciario/ListaDocumentosView";
-import { ListaBasicaView } from "../components/portal-previdenciario/ListaBasicaView";
+import { PortalBasico } from "../components/portal-basico/PortalBasico";
 import { CONFIG_ENTIDADES_BASICA, configDaLista } from "../components/portal-previdenciario/listaDocumentosConfigs";
 import { PortalPrevidenciarioDocumentoPage } from "./PortalPrevidenciarioDocumentoPage";
 import { useAutoRefresh } from "../lib/useAutoRefresh";
@@ -17,17 +17,16 @@ import { useAutoRefresh } from "../lib/useAutoRefresh";
 // O ESTILO vem do cadastro do cliente: "completo" (busca inteligente, gráficos, todos os campos) ou "basico"
 // (filtros simples + lista, no padrão do portal de transparência do órgão).
 // Código que não é nenhum destes cai no comportamento antigo (documento DAIR/DPIN).
-type Estilo = "completo" | "basico";
-
 function ehPaginaApi(codigo: string): boolean {
   return codigo === "entidades-credenciadas" || configDaLista(codigo) !== null;
 }
 
-function Visao({ codigo, registros, estilo }: { codigo: string; registros: RegistroTransparenciaApi[]; estilo: Estilo }) {
-  const config = useMemo(() => (codigo === "entidades-credenciadas" ? CONFIG_ENTIDADES_BASICA : configDaLista(codigo)), [codigo]);
-  if (codigo === "entidades-credenciadas" && estilo === "completo") return <EntidadesCredenciadasView registros={registros} />;
+// Estilo COMPLETO (o estilo básico é uma página à parte, ver PortalBasico)
+function Visao({ codigo, registros }: { codigo: string; registros: RegistroTransparenciaApi[] }) {
+  const config = useMemo(() => configDaLista(codigo), [codigo]);
+  if (codigo === "entidades-credenciadas") return <EntidadesCredenciadasView registros={registros} />;
   if (!config) return null;
-  return estilo === "basico" ? <ListaBasicaView registros={registros} config={config} /> : <ListaDocumentosView registros={registros} config={config} />;
+  return <ListaDocumentosView registros={registros} config={config} />;
 }
 
 // Mesma rota do DAIR/DPIN (/portal-previdenciario/:slug/:codigo): decide qual dos dois tipos de página é.
@@ -78,6 +77,21 @@ function PortalPrevidenciarioApiPage() {
     );
   }
 
+  // Cliente no estilo BÁSICO: página própria, no visual do portal de transparência do órgão (sem o layout do
+  // nosso portal). Enquanto ainda não sabemos o estilo do cliente, nada é desenhado (evita piscar o layout errado).
+  if (!dados) return <div style={{ minHeight: "100vh", background: "#f4f6f8" }} aria-busy="true" />;
+  if (dados.tenant.estiloPaginas === "basico") {
+    return (
+      <PortalBasico
+        slug={slug ?? ""}
+        dados={dados}
+        titulo={conteudo?.titulo ?? "Carregando…"}
+        atualizadoEm={conteudo?.atualizadoEm ?? null}
+        registros={conteudo?.registros ?? []}
+        config={conteudo ? (codigo === "entidades-credenciadas" ? CONFIG_ENTIDADES_BASICA : configDaLista(codigo ?? "")) : null}
+      />
+    );
+  }
   return (
     <PortalPrevidenciarioLayout
       tenantNome={dados?.tenant.name ?? "Portal Previdenciário"}
@@ -117,7 +131,7 @@ function PortalPrevidenciarioApiPage() {
         {!conteudo || !dados || !codigo ? (
           <p className="mt-8 text-sm text-ink-muted">Carregando…</p>
         ) : (
-          <Visao codigo={codigo} registros={conteudo.registros} estilo={dados.tenant.estiloPaginas} />
+          <Visao codigo={codigo} registros={conteudo.registros} />
         )}
       </div>
     </PortalPrevidenciarioLayout>
