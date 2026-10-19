@@ -1,16 +1,19 @@
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Building, CalendarCheck, Landmark, Search, Vault } from "lucide-react";
+import { Building, CalendarCheck, Landmark, SearchX, Vault } from "lucide-react";
 import { Card, StatTile } from "../ui/Card";
 import type { RegistroTransparenciaApi } from "../../lib/api";
+import type { DocBusca } from "../../lib/buscaInteligente";
 import { corDoGrafico } from "./paletaGraficos";
+import { ATRASO_GRAFICO, DURACAO_GRAFICO, entradaEscalonada, useAnimarGraficos } from "./animacao";
+import { CampoBusca, Destaque, ResumoBusca, useBusca } from "./CampoBusca";
 
 // Conteúdo da página "Entidades de investimento credenciadas" (API Nexa: EntidadeInvestimentoCredenciada).
 // Campos de cada registro: cnpj, instituicao, tipo, credenciamento (dd/mm/aaaa), renovacao (dd/mm/aaaa).
-// Primeira página do padrão "API Nexa → cópia no banco → página com gráficos"; as próximas reaproveitam
-// o mesmo esqueleto (cabeçalho, StatTiles, gráficos, tabela com busca).
+// Mesmo esqueleto das demais páginas: busca, cartões, gráficos animados e tabela.
 
 interface Entidade {
+  id: number;
   cnpj: string;
   instituicao: string;
   tipo: string;
@@ -40,8 +43,9 @@ function rotuloTipo(tipo: string): string {
 }
 
 export function EntidadesCredenciadasView({ registros }: { registros: RegistroTransparenciaApi[] }) {
-  const [busca, setBusca] = useState("");
+  const [consulta, setConsulta] = useState("");
   const [tipoFiltro, setTipoFiltro] = useState("");
+  const animar = useAnimarGraficos();
 
   const entidades = useMemo<Entidade[]>(
     () =>
@@ -53,9 +57,25 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
           credenciamento: lerDataBr(r.credenciamento),
           renovacao: lerDataBr(r.renovacao),
         }))
-        .sort((a, b) => a.instituicao.localeCompare(b.instituicao, "pt-BR")),
+        .sort((a, b) => a.instituicao.localeCompare(b.instituicao, "pt-BR"))
+        .map((e, id) => ({ ...e, id })),
     [registros],
   );
+
+  // o que a busca enxerga: nome (peso maior), tipo, e o resto (CNPJ, anos e datas de credenciamento/renovação)
+  const docsBusca = useMemo<DocBusca[]>(
+    () =>
+      entidades.map((e) => ({
+        id: e.id,
+        titulo: e.instituicao,
+        grupo: rotuloTipo(e.tipo),
+        desc: "",
+        extra: [e.cnpj, e.cnpj.replace(/\D/g, ""), formatarData(e.credenciamento), formatarData(e.renovacao), e.credenciamento?.getFullYear(), e.renovacao?.getFullYear()].filter(Boolean).join(" "),
+      })),
+    [entidades],
+  );
+  const { motor, resultado } = useBusca(docsBusca, consulta);
+  const sugestoes = useMemo(() => motor.sugestoes(5), [motor]);
 
   const resumo = useMemo(() => {
     const porTipo = new Map<string, number>();
@@ -78,19 +98,14 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
   }, [entidades]);
 
   const tipos = resumo.porTipo.map((t) => t.nome);
+  const buscando = consulta.trim().length > 0;
+  const porId = useMemo(() => new Map(entidades.map((e) => [e.id, e])), [entidades]);
 
-  const filtradas = useMemo(() => {
-    const q = busca.trim().toLocaleLowerCase("pt-BR");
-    const digitos = q.replace(/\D/g, "");
-    return entidades.filter(
-      (e) =>
-        (!tipoFiltro || rotuloTipo(e.tipo) === tipoFiltro) &&
-        (!q ||
-          e.instituicao.toLocaleLowerCase("pt-BR").includes(q) ||
-          e.cnpj.includes(q) ||
-          (digitos.length > 0 && e.cnpj.replace(/\D/g, "").includes(digitos))),
-    );
-  }, [entidades, busca, tipoFiltro]);
+  // busca ativa: relevância; sem busca: ordem alfabética. O filtro de tipo vale nos dois casos.
+  const lista = useMemo(() => {
+    const base = buscando && resultado ? resultado.ids.map((id) => porId.get(id)!) : entidades;
+    return base.filter((e) => !tipoFiltro || rotuloTipo(e.tipo) === tipoFiltro);
+  }, [buscando, resultado, porId, entidades, tipoFiltro]);
 
   if (!entidades.length) {
     return (
@@ -100,79 +115,118 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
     );
   }
 
+  const termos = buscando && resultado ? resultado.termos : [];
+
   return (
     <div className="mt-6 space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Instituições credenciadas" value={entidades.length} icon={<Building size={20} />} />
-        <StatTile
-          label="Administradores / gestores"
-          value={resumo.porTipo.filter((t) => t.nome.toLocaleLowerCase("pt-BR").includes("gestor")).reduce((s, t) => s + t.total, 0)}
-          icon={<Landmark size={20} />}
-          tone="gold"
+      <div style={entradaEscalonada(0)}>
+        <CampoBusca
+          valor={consulta}
+          onChange={setConsulta}
+          placeholder="Pesquise por instituição, CNPJ, tipo ou ano… (ex.: banco, custodiante, 2025)"
+          sugestoes={sugestoes}
+          rotuloItens="instituições"
         />
-        <StatTile
-          label="Custodiantes"
-          value={resumo.porTipo.filter((t) => t.nome.toLocaleLowerCase("pt-BR").includes("custodiante")).reduce((s, t) => s + t.total, 0)}
-          icon={<Vault size={20} />}
-          tone="ok"
-        />
-        <StatTile
-          label="Última renovação registrada"
-          value={formatarData(resumo.ultimaRenovacao)}
-          hint="Data mais recente entre os credenciamentos"
-          icon={<CalendarCheck size={20} />}
-          tone="warn"
-        />
+        {buscando && resultado && (
+          <ResumoBusca consulta={consulta} resultado={{ ...resultado, ids: lista.map((e) => e.id) }} total={entidades.length} rotuloItens="instituições" />
+        )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-5">
-          <p className="text-sm font-semibold text-ink">Credenciadas por tipo</p>
-          <div className="mt-2 h-60">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie data={resumo.porTipo} dataKey="total" nameKey="nome" innerRadius={52} outerRadius={88} paddingAngle={2} label={(p) => `${p.name}: ${p.value}`}>
-                  {resumo.porTipo.map((t, i) => (
-                    <Cell key={t.nome} fill={corDoGrafico(i)} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+      {!buscando && (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div style={entradaEscalonada(1)}>
+              <StatTile label="Instituições credenciadas" value={entidades.length} icon={<Building size={20} />} />
+            </div>
+            <div style={entradaEscalonada(2)}>
+              <StatTile
+                label="Administradores / gestores"
+                value={resumo.porTipo.filter((t) => t.nome.toLocaleLowerCase("pt-BR").includes("gestor")).reduce((s, t) => s + t.total, 0)}
+                icon={<Landmark size={20} />}
+                tone="gold"
+              />
+            </div>
+            <div style={entradaEscalonada(3)}>
+              <StatTile
+                label="Custodiantes"
+                value={resumo.porTipo.filter((t) => t.nome.toLocaleLowerCase("pt-BR").includes("custodiante")).reduce((s, t) => s + t.total, 0)}
+                icon={<Vault size={20} />}
+                tone="ok"
+              />
+            </div>
+            <div style={entradaEscalonada(4)}>
+              <StatTile
+                label="Última renovação registrada"
+                value={formatarData(resumo.ultimaRenovacao)}
+                hint="Data mais recente entre os credenciamentos"
+                icon={<CalendarCheck size={20} />}
+                tone="warn"
+              />
+            </div>
           </div>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm font-semibold text-ink">Renovações por ano</p>
-          <p className="text-xs text-ink-muted">Ano da última renovação de cada credenciamento.</p>
-          <div className="mt-2 h-56">
-            <ResponsiveContainer>
-              <BarChart data={resumo.renovacoesPorAno} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
-                <XAxis dataKey="ano" stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }} />
-                <Bar dataKey="total" name="Renovações" radius={[6, 6, 0, 0]} maxBarSize={48}>
-                  {resumo.renovacoesPorAno.map((a, i) => (
-                    <Cell key={a.ano} fill={corDoGrafico(i)} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
 
-      <Card className="p-5">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card className="p-5" style={entradaEscalonada(5)}>
+              <p className="text-sm font-semibold text-ink">Credenciadas por tipo</p>
+              <div className="mt-2 h-60">
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={resumo.porTipo}
+                      dataKey="total"
+                      nameKey="nome"
+                      innerRadius={52}
+                      outerRadius={88}
+                      paddingAngle={2}
+                      label={(p) => `${p.name}: ${p.value}`}
+                      isAnimationActive={animar}
+                      animationBegin={ATRASO_GRAFICO}
+                      animationDuration={DURACAO_GRAFICO}
+                      animationEasing="ease-out"
+                    >
+                      {resumo.porTipo.map((t, i) => (
+                        <Cell key={t.nome} fill={corDoGrafico(i)} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+            <Card className="p-5" style={entradaEscalonada(6)}>
+              <p className="text-sm font-semibold text-ink">Renovações por ano</p>
+              <p className="text-xs text-ink-muted">Ano da última renovação de cada credenciamento.</p>
+              <div className="mt-2 h-56">
+                <ResponsiveContainer>
+                  <BarChart data={resumo.renovacoesPorAno} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                    <CartesianGrid vertical={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
+                    <XAxis dataKey="ano" stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis allowDecimals={false} stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }} />
+                    <Bar
+                      dataKey="total"
+                      name="Renovações"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={48}
+                      isAnimationActive={animar}
+                      animationBegin={ATRASO_GRAFICO}
+                      animationDuration={DURACAO_GRAFICO}
+                      animationEasing="ease-out"
+                    >
+                      {resumo.renovacoesPorAno.map((a, i) => (
+                        <Cell key={a.ano} fill={corDoGrafico(i)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+        </>
+      )}
+
+      <Card className="p-5" style={entradaEscalonada(buscando ? 1 : 7)}>
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-border bg-bg px-3 py-2">
-            <Search size={15} className="text-ink-muted" />
-            <input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar por instituição ou CNPJ"
-              className="w-full bg-transparent text-sm text-ink outline-none"
-            />
-          </label>
           <select
             value={tipoFiltro}
             onChange={(e) => setTipoFiltro(e.target.value)}
@@ -186,45 +240,52 @@ export function EntidadesCredenciadasView({ registros }: { registros: RegistroTr
             ))}
           </select>
           <span className="text-xs text-ink-muted">
-            {filtradas.length} de {entidades.length}
+            {lista.length} de {entidades.length}
           </span>
         </div>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-ink-muted">
-                <th className="py-2 pr-3 font-semibold">Instituição</th>
-                <th className="py-2 pr-3 font-semibold">CNPJ</th>
-                <th className="py-2 pr-3 font-semibold">Tipo</th>
-                <th className="py-2 pr-3 font-semibold">Credenciamento</th>
-                <th className="py-2 pr-3 font-semibold">Renovação</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtradas.map((e) => {
-                return (
-                  <tr key={`${e.cnpj}|${e.tipo}|${e.instituicao}`} className="border-b border-border/60 last:border-0">
-                    <td className="py-2.5 pr-3 font-medium text-ink">{e.instituicao || "—"}</td>
-                    <td className="py-2.5 pr-3 tabular text-ink-muted">{e.cnpj || "—"}</td>
-                    <td className="py-2.5 pr-3 text-ink">{rotuloTipo(e.tipo)}</td>
-                    <td className="py-2.5 pr-3 tabular text-ink">{formatarData(e.credenciamento)}</td>
-                    <td className="py-2.5 pr-3 tabular">
-                      <span className="text-ink">{formatarData(e.renovacao)}</span>
+        {lista.length > 0 ? (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-ink-muted">
+                  <th className="py-2 pr-3 font-semibold">Instituição</th>
+                  <th className="py-2 pr-3 font-semibold">CNPJ</th>
+                  <th className="py-2 pr-3 font-semibold">Tipo</th>
+                  <th className="py-2 pr-3 font-semibold">Credenciamento</th>
+                  <th className="py-2 pr-3 font-semibold">Renovação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lista.map((e) => (
+                  <tr key={e.id} className="border-b border-border/60 last:border-0">
+                    <td className="py-2.5 pr-3 font-medium text-ink">
+                      <Destaque texto={e.instituicao || "—"} termos={termos} />
+                    </td>
+                    <td className="py-2.5 pr-3 tabular text-ink-muted">
+                      <Destaque texto={e.cnpj || "—"} termos={termos} />
+                    </td>
+                    <td className="py-2.5 pr-3 text-ink">
+                      <Destaque texto={rotuloTipo(e.tipo)} termos={termos} />
+                    </td>
+                    <td className="py-2.5 pr-3 tabular text-ink">
+                      <Destaque texto={formatarData(e.credenciamento)} termos={termos} />
+                    </td>
+                    <td className="py-2.5 pr-3 tabular text-ink">
+                      <Destaque texto={formatarData(e.renovacao)} termos={termos} />
                     </td>
                   </tr>
-                );
-              })}
-              {!filtradas.length && (
-                <tr>
-                  <td colSpan={5} className="py-6 text-center text-sm text-ink-muted">
-                    Nenhuma instituição encontrada.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2 py-10 text-center">
+            <SearchX size={32} className="text-ink-muted" />
+            <p className="text-sm font-medium text-ink">{buscando ? `Nada encontrado para “${consulta.trim()}”.` : "Nenhuma instituição encontrada."}</p>
+            {buscando && <p className="text-xs text-ink-muted">Tente outra palavra, parte do CNPJ ou o ano.</p>}
+          </div>
+        )}
       </Card>
     </div>
   );
