@@ -5,6 +5,7 @@ import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import { criarCache } from "../../middleware/publicProtect";
 import { endpointPorCodigo } from "../transparencia-api/catalogo";
+import { camposDeLink, hashUrl } from "../transparencia-api/arquivos";
 
 // Rota pública (sem requireAuth), mesmo padrão de /public/transparencia: o Portal
 // Previdenciário deste RPPS é público por definição. Diferente da Transparência, aqui não há
@@ -338,14 +339,44 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/:codigo", async (
         orderBy: [{ referencia: "desc" }, { coletadoEm: "asc" }],
         select: { dados: true, ano: true, referencia: true, coletadoEm: true },
       });
+      // links de PDF/anexo: onde já temos a cópia, aponta pro nosso arquivo (não pro servidor da Nexa)
+      const copias = await prisma.transparenciaApiArquivo.findMany({
+        where: { tenantId: tenant.id, status: "OK" },
+        select: { id: true, urlHash: true },
+      });
+      const idPorHash = new Map(copias.map((c) => [c.urlHash, c.id]));
+      const comLinksNossos = (dados: Record<string, unknown>) => {
+        const saida = { ...dados };
+        for (const l of camposDeLink(dados)) {
+          const id = idPorHash.get(hashUrl(l.url));
+          if (id) saida[l.campo] = `/api/public/portal-previdenciario/${req.params.slug}/transparencia-api/arquivos/${id}`;
+        }
+        return saida;
+      };
       return {
         codigo: ep.codigo,
         titulo: ep.titulo,
         atualizadoEm: registros.reduce<Date | null>((m, r) => (!m || r.coletadoEm > m ? r.coletadoEm : m), null),
-        registros: registros.map((r) => ({ ...(r.dados as Record<string, unknown>), _ano: r.ano, _referencia: r.referencia })),
+        registros: registros.map((r) => ({ ...comLinksNossos(r.dados as Record<string, unknown>), _ano: r.ano, _referencia: r.referencia })),
       };
     });
     res.json(corpo);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Serve a nossa cópia de um PDF/anexo da API Nexa (só se pertencer a este RPPS e estiver baixado).
+portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/arquivos/:id", async (req, res, next) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug }, select: { id: true } });
+    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+    const arq = await prisma.transparenciaApiArquivo.findFirst({ where: { id: req.params.id, tenantId: tenant.id, status: "OK" } });
+    if (!arq?.conteudo) throw new HttpError(404, "Arquivo não encontrado.");
+    res.setHeader("Content-Type", arq.mime ?? "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${(arq.nome ?? "arquivo.pdf").replace(/["\\\r\n]/g, "")}"`);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(Buffer.from(arq.conteudo));
   } catch (err) {
     next(err);
   }

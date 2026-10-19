@@ -150,6 +150,7 @@ model Tenant {
   portalIndicadorValores    TenantPortalIndicadorValor[]
   portalIndicadorInstancias TenantPortalIndicadorInstancia[]
   transparenciaApiRegistros TransparenciaApiRegistro[]
+  transparenciaApiArquivos  TransparenciaApiArquivo[]
 
   @@map("tenants")
 }
@@ -810,6 +811,32 @@ model TransparenciaApiRegistro {
   @@unique([tenantId, endpoint, hash])
   @@index([tenantId, endpoint])
   @@map("transparencia_api_registros")
+}
+
+// Cópia local de cada arquivo (PDF/anexo) apontado pelos registros da API Nexa. A página pública serve
+// ESTA cópia (/transparencia-api/arquivos/:id) em vez de mandar o visitante pro servidor do fornecedor.
+// status: OK (conteúdo guardado) | FALHA (não baixou; tenta de novo até o limite de tentativas) |
+// IGNORADO (não é PDF ou passa do teto de tamanho — continua apontando pra origem).
+model TransparenciaApiArquivo {
+  id         String    @id @default(cuid())
+  tenantId   String
+  urlHash    String // sha1 da URL de origem
+  urlOrigem  String    @db.Text
+  status     String    @default("FALHA")
+  nome       String?
+  mime       String?
+  tamanho    Int?
+  conteudo   Bytes?
+  erro       String?   @db.Text
+  tentativas Int       @default(0)
+  baixadoEm  DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, urlHash])
+  @@index([tenantId, status])
+  @@map("transparencia_api_arquivos")
 }
 
 model TransparenciaPortal {

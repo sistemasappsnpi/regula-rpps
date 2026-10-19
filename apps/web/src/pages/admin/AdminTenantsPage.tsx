@@ -107,13 +107,15 @@ export function AdminTenantsPage() {
     setResumoColeta(null);
     setColetando(true);
     try {
-      const { resultados } = await api.adminColetarTransparenciaApi(editandoId);
+      const { resultados, arquivos } = await api.adminColetarTransparenciaApi(editandoId);
       const ok = resultados.filter((r) => r.ok);
       const falhas = resultados.filter((r) => !r.ok);
       const novos = ok.reduce((s, r) => s + (r.novos ?? 0), 0);
       setResumoColeta(
         `${ok.length} de ${resultados.length} endpoints coletados, ${novos} registros novos.` +
-          (falhas.length ? ` Com erro: ${falhas.map((f) => `${f.codigo} (${f.erro})`).join("; ")}.` : ""),
+          (falhas.length ? ` Com erro: ${falhas.map((f) => `${f.codigo} (${f.erro})`).join("; ")}.` : "") +
+          ` PDFs: ${arquivos.baixados} de ${arquivos.total} copiados, ${arquivos.pendentes} na fila` +
+          (arquivos.ignorados || arquivos.falhas ? `, ${arquivos.ignorados} fora do padrão, ${arquivos.falhas} com falha.` : "."),
       );
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao coletar a API de Transparência.");

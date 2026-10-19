@@ -350,7 +350,7 @@ export const api = {
 
   // Gera o JSON de importação em massa da Central (e grava o código dos RPPS que ainda não tinham).
   adminColetarTransparenciaApi: (tenantId: string) =>
-    request<{ resultados: ResultadoColetaTransparenciaApi[] }>(`/admin/tenants/${tenantId}/transparencia-api/coletar`, { method: "POST" }),
+    request<{ resultados: ResultadoColetaTransparenciaApi[]; arquivos: { total: number; baixados: number; pendentes: number; falhas: number; ignorados: number } }>(`/admin/tenants/${tenantId}/transparencia-api/coletar`, { method: "POST" }),
 
   // Página pública alimentada pela cópia local da API Nexa de Transparência.
   portalPrevidenciarioTransparenciaApi: async (slug: string, codigo: string): Promise<TransparenciaApiConteudo> => {

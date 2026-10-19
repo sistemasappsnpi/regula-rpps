@@ -8,6 +8,7 @@ import { adminRepository } from "./admin.repository";
 import { transparenciaGeradorRouter } from "../transparencia-gerador/transparencia-gerador.routes";
 import { extrairTextoPorPagina } from "../uploads/pdf-extraction";
 import { coletarTudo } from "../transparencia-api/coletor";
+import { statusArquivos } from "../transparencia-api/arquivos";
 import { isAiConfigured, sugerirChecklistDePdf } from "../ai/anthropic.client";
 
 // PDF de exemplo pro checklist (ver rota /campos/sugerir-de-pdf abaixo): nunca precisa ficar
@@ -97,7 +98,9 @@ const updateTenantSchema = z.object({
 // Coleta (e copia pro nosso banco) tudo o que a API Nexa de Transparência entrega pra este RPPS.
 adminRouter.post("/tenants/:id/transparencia-api/coletar", async (req, res, next) => {
   try {
-    res.json({ resultados: await coletarTudo(req.params.id) });
+    const resultados = await coletarTudo(req.params.id);
+    // os PDFs são baixados pela coleta automática (leva algumas rodadas); aqui só o andamento
+    res.json({ resultados, arquivos: await statusArquivos(req.params.id) });
   } catch (err) {
     next(err);
   }

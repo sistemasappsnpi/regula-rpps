@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
+import { baixarArquivosPendentes } from "./arquivos";
 import { CATALOGO_TRANSPARENCIA_API, NEXA_BASE_URL, type EndpointTransparenciaApi } from "./catalogo";
 
 export interface ResultadoColeta {
@@ -121,6 +122,10 @@ export function iniciarColetaAgendada(): void {
         const falhas = resultados.filter((r) => !r.ok).length;
         const novos = resultados.reduce((s, r) => s + (r.novos ?? 0), 0);
         console.log(`[transparencia-api] ${t.slug}: ${resultados.length - falhas}/${resultados.length} endpoints, ${novos} novos`);
+        // PDFs/anexos: baixa o que falta, aos poucos (a primeira carga leva algumas rodadas)
+        const arq = await baixarArquivosPendentes(t.id, 4 * 60_000);
+        console.log(`[transparencia-api] ${t.slug}: ${arq.baixados} arquivos baixados, ${arq.falhas.length} com problema`);
+        for (const f of arq.falhas.slice(0, 15)) console.log(`[transparencia-api]   ${f}`);
       }
     } catch (err) {
       console.error("[transparencia-api] coleta agendada falhou:", err instanceof Error ? err.message : err);
