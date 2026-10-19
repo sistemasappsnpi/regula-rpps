@@ -57,7 +57,7 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
           grupo: config.grupo?.valor(r).trim() ?? "",
           links: config.links
             .map((l) => ({ rotulo: l.rotulo, url: typeof r[l.campo] === "string" ? (r[l.campo] as string).trim() : "" }))
-            .filter((l) => /^https?:\/\//i.test(l.url)),
+            .filter((l) => /^(https?:\/\/|\/)/i.test(l.url)), // link da Nexa (http) ou da nossa cópia (/api/…)
         }))
         .sort((a, b) => b.ordem - a.ordem),
     [registros, config],

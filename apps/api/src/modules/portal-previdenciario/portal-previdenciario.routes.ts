@@ -341,15 +341,28 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/:codigo", async (
       });
       // links de PDF/anexo: onde já temos a cópia, aponta pro nosso arquivo (não pro servidor da Nexa)
       const copias = await prisma.transparenciaApiArquivo.findMany({
-        where: { tenantId: tenant.id, status: "OK" },
-        select: { id: true, urlHash: true },
+        where: { tenantId: tenant.id },
+        select: { id: true, urlHash: true, status: true, erro: true, tentativas: true },
       });
-      const idPorHash = new Map(copias.map((c) => [c.urlHash, c.id]));
+      const idPorHash = new Map(copias.filter((c) => c.status === "OK").map((c) => [c.urlHash, c.id]));
+      // link que a origem nunca vai servir (erro 4xx depois de todas as tentativas): esconde o botão em vez de
+      // mostrar um link quebrado — é erro de cadastro lá na fonte, não algo que a gente resolva
+      const quebrados = new Set(copias.filter((c) => c.status === "FALHA" && c.tentativas >= 5 && /^HTTP 4\d\d/.test(c.erro ?? "")).map((c) => c.urlHash));
+      // URL que termina em "/" é uma pasta, não um arquivo (ex.: anexo cadastrado sem escolher o arquivo)
+      const ehPasta = (url: string) => {
+        try {
+          return new URL(url).pathname.endsWith("/");
+        } catch {
+          return false;
+        }
+      };
       const comLinksNossos = (dados: Record<string, unknown>) => {
         const saida = { ...dados };
         for (const l of camposDeLink(dados)) {
-          const id = idPorHash.get(hashUrl(l.url));
+          const hash = hashUrl(l.url);
+          const id = idPorHash.get(hash);
           if (id) saida[l.campo] = `/api/public/portal-previdenciario/${req.params.slug}/transparencia-api/arquivos/${id}`;
+          else if (ehPasta(l.url) || quebrados.has(hash)) saida[l.campo] = null;
         }
         return saida;
       };
