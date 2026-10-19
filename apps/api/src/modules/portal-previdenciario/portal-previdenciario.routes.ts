@@ -4,7 +4,16 @@ import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import { criarCache } from "../../middleware/publicProtect";
-import { endpointPorCodigo } from "../transparencia-api/catalogo";
+import {
+  CATALOGO_PORTAL,
+  CATALOGO_TRANSPARENCIA_API,
+  ENDPOINT_PUBLICACOES,
+  PREFIXO_PUBLICACAO,
+  endpointPorCodigo,
+  paginaPortalPorCodigo,
+  slugDoTipo,
+  tituloAmigavel,
+} from "../transparencia-api/catalogo";
 import { camposDeLink, hashUrl } from "../transparencia-api/arquivos";
 
 // Rota pública (sem requireAuth), mesmo padrão de /public/transparencia: o Portal
@@ -150,6 +159,8 @@ portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
         slug: tenant.slug,
         logoUrl: tenant.logoUrl,
         corPrimaria: tenant.portalCorPrimaria,
+        corDestaque: tenant.portalCorDestaque,
+        estiloPaginas: tenant.portalEstiloPaginas === "basico" ? "basico" : "completo",
         site: tenant.site,
       },
       menu,
@@ -323,23 +334,53 @@ portalPrevidenciarioPublicRouter.get("/:slug/documentos/:codigo", async (req, re
   }
 });
 
-// Páginas alimentadas pela API Nexa de Transparência (ex.: /portal-previdenciario/:slug/entidades-credenciadas).
-// Lê SEMPRE da cópia no nosso banco (TransparenciaApiRegistro), nunca da API do fornecedor — a coleta
-// roda à parte (ver transparencia-api/coletor.ts).
+// Páginas alimentadas pela cópia local dos dados da API Nexa de Transparência (com chave) e dos dados abertos do
+// portal de transparência do órgão (sem chave) — ex.: /portal-previdenciario/:slug/entidades-credenciadas ou
+// /portal-previdenciario/:slug/pub-investimentos. Lê SEMPRE da cópia no nosso banco (TransparenciaApiRegistro),
+// nunca da fonte — a coleta roda à parte (ver transparencia-api/coletor.ts).
+interface PaginaResolvida {
+  titulo: string;
+  endpoint: string;
+  tipoSlug?: string; // páginas "pub-<tipo>": só as publicações desse tipo
+}
+
+function resolverPagina(codigo: string): PaginaResolvida | null {
+  const nexa = endpointPorCodigo(codigo);
+  if (nexa) return { titulo: nexa.titulo, endpoint: nexa.codigo };
+  const portal = paginaPortalPorCodigo(codigo);
+  if (portal) return { titulo: portal.titulo, endpoint: portal.endpoint };
+  if (codigo.startsWith(PREFIXO_PUBLICACAO) && codigo.length > PREFIXO_PUBLICACAO.length) {
+    return { titulo: "Publicações", endpoint: ENDPOINT_PUBLICACOES, tipoSlug: codigo.slice(PREFIXO_PUBLICACAO.length) };
+  }
+  return null;
+}
+
+function tipoDe(dados: unknown): string {
+  const t = dados && typeof dados === "object" ? (dados as Record<string, unknown>).Tipo : "";
+  return typeof t === "string" ? t.trim() : "";
+}
+
 portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/:codigo", async (req, res, next) => {
   try {
-    const ep = endpointPorCodigo(req.params.codigo);
-    if (!ep) throw new HttpError(404, "Página não encontrada.");
+    const pagina = resolverPagina(req.params.codigo);
+    if (!pagina) throw new HttpError(404, "Página não encontrada.");
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug }, select: { id: true } });
     if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
 
-    const corpo = await cacheIndicadores(`napi|${tenant.id}|${ep.codigo}`, async () => {
-      const registros = await prisma.transparenciaApiRegistro.findMany({
-        where: { tenantId: tenant.id, endpoint: ep.codigo, removidoEm: null },
+    const corpo = await cacheIndicadores(`napi|${tenant.id}|${req.params.codigo}`, async () => {
+      let registros = await prisma.transparenciaApiRegistro.findMany({
+        where: { tenantId: tenant.id, endpoint: pagina.endpoint, removidoEm: null },
         orderBy: [{ referencia: "desc" }, { coletadoEm: "asc" }],
         select: { dados: true, ano: true, referencia: true, coletadoEm: true },
       });
-      // links de PDF/anexo: onde já temos a cópia, aponta pro nosso arquivo (não pro servidor da Nexa)
+      let titulo = pagina.titulo;
+      if (pagina.tipoSlug) {
+        registros = registros.filter((r) => slugDoTipo(tipoDe(r.dados)) === pagina.tipoSlug);
+        if (registros.length === 0) return null;
+        titulo = tituloAmigavel(tipoDe(registros[0].dados));
+      }
+
+      // links de PDF/anexo: onde já temos a cópia, aponta pro nosso arquivo (não pro servidor de origem)
       const copias = await prisma.transparenciaApiArquivo.findMany({
         where: { tenantId: tenant.id },
         select: { id: true, urlHash: true, status: true, erro: true, tentativas: true },
@@ -367,18 +408,61 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/:codigo", async (
         return saida;
       };
       return {
-        codigo: ep.codigo,
-        titulo: ep.titulo,
+        codigo: req.params.codigo,
+        titulo,
         atualizadoEm: registros.reduce<Date | null>((m, r) => (!m || r.coletadoEm > m ? r.coletadoEm : m), null),
         registros: registros.map((r) => ({ ...comLinksNossos(r.dados as Record<string, unknown>), _ano: r.ano, _referencia: r.referencia })),
       };
     });
+    if (!corpo) throw new HttpError(404, "Página não encontrada.");
     res.json(corpo);
   } catch (err) {
     next(err);
   }
 });
 
+// Índice das páginas que este cliente tem (com quantos registros cada uma): serve de base para montar os
+// botões do site do órgão e para conferir o que foi coletado.
+portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api", async (req, res, next) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug }, select: { id: true } });
+    if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
+
+    const corpo = await cacheIndicadores(`napi-indice|${tenant.id}`, async () => {
+      const grupos = await prisma.transparenciaApiRegistro.groupBy({
+        by: ["endpoint"],
+        where: { tenantId: tenant.id, removidoEm: null },
+        _count: { _all: true },
+      });
+      const total = new Map(grupos.map((g) => [g.endpoint, g._count._all]));
+
+      const paginas: { codigo: string; titulo: string; total: number; origem: "nexa" | "portal" | "portal-tipo" }[] = [];
+      for (const e of CATALOGO_TRANSPARENCIA_API) if (total.get(e.codigo)) paginas.push({ codigo: e.codigo, titulo: e.titulo, total: total.get(e.codigo)!, origem: "nexa" });
+      for (const p of CATALOGO_PORTAL) if (total.get(p.endpoint)) paginas.push({ codigo: p.codigo, titulo: p.titulo, total: total.get(p.endpoint)!, origem: "portal" });
+
+      const pubs = await prisma.transparenciaApiRegistro.findMany({
+        where: { tenantId: tenant.id, endpoint: ENDPOINT_PUBLICACOES, removidoEm: null },
+        select: { dados: true },
+      });
+      const porTipo = new Map<string, { titulo: string; total: number }>();
+      for (const r of pubs) {
+        const tipo = tipoDe(r.dados);
+        if (!tipo) continue;
+        const slug = slugDoTipo(tipo);
+        const atual = porTipo.get(slug) ?? { titulo: tituloAmigavel(tipo), total: 0 };
+        atual.total++;
+        porTipo.set(slug, atual);
+      }
+      for (const [slug, v] of [...porTipo.entries()].sort((a, b) => a[1].titulo.localeCompare(b[1].titulo, "pt-BR"))) {
+        paginas.push({ codigo: `${PREFIXO_PUBLICACAO}${slug}`, titulo: v.titulo, total: v.total, origem: "portal-tipo" });
+      }
+      return { paginas };
+    });
+    res.json(corpo);
+  } catch (err) {
+    next(err);
+  }
+});
 // Serve a nossa cópia de um PDF/anexo da API Nexa (só se pertencer a este RPPS e estiver baixado).
 portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/arquivos/:id", async (req, res, next) => {
   try {

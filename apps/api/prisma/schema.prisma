@@ -119,6 +119,13 @@ model Tenant {
   // Previdenciário deste RPPS — mesmo papel de --nav-active/--footer-bg no modelo de referência
   // (uma cor só, reaproveitada nos dois lugares). Nulo cai na cor padrão do modelo (petróleo).
   portalCorPrimaria  String?
+  // Segunda cor da identidade do cliente (hex), usada nos destaques das páginas do Portal Previdenciário
+  // (ícones, marcações). Nula = sem destaque próprio, vale a cor padrão do modelo.
+  portalCorDestaque  String?
+  // Como as páginas de dados do Portal Previdenciário (/portal-previdenciario/:slug/:codigo) aparecem:
+  // "completo" (padrão: busca inteligente, cartões, gráficos, detalhes de todos os campos) ou "basico"
+  // (filtros simples + tabela, no padrão do portal de transparência do órgão).
+  portalEstiloPaginas String @default("completo")
   // Chave (`?chave=`) da API Nexa de Transparência deste órgão — é credencial, nunca vai pro
   // frontend nem pras rotas públicas; só o coletor (transparencia-api) lê.
   transparenciaApiChave String?

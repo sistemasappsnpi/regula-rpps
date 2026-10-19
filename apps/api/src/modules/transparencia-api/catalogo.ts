@@ -41,3 +41,60 @@ export const CATALOGO_TRANSPARENCIA_API: EndpointTransparenciaApi[] = [
 export function endpointPorCodigo(codigo: string): EndpointTransparenciaApi | undefined {
   return CATALOGO_TRANSPARENCIA_API.find((e) => e.codigo === codigo);
 }
+
+// --- Páginas alimentadas pelos dados abertos do portal de transparência do órgão (sem chave) -------------
+// `codigo` é o da URL pública; `endpoint` é o conjunto gravado na cópia (ver portal-dados-abertos.ts).
+export interface PaginaPortal {
+  codigo: string;
+  titulo: string;
+  endpoint: string;
+}
+
+export const CATALOGO_PORTAL: PaginaPortal[] = [
+  { codigo: "publicacoes", titulo: "Publicações", endpoint: "portal-publicacoes" },
+  { codigo: "licitacoes", titulo: "Licitações", endpoint: "portal-licitacoes" },
+  { codigo: "contratos", titulo: "Contratos e aditivos", endpoint: "portal-contratos" },
+  { codigo: "leis", titulo: "Leis, decretos e resoluções", endpoint: "portal-leis" },
+  { codigo: "portarias", titulo: "Portarias", endpoint: "portal-portarias" },
+  { codigo: "lrf", titulo: "Lei de Responsabilidade Fiscal (LRF)", endpoint: "portal-lrf" },
+  { codigo: "noticias", titulo: "Notícias", endpoint: "portal-noticias" },
+  { codigo: "conselhos", titulo: "Órgãos colegiados", endpoint: "portal-conselhos" },
+  { codigo: "gestao-e-atendimento", titulo: "Gestão e atendimento", endpoint: "portal-secretarias" },
+  { codigo: "concursos-publicos", titulo: "Concursos públicos", endpoint: "portal-concursos" },
+  { codigo: "processos-seletivos", titulo: "Processos seletivos", endpoint: "portal-processos-seletivos" },
+  { codigo: "servicos-online", titulo: "Serviços online", endpoint: "portal-servicos-online" },
+  { codigo: "selos", titulo: "Selos e certificações", endpoint: "portal-selos" },
+];
+
+export function paginaPortalPorCodigo(codigo: string): PaginaPortal | undefined {
+  return CATALOGO_PORTAL.find((p) => p.codigo === codigo);
+}
+
+// Cada tipo de publicação (INVESTIMENTOS, ATAS, DAIR…) vira uma página própria: /pub-<tipo>.
+export const PREFIXO_PUBLICACAO = "pub-";
+export const ENDPOINT_PUBLICACOES = "portal-publicacoes";
+
+export function slugDoTipo(tipo: string): string {
+  return tipo
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+const SIGLAS = new Set(["dipr", "dair", "dpin", "apr", "tce", "crp", "alm", "draa", "lrf", "rpps", "cadprev", "cnpj", "ug", "u.g.", "rgf", "rreo", "ppa", "ldo", "loa", "pca", "ti", "ipres", "cmn", "cvm"]);
+const LIGACAO = new Set(["de", "da", "do", "das", "dos", "e", "a", "o", "as", "os", "em", "para", "por", "com", "no", "na", "nos", "nas", "ao", "aos"]);
+
+// "DEMONSTRATIVO DE INFORMAÇÕES PREVIDENCIÁRIAS E REPASSES" -> "Demonstrativo de Informações Previdenciárias e Repasses"
+export function tituloAmigavel(texto: string): string {
+  const palavras = texto.trim().toLocaleLowerCase("pt-BR").split(/\s+/);
+  return palavras
+    .map((p, i) => {
+      if (SIGLAS.has(p)) return p.toLocaleUpperCase("pt-BR");
+      if (i > 0 && LIGACAO.has(p)) return p;
+      return p.charAt(0).toLocaleUpperCase("pt-BR") + p.slice(1);
+    })
+    .join(" ");
+}

@@ -87,6 +87,12 @@ const updateTenantSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida — use o formato #rrggbb.")
     .nullable()
     .optional(),
+  portalCorDestaque: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Cor de destaque inválida — use o formato #rrggbb.")
+    .nullable()
+    .optional(),
+  portalEstiloPaginas: z.enum(["completo", "basico"]).optional(),
   observacao: z.string().nullable().optional(),
   seguradosCount: z.number().int().nonnegative().optional(),
   plan: z.enum(["ESSENCIAL", "GESTAO", "PERFORMANCE"]).optional(),

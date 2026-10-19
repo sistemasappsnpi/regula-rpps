@@ -1,5 +1,6 @@
 import type { RegistroTransparenciaApi } from "../../lib/api";
 import type { ConfigListaDocumentos } from "./ListaDocumentosView";
+import { dataIso, formatarDataIso, fraseSimples, lerValor, textoPuro, tituloAmigavel } from "../../lib/textos";
 
 // Uma config por página "lista de documentos". A chave é o `codigo` do catálogo da API
 // (apps/api/src/modules/transparencia-api/catalogo.ts). Os campos lidos de cada registro são os que a
@@ -256,3 +257,203 @@ export const CONFIGS_LISTA_DOCUMENTOS: Record<string, ConfigListaDocumentos> = {
       { rotulo: "Ata de aprovação", campo: "linkaAquivo_Ata" },
     ],
   },};
+
+
+// ---------------------------------------------------------------------------------------------------------
+// Dados abertos do portal de transparência do órgão (IPRES, Angraprev…): os campos aqui seguem a página
+// /dadosabertos do próprio portal (Id, Numero, Data "aaaa-mm-dd", Descricao, Exercicio, Tipo, Url, LinkArquivo…).
+// ---------------------------------------------------------------------------------------------------------
+
+function exercicio(r: RegistroTransparenciaApi): number | null {
+  const n = Number(txt(r, "Exercicio"));
+  return Number.isInteger(n) && n > 1900 && n < 2200 ? n : null;
+}
+
+// ordem: data (aaaammdd) e, no empate, o código do portal (mais novo primeiro)
+function ordemPorData(campo: string) {
+  return (r: RegistroTransparenciaApi) => (dataIso(txt(r, campo))?.chave ?? 0) * 100000 + (Number(txt(r, "Id")) % 100000 || 0);
+}
+
+function data(r: RegistroTransparenciaApi, campo: string): string {
+  const v = txt(r, campo);
+  return v ? formatarDataIso(v) : "";
+}
+
+const PAGINA_NO_PORTAL = { rotulo: "Ver no portal", campo: "Url" };
+
+export function configPublicacoes(porTipo: boolean): ConfigListaDocumentos {
+  return {
+    rotuloItens: "publicações",
+    // publicação sem descrição cadastrada ainda precisa de um título legível
+    titulo: (r) => txt(r, "Descricao") || `${tituloAmigavel(txt(r, "Tipo") || "Publicação")}${txt(r, "Numero") ? ` nº ${txt(r, "Numero")}` : ""}${exercicio(r) ? `/${exercicio(r)}` : ""}`,
+    detalhe: (r) => partes(txt(r, "Numero") ? `Nº ${txt(r, "Numero")}` : "", data(r, "Data")),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    ...(porTipo ? {} : { grupo: { rotulo: "Tipo de publicação", rotuloPlural: "Tipos de publicação", valor: (r: RegistroTransparenciaApi) => tituloAmigavel(txt(r, "Tipo")) } }),
+    links: [{ rotulo: "Abrir PDF", campo: "LinkArquivo" }],
+  };
+}
+
+export const CONFIGS_PORTAL: Record<string, ConfigListaDocumentos> = {
+  licitacoes: {
+    rotuloItens: "licitações",
+    titulo: (r) => txt(r, "Objeto"),
+    detalhe: (r) =>
+      partes(
+        txt(r, "NumeroPrecesso") ? `Processo ${txt(r, "NumeroPrecesso")}` : "",
+        txt(r, "NumeroEdital") ? `Edital ${txt(r, "NumeroEdital")}` : "",
+        txt(r, "DataAbertura") ? `Abertura ${data(r, "DataAbertura")}` : "",
+        txt(r, "Tipo"),
+        txt(r, "Situacao"),
+      ),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "DataAbertura"))?.ano ?? null,
+    ordem: ordemPorData("DataAbertura"),
+    grupo: { rotulo: "Modalidade", rotuloPlural: "Modalidades", valor: (r) => tituloAmigavel(txt(r, "Modalidade")) },
+    valor: (r) => lerValor(txt(r, "ValorEstimado")),
+    rotuloValor: "Valor estimado",
+    links: [PAGINA_NO_PORTAL],
+  },
+
+  contratos: {
+    rotuloItens: "contratos",
+    titulo: (r) => `${txt(r, "NomeCredor") || "Credor não informado"} — ${txt(r, "Tipo") ? tituloAmigavel(txt(r, "Tipo")) : "Contrato"} nº ${txt(r, "NumeroContrato")}${txt(r, "Exercicio") ? `/${txt(r, "Exercicio")}` : ""}`,
+    detalhe: (r) =>
+      partes(
+        txt(r, "VigenciaInicio") && txt(r, "VigenciaFim") ? `Vigência ${data(r, "VigenciaInicio")} a ${data(r, "VigenciaFim")}` : "",
+        txt(r, "NumeroProcesso") ? `Processo ${txt(r, "NumeroProcesso")}` : "",
+        txt(r, "Objeto"),
+      ),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "DataContrato"))?.ano ?? null,
+    ordem: ordemPorData("DataContrato"),
+    grupo: { rotulo: "Modalidade", rotuloPlural: "Modalidades", valor: (r) => tituloAmigavel(txt(r, "Modalidade")) },
+    valor: (r) => lerValor(txt(r, "ValorGlobal")),
+    rotuloValor: "Valor global",
+    links: [
+      { rotulo: "Contrato (PDF)", campo: "Arquivo" },
+      { rotulo: "Demais arquivos", campo: "DemaisArquivos" },
+      PAGINA_NO_PORTAL,
+    ],
+  },
+
+  leis: {
+    rotuloItens: "normas",
+    titulo: (r) => `${tituloAmigavel(txt(r, "Tipo") || "Norma")} nº ${txt(r, "Numero")}${exercicio(r) ? `/${exercicio(r)}` : ""}`,
+    detalhe: (r) => partes(data(r, "Data"), txt(r, "Descricao")),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    grupo: { rotulo: "Tipo de norma", rotuloPlural: "Tipos de norma", valor: (r) => tituloAmigavel(txt(r, "Tipo")) },
+    links: [{ rotulo: "Ver norma", campo: "Url" }],
+  },
+
+  portarias: {
+    rotuloItens: "portarias",
+    titulo: (r) => `Portaria nº ${txt(r, "Numero")}${exercicio(r) ? `/${exercicio(r)}` : ""} — ${tituloAmigavel(txt(r, "Nome"))}`,
+    detalhe: (r) => partes(txt(r, "DescCargo") ? tituloAmigavel(txt(r, "DescCargo")) : "", data(r, "Data")),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    grupo: { rotulo: "Cargo", rotuloPlural: "Cargos", valor: (r) => tituloAmigavel(txt(r, "DescCargo")) },
+    links: [{ rotulo: "Ver portaria", campo: "Url" }],
+  },
+
+  lrf: {
+    rotuloItens: "demonstrativos",
+    titulo: (r) => txt(r, "DescTipoArq"),
+    detalhe: (r) => partes(data(r, "Data"), txt(r, "DescLei")),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    grupo: { rotulo: "Demonstrativo", rotuloPlural: "Demonstrativos", valor: (r) => txt(r, "DescLei") },
+    links: [{ rotulo: "Ver demonstrativo", campo: "Url" }],
+  },
+
+  noticias: {
+    rotuloItens: "notícias",
+    titulo: (r) => txt(r, "Titulo"),
+    detalhe: (r) => {
+      const resumo = textoPuro(txt(r, "Resumo"));
+      return partes(data(r, "Data"), resumo.length > 220 ? `${resumo.slice(0, 217)}…` : resumo);
+    },
+    ano: (r) => dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    grupo: { rotulo: "Categoria", rotuloPlural: "Categorias", valor: (r) => txt(r, "Categoria").replace(/^#/, "").trim() },
+    links: [{ rotulo: "Ler no portal", campo: "Url" }],
+  },
+
+  conselhos: {
+    rotuloItens: "órgãos",
+    titulo: (r) => tituloAmigavel(txt(r, "Descricao")),
+    detalhe: (r) => partes(txt(r, "Sigla"), txt(r, "Portaria") ? `Portaria ${txt(r, "Portaria")}` : "", data(r, "DataCriacao") ? `Criado em ${data(r, "DataCriacao")}` : ""),
+    ano: (r) => dataIso(txt(r, "DataCriacao"))?.ano ?? null,
+    ordem: (r, i) => (dataIso(txt(r, "DataCriacao"))?.chave ?? 0) - i,
+    links: [],
+  },
+
+  "gestao-e-atendimento": {
+    rotuloItens: "unidades",
+    titulo: (r) => tituloAmigavel(txt(r, "Secretaria")),
+    detalhe: (r) => partes(txt(r, "Gestor") ? `${tituloAmigavel(txt(r, "Gestor"))}${txt(r, "Cargo") ? ` — ${tituloAmigavel(txt(r, "Cargo"))}` : ""}` : "", fraseSimples(txt(r, "HorarioFunciona"))),
+    ano: (r) => dataIso(txt(r, "DataInicio"))?.ano ?? null,
+    ordem: (r, i) => (dataIso(txt(r, "DataInicio"))?.chave ?? 0) - i,
+    links: [{ rotulo: "Ver no portal", campo: "Url" }],
+  },
+
+  "concursos-publicos": configConcurso("concursos"),
+  "processos-seletivos": configConcurso("processos"),
+
+  "servicos-online": {
+    rotuloItens: "serviços",
+    titulo: (r) => txt(r, "Titulo"),
+    detalhe: (r) => txt(r, "Descricao"),
+    ano: () => null,
+    ordem: (_r, i) => -i,
+    links: [{ rotulo: "Acessar", campo: "Link" }],
+  },
+
+  selos: {
+    rotuloItens: "selos",
+    titulo: (r) => txt(r, "DescSelo"),
+    detalhe: (r) => textoPuro(txt(r, "Texto")).slice(0, 240),
+    ano: () => null,
+    ordem: (r, i) => Number(txt(r, "Id")) * -1 - i,
+    links: [{ rotulo: "Ver selo", campo: "Url" }],
+  },
+};
+
+function configConcurso(rotuloItens: string): ConfigListaDocumentos {
+  return {
+    rotuloItens,
+    titulo: (r) => txt(r, "Descricao"),
+    detalhe: (r) => partes(txt(r, "TipoArquivo") ? tituloAmigavel(txt(r, "TipoArquivo")) : "", txt(r, "Numero") ? `Nº ${txt(r, "Numero")}` : "", data(r, "Data")),
+    ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    grupo: { rotulo: "Tipo", rotuloPlural: "Tipos", valor: (r) => tituloAmigavel(txt(r, "TipoArquivo")) },
+    links: [
+      { rotulo: "Abrir arquivo", campo: "Link" },
+      PAGINA_NO_PORTAL,
+    ],
+  };
+}
+
+// Entidades credenciadas no estilo BÁSICO (no estilo completo elas têm a página própria, EntidadesCredenciadasView).
+export const CONFIG_ENTIDADES_BASICA: ConfigListaDocumentos = {
+  rotuloItens: "instituições",
+  titulo: (r) => txt(r, "instituicao"),
+  detalhe: (r) =>
+    partes(
+      txt(r, "cnpj") ? `CNPJ ${txt(r, "cnpj")}` : "",
+      txt(r, "credenciamento") ? `Credenciamento ${txt(r, "credenciamento")}` : "",
+      txt(r, "renovacao") ? `Renovação ${txt(r, "renovacao")}` : "",
+    ),
+  ano: (r) => dataBr(txt(r, "renovacao"))?.ano ?? null,
+  ordem: (r, i) => (dataBr(txt(r, "renovacao"))?.chave ?? 0) - i,
+  grupo: { rotulo: "Tipo", rotuloPlural: "Tipos", valor: (r) => tituloAmigavel(txt(r, "tipo")) },
+  links: [],
+};
+
+// Qual configuração de lista vale para um código de página (ou null se a página não é uma lista).
+export function configDaLista(codigo: string): ConfigListaDocumentos | null {
+  if (CONFIGS_LISTA_DOCUMENTOS[codigo]) return CONFIGS_LISTA_DOCUMENTOS[codigo];
+  if (CONFIGS_PORTAL[codigo]) return CONFIGS_PORTAL[codigo];
+  if (codigo === "publicacoes") return configPublicacoes(false);
+  if (codigo.startsWith("pub-")) return configPublicacoes(true);
+  return null;
+}

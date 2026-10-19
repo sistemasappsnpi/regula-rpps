@@ -77,6 +77,7 @@ export function PortalPrevidenciarioDocumentoPage() {
       tenantNome={dados?.tenant.name ?? "Portal Previdenciário"}
       tenantLogoUrl={dados?.tenant.logoUrl}
       corPrimaria={dados?.tenant.corPrimaria}
+      corDestaque={dados?.tenant.corDestaque}
       siteUrl={dados?.tenant.site}
       slug={slug}
       menu={dados?.menu ?? null}

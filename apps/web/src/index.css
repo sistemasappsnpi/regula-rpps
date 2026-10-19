@@ -78,6 +78,16 @@
   font-family: var(--font-sans);
 }
 
+/* Cliente com identidade própria (Tenant.portalCorPrimaria / portalCorDestaque, ver PortalPrevidenciarioLayout):
+   o layout só entrega os tripletos em --tema-petrol / --tema-gold e estas regras os aplicam. Têm menos
+   especificidade que a regra do alto contraste logo abaixo, de propósito: alto contraste sempre vence. */
+.portal-publico-claro[data-tema-proprio] {
+  --color-petrol: var(--tema-petrol);
+}
+.portal-publico-claro[data-tema-proprio][data-tema-destaque] {
+  --color-gold: var(--tema-gold);
+}
+
 /* Alto contraste (barra de acessibilidade dos portais públicos, ver AcessibilidadeWidgets.tsx) —
    preto sobre branco, sem meio-tom nenhum. O segundo seletor (com .portal-publico-claro junto)
    existe porque, sem ele, a especificidade menor perderia pras variáveis fixas que esse portal já

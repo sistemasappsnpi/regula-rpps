@@ -41,6 +41,8 @@ export function AdminTenantsPage() {
     portalMenuApiUrl: "",
     portalRodapeApiUrl: "",
     portalCorPrimaria: "",
+    portalCorDestaque: "",
+    portalEstiloPaginas: "completo" as "completo" | "basico",
     seguradosCount: 0,
     plan: "ESSENCIAL" as Tenant["plan"],
     nivelProGestaoAlvo: "" as Nivel | "",
@@ -91,6 +93,8 @@ export function AdminTenantsPage() {
       portalMenuApiUrl: t.portalMenuApiUrl ?? "",
       portalRodapeApiUrl: t.portalRodapeApiUrl ?? "",
       portalCorPrimaria: t.portalCorPrimaria ?? "",
+      portalCorDestaque: t.portalCorDestaque ?? "",
+      portalEstiloPaginas: t.portalEstiloPaginas,
       seguradosCount: t.seguradosCount,
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo ?? "",
@@ -161,6 +165,8 @@ export function AdminTenantsPage() {
         portalMenuApiUrl: formEdicao.portalMenuApiUrl.trim() || null,
         portalRodapeApiUrl: formEdicao.portalRodapeApiUrl.trim() || null,
         portalCorPrimaria: formEdicao.portalCorPrimaria.trim() || null,
+        portalCorDestaque: formEdicao.portalCorDestaque.trim() || null,
+        portalEstiloPaginas: formEdicao.portalEstiloPaginas,
         observacao: formEdicao.observacao.trim() || null,
         seguradosCount: formEdicao.seguradosCount,
         plan: formEdicao.plan,
@@ -482,11 +488,41 @@ export function AdminTenantsPage() {
               </div>
               <span className="mt-1 block text-xs text-ink-muted">Em branco usa a cor padrão do modelo.</span>
             </label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">Cor de destaque (ícones e marcações das páginas)</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={/^#[0-9a-fA-F]{6}$/.test(formEdicao.portalCorDestaque) ? formEdicao.portalCorDestaque : "#98c810"}
+                  onChange={(e) => setFormEdicao({ ...formEdicao, portalCorDestaque: e.target.value })}
+                  className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-bg"
+                />
+                <input
+                  value={formEdicao.portalCorDestaque}
+                  onChange={(e) => setFormEdicao({ ...formEdicao, portalCorDestaque: e.target.value })}
+                  placeholder="#98c810"
+                  className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+                />
+              </div>
+              <span className="mt-1 block text-xs text-ink-muted">Em branco usa a cor de destaque padrão. Sem a cor institucional acima, esta não tem efeito.</span>
+            </label>
+            <label className="block text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-ink">Estilo das páginas de dados</span>
+              <select
+                value={formEdicao.portalEstiloPaginas}
+                onChange={(e) => setFormEdicao({ ...formEdicao, portalEstiloPaginas: e.target.value as "completo" | "basico" })}
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-petrol"
+              >
+                <option value="completo">Completo — busca inteligente, gráficos e todos os campos</option>
+                <option value="basico">Básico — filtros simples e lista, no padrão do portal de transparência</option>
+              </select>
+            </label>
             <div className="sm:col-span-2">
               <p className="text-sm font-medium text-ink">API de Transparência (Nexa)</p>
               <p className="mt-0.5 text-xs text-ink-muted">
-                Chave do órgão na API Nexa. Os dados são copiados para o nosso banco e as páginas do Portal Previdenciário
-                leem da cópia. Salve a chave antes de coletar.
+                Chave do órgão na API Nexa (opcional). Os dados são copiados para o nosso banco e as páginas do Portal
+                Previdenciário leem da cópia. Quem tem a URL da API do menu do portal de transparência também é coletado,
+                sem chave. Salve antes de coletar.
               </p>
             </div>
             <label className="block text-sm sm:col-span-2">
@@ -506,7 +542,7 @@ export function AdminTenantsPage() {
               <button
                 type="button"
                 onClick={coletarTransparenciaApi}
-                disabled={coletando || !editando?.transparenciaApiChaveConfigurada}
+                disabled={coletando || !(editando?.transparenciaApiChaveConfigurada || editando?.transparenciaPortalConfigurado)}
                 className="rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:border-petrol disabled:opacity-50"
               >
                 {coletando ? "Coletando…" : "Coletar agora"}

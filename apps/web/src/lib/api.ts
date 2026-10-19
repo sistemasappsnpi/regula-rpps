@@ -339,6 +339,8 @@ export const api = {
       portalMenuApiUrl: string | null;
       portalRodapeApiUrl: string | null;
       portalCorPrimaria: string | null;
+      portalCorDestaque: string | null;
+      portalEstiloPaginas: "completo" | "basico";
       transparenciaApiChave: string | null;
       observacao: string | null;
       seguradosCount: number;
@@ -561,12 +563,15 @@ export interface AdminTenant {
   portalMenuApiUrl: string | null;
   portalRodapeApiUrl: string | null;
   portalCorPrimaria: string | null;
+  portalCorDestaque: string | null;
+  portalEstiloPaginas: "completo" | "basico";
   observacao: string | null;
   plan: Tenant["plan"];
   nivelProGestaoAlvo: Nivel | null;
   seguradosCount: number;
   centralClientCode: string | null;
   transparenciaApiChaveConfigurada: boolean;
+  transparenciaPortalConfigurado: boolean;
   createdAt: string;
   membros: {
     membershipId: string;
@@ -784,7 +789,7 @@ export interface PortalPrevidenciarioRodape {
 }
 
 export interface PortalPrevidenciario {
-  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null; site: string | null };
+  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null; corDestaque: string | null; estiloPaginas: "completo" | "basico"; site: string | null };
   menu: PortalPrevidenciarioMenuItem[] | null;
   menuConfigurado: boolean;
   rodape: PortalPrevidenciarioRodape | null;

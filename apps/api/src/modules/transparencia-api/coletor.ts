@@ -1,58 +1,16 @@
-import { createHash } from "node:crypto";
-import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import { baixarArquivosPendentes } from "./arquivos";
 import { CATALOGO_TRANSPARENCIA_API, NEXA_BASE_URL, type EndpointTransparenciaApi } from "./catalogo";
+import { urlPortalBase } from "./fontes";
+import { coletarPortal } from "./portal-dados-abertos";
+import { sincronizarRegistros, type ResultadoColeta } from "./sincronizar";
 
-export interface ResultadoColeta {
-  codigo: string;
-  ok: boolean;
-  total?: number;
-  novos?: number;
-  removidos?: number;
-  erro?: string;
-}
+export type { ResultadoColeta } from "./sincronizar";
 
-// JSON com chaves em ordem fixa: o mesmo registro sempre gera o mesmo hash, venha a API com os
-// campos na ordem que vier.
-function jsonEstavel(v: unknown): string {
-  if (Array.isArray(v)) return `[${v.map(jsonEstavel).join(",")}]`;
-  if (v && typeof v === "object") {
-    const o = v as Record<string, unknown>;
-    return `{${Object.keys(o).sort().map((k) => `${JSON.stringify(k)}:${jsonEstavel(o[k])}`).join(",")}}`;
-  }
-  return JSON.stringify(v);
-}
-
-// A API manda datas como "dd/mm/aaaa" (às vezes ISO). Qualquer coisa que não seja uma data clara vira null.
-export function lerData(v: unknown): Date | null {
-  if (typeof v !== "string") return null;
-  const br = v.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-  if (br) {
-    const d = new Date(Date.UTC(Number(br[3]), Number(br[2]) - 1, Number(br[1])));
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  const iso = v.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) {
-    const d = new Date(Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3])));
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  return null;
-}
-
-const CAMPOS_DATA = ["data", "renovacao", "aprovacao", "data_validade", "inicio", "data_inicio", "credenciamento"];
-
-function extrairAnoEReferencia(item: Record<string, unknown>): { ano: number | null; referencia: Date | null } {
-  let referencia: Date | null = null;
-  for (const campo of CAMPOS_DATA) {
-    referencia = lerData(item[campo]);
-    if (referencia) break;
-  }
-  const anoBruto = Number(item.ano);
-  const ano = Number.isInteger(anoBruto) && anoBruto > 1900 && anoBruto < 2200 ? anoBruto : referencia ? referencia.getUTCFullYear() : null;
-  return { ano, referencia };
-}
+// Duas fontes de dados por cliente, e o cliente pode ter uma ou as duas:
+//  1) API Nexa de Transparência (manual, com chave por órgão) — Tenant.transparenciaApiChave;
+//  2) dados abertos do portal de transparência do órgão (sem chave) — derivado de Tenant.portalMenuApiUrl.
 
 async function buscarLista(chave: string, ep: EndpointTransparenciaApi): Promise<Record<string, unknown>[]> {
   const url = `${NEXA_BASE_URL}/${ep.caminho}?chave=${encodeURIComponent(chave)}`;
@@ -67,65 +25,44 @@ async function buscarLista(chave: string, ep: EndpointTransparenciaApi): Promise
 export async function coletarEndpoint(tenantId: string, chave: string, ep: EndpointTransparenciaApi): Promise<ResultadoColeta> {
   try {
     const itens = await buscarLista(chave, ep);
-    const agora = new Date();
-
-    const preparados = new Map<string, Prisma.TransparenciaApiRegistroCreateManyInput>();
-    for (const item of itens) {
-      const hash = createHash("sha1").update(jsonEstavel(item)).digest("hex");
-      if (preparados.has(hash)) continue; // item idêntico repetido na própria resposta
-      const { ano, referencia } = extrairAnoEReferencia(item);
-      preparados.set(hash, { tenantId, endpoint: ep.codigo, hash, dados: item as Prisma.InputJsonObject, ano, referencia, vistoEm: agora });
-    }
-
-    const existentes = await prisma.transparenciaApiRegistro.findMany({
-      where: { tenantId, endpoint: ep.codigo },
-      select: { id: true, hash: true, removidoEm: true },
-    });
-    const hashesExistentes = new Set(existentes.map((e) => e.hash));
-
-    const novos = [...preparados.values()].filter((p) => !hashesExistentes.has(p.hash));
-    if (novos.length) await prisma.transparenciaApiRegistro.createMany({ data: novos, skipDuplicates: true });
-
-    // vistos agora: atualiza vistoEm e "ressuscita" quem tinha sido marcado como removido
-    const vistosIds = existentes.filter((e) => preparados.has(e.hash)).map((e) => e.id);
-    if (vistosIds.length) {
-      await prisma.transparenciaApiRegistro.updateMany({ where: { id: { in: vistosIds } }, data: { vistoEm: agora, removidoEm: null } });
-    }
-
-    // sumiu da API: mantém a cópia, só marca. (Só chega aqui se a API respondeu com sucesso —
-    // erro de rede/contrato encerrado cai no catch e não marca nada.)
-    const sumiramIds = existentes.filter((e) => !preparados.has(e.hash) && !e.removidoEm).map((e) => e.id);
-    if (sumiramIds.length) {
-      await prisma.transparenciaApiRegistro.updateMany({ where: { id: { in: sumiramIds } }, data: { removidoEm: agora } });
-    }
-
-    return { codigo: ep.codigo, ok: true, total: preparados.size, novos: novos.length, removidos: sumiramIds.length };
+    // a Nexa devolve sempre a lista inteira: pode marcar o que sumiu (a função ignora lista vazia)
+    const r = await sincronizarRegistros(tenantId, ep.codigo, itens, true);
+    return { codigo: ep.codigo, ok: true, ...r };
   } catch (err) {
     return { codigo: ep.codigo, ok: false, erro: err instanceof Error ? err.message : "erro desconhecido" };
   }
 }
 
-const INTERVALO_COLETA_MS = 20 * 60_000;
+const INTERVALO_COLETA_MS = 10 * 60_000;
 let coletaEmAndamento = false;
 
-// Coleta automática: a cada 20 min, para todo RPPS que tem chave cadastrada. Roda dentro do próprio
-// processo da API (um container só), por isso o trava-repetição: se uma rodada demorar mais que o
-// intervalo, a seguinte espera em vez de empilhar.
+// Coleta automática: a cada 10 min, para todo RPPS que tem alguma fonte (chave da Nexa ou portal de
+// transparência). Roda dentro do próprio processo da API (um container só), por isso o trava-repetição: se
+// uma rodada demorar mais que o intervalo, a seguinte espera em vez de empilhar.
 export function iniciarColetaAgendada(): void {
   const rodar = async () => {
     if (coletaEmAndamento) return;
     coletaEmAndamento = true;
     try {
-      const tenants = await prisma.tenant.findMany({ where: { transparenciaApiChave: { not: null } }, select: { id: true, slug: true } });
+      const tenants = await prisma.tenant.findMany({
+        where: { OR: [{ transparenciaApiChave: { not: null } }, { portalMenuApiUrl: { contains: "dadosabertosexportar" } }] },
+        select: { id: true, slug: true },
+      });
       for (const t of tenants) {
-        const resultados = await coletarTudo(t.id);
-        const falhas = resultados.filter((r) => !r.ok).length;
-        const novos = resultados.reduce((s, r) => s + (r.novos ?? 0), 0);
-        console.log(`[transparencia-api] ${t.slug}: ${resultados.length - falhas}/${resultados.length} endpoints, ${novos} novos`);
-        // PDFs/anexos: baixa o que falta, aos poucos (a primeira carga leva algumas rodadas)
-        const arq = await baixarArquivosPendentes(t.id, 4 * 60_000);
-        console.log(`[transparencia-api] ${t.slug}: ${arq.baixados} arquivos baixados, ${arq.falhas.length} com problema`);
-        for (const f of arq.falhas.slice(0, 15)) console.log(`[transparencia-api]   ${f}`);
+        try {
+          const resultados = await coletarTudo(t.id);
+          const falhas = resultados.filter((r) => !r.ok);
+          const novos = resultados.reduce((s, r) => s + (r.novos ?? 0), 0);
+          console.log(`[transparencia-api] ${t.slug}: ${resultados.length - falhas.length}/${resultados.length} conjuntos, ${novos} novos`);
+          for (const f of falhas.slice(0, 10)) console.log(`[transparencia-api]   ${f.codigo}: ${f.erro}`);
+          // PDFs/anexos: baixa o que falta, aos poucos (a primeira carga leva algumas rodadas)
+          const arq = await baixarArquivosPendentes(t.id, 4 * 60_000);
+          console.log(`[transparencia-api] ${t.slug}: ${arq.baixados} arquivos baixados, ${arq.falhas.length} com problema`);
+          for (const f of arq.falhas.slice(0, 15)) console.log(`[transparencia-api]   ${f}`);
+        } catch (err) {
+          // um cliente com problema não pode impedir a coleta dos outros
+          console.error(`[transparencia-api] ${t.slug}: falhou:`, err instanceof Error ? err.message : err);
+        }
       }
     } catch (err) {
       console.error("[transparencia-api] coleta agendada falhou:", err instanceof Error ? err.message : err);
@@ -138,15 +75,21 @@ export function iniciarColetaAgendada(): void {
   setInterval(rodar, INTERVALO_COLETA_MS).unref();
 }
 
-// Um endpoint por vez (mesma lição do pool de conexões em portal-previdenciario.routes.ts).
+// Um conjunto por vez (mesma lição do pool de conexões em portal-previdenciario.routes.ts).
 export async function coletarTudo(tenantId: string): Promise<ResultadoColeta[]> {
-  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { transparenciaApiChave: true } });
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { transparenciaApiChave: true, portalMenuApiUrl: true } });
   if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
-  if (!tenant.transparenciaApiChave) throw new HttpError(400, "Este RPPS não tem a chave da API de Transparência cadastrada.");
+  const base = urlPortalBase(tenant.portalMenuApiUrl);
+  if (!tenant.transparenciaApiChave && !base) {
+    throw new HttpError(400, "Este RPPS não tem fonte de dados: cadastre a chave da API Nexa ou a URL da API do menu do portal de transparência.");
+  }
 
   const resultados: ResultadoColeta[] = [];
-  for (const ep of CATALOGO_TRANSPARENCIA_API) {
-    resultados.push(await coletarEndpoint(tenantId, tenant.transparenciaApiChave, ep));
+  if (tenant.transparenciaApiChave) {
+    for (const ep of CATALOGO_TRANSPARENCIA_API) {
+      resultados.push(await coletarEndpoint(tenantId, tenant.transparenciaApiChave, ep));
+    }
   }
+  if (base) resultados.push(...(await coletarPortal(tenantId, base)));
   return resultados;
 }

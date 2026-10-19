@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CalendarRange, ExternalLink, FileText, Layers, SearchX } from "lucide-react";
+import { CalendarRange, ChevronDown, ExternalLink, FileText, Layers, SearchX, Wallet } from "lucide-react";
 import { Card, StatTile } from "../ui/Card";
 import type { RegistroTransparenciaApi } from "../../lib/api";
 import type { DocBusca } from "../../lib/buscaInteligente";
 import { corDoGrafico } from "./paletaGraficos";
 import { ATRASO_GRAFICO, DURACAO_GRAFICO, entradaEscalonada, useAnimarGraficos, useMontado } from "./animacao";
 import { CampoBusca, consultaDaUrl, Destaque, ResumoBusca, useBusca } from "./CampoBusca";
+import { CamposDoRegistro } from "./CamposDoRegistro";
+import { formatarMoeda, formatarMoedaCompacta } from "../../lib/textos";
 
 // Molde das páginas "lista de documentos" da API Nexa (a maioria dos endpoints: cada registro é um
 // documento com ano/período, às vezes um grupo — colegiado, tipo — e um ou mais PDFs). Cada página só
@@ -26,6 +28,10 @@ export interface ConfigListaDocumentos {
   grupo?: { rotulo: string; rotuloPlural: string; valor: (r: RegistroTransparenciaApi) => string };
   // campos do registro que são links de PDF
   links: { rotulo: string; campo: string }[];
+  // páginas com dinheiro (licitações, contratos): valor de cada registro, em reais. Liga o cartão de total,
+  // o gráfico de valor por exercício e o valor em cada linha.
+  valor?: (r: RegistroTransparenciaApi) => number | null;
+  rotuloValor?: string;
 }
 
 interface Item {
@@ -35,27 +41,32 @@ interface Item {
   ano: number | null;
   ordem: number;
   grupo: string;
+  valor: number | null;
+  dados: RegistroTransparenciaApi;
   links: { rotulo: string; url: string }[];
 }
 
 const POR_PAGINA = 40;
 
 function LinhaDocumento({ it, termos, mostrarAno, estilo }: { it: Item; termos: string[]; mostrarAno?: boolean; estilo?: React.CSSProperties }) {
+  const [aberto, setAberto] = useState(false);
   const subtitulo = [it.grupo && !it.titulo.includes(it.grupo) ? it.grupo : "", it.detalhe].filter(Boolean).join(" · ");
   return (
-    <li className="flex flex-wrap items-center justify-between gap-3 py-3" style={estilo}>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-ink">
-          <Destaque texto={it.titulo || "Sem título"} termos={termos} />
-        </p>
-        {(subtitulo || (mostrarAno && it.ano)) && (
-          <p className="mt-0.5 text-xs text-ink-muted">
-            {mostrarAno && it.ano && <span className="mr-1.5 rounded bg-petrol/10 px-1.5 py-0.5 font-semibold text-petrol">{it.ano}</span>}
-            <Destaque texto={subtitulo} termos={termos} />
+    <li className="py-3" style={estilo}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-3 text-sm font-medium text-ink" title={it.titulo}>
+            <Destaque texto={it.titulo || "Sem título"} termos={termos} />
           </p>
-        )}
-      </div>
-      <div className="flex flex-wrap gap-2">
+          {(subtitulo || (mostrarAno && it.ano)) && (
+            <p className="mt-0.5 line-clamp-3 text-xs text-ink-muted" title={subtitulo}>
+              {mostrarAno && it.ano && <span className="mr-1.5 rounded bg-petrol/10 px-1.5 py-0.5 font-semibold text-petrol">{it.ano}</span>}
+              <Destaque texto={subtitulo} termos={termos} />
+            </p>
+          )}
+        </div>
+        {it.valor !== null && <span className="tabular shrink-0 rounded-lg bg-ok/10 px-2.5 py-1 text-xs font-bold text-ok">{formatarMoeda(it.valor)}</span>}
+        <div className="flex flex-wrap items-center gap-2">
         {it.links.map((l) => (
           <a
             key={l.rotulo}
@@ -68,7 +79,22 @@ function LinhaDocumento({ it, termos, mostrarAno, estilo }: { it: Item; termos: 
             {l.rotulo}
           </a>
         ))}
+        <button
+          type="button"
+          onClick={() => setAberto((a) => !a)}
+          aria-expanded={aberto}
+          className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ink-muted hover:bg-ink/5 hover:text-petrol"
+        >
+          Todos os campos
+          <ChevronDown size={14} className={`transition-transform duration-200 ${aberto ? "rotate-180" : ""}`} />
+        </button>
+        </div>
       </div>
+      {aberto && (
+        <div className="mt-3" style={{ animation: "fade-up .35s ease-out both" }}>
+          <CamposDoRegistro dados={it.dados} />
+        </div>
+      )}
     </li>
   );
 }
@@ -84,6 +110,7 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
   });
   const [grupoFiltro, setGrupoFiltro] = useState("");
   const [visiveis, setVisiveis] = useState(POR_PAGINA);
+  const [verTodosGrupos, setVerTodosGrupos] = useState(false);
   const animar = useAnimarGraficos();
   const montado = useMontado();
 
@@ -96,9 +123,18 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
           ano: config.ano(r),
           ordem: config.ordem(r, i),
           grupo: config.grupo?.valor(r).trim() ?? "",
+          valor: config.valor ? config.valor(r) : null,
+          dados: r,
           links: config.links
             .map((l) => ({ rotulo: l.rotulo, url: typeof r[l.campo] === "string" ? (r[l.campo] as string).trim() : "" }))
-            .filter((l) => /^(https?:\/\/|\/)/i.test(l.url)), // link da Nexa (http) ou da nossa cópia (/api/…)
+            // link da origem (http) ou da nossa cópia (/api/…). Campo de ARQUIVO só vira botão se for arquivo de
+            // verdade (ou cópia nossa): o portal às vezes grava em "Arquivo" um endereço de página, não de PDF.
+            .filter((l) => {
+              const campo = config.links.find((c) => c.rotulo === l.rotulo)?.campo ?? "";
+              if (l.url.startsWith("/")) return true;
+              if (!/^https?:\/\//i.test(l.url)) return false;
+              return !/arquivo/i.test(campo) || /\.(pdf|docx?|xlsx?|odt|ods|zip|rar|jpe?g|png)(\?.*)?$/i.test(l.url);
+            }),
         }))
         .sort((a, b) => b.ordem - a.ordem)
         .map((it, id) => ({ ...it, id })),
@@ -107,7 +143,18 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
 
   // o que a busca enxerga de cada documento: título, grupo, detalhe e o resto (ano, rótulos dos anexos)
   const docsBusca = useMemo<DocBusca[]>(
-    () => itens.map((it) => ({ id: it.id, titulo: it.titulo, grupo: it.grupo, desc: it.detalhe, extra: `${it.ano ?? ""} ${it.links.map((l) => l.rotulo).join(" ")}` })),
+    () =>
+      itens.map((it) => ({
+        id: it.id,
+        titulo: it.titulo,
+        grupo: it.grupo,
+        desc: it.detalhe,
+        // o resto do registro inteiro (credor, CNPJ, processo, cargo…), sem endereços de arquivo: a busca acha qualquer campo
+        extra: `${it.ano ?? ""} ${it.links.map((l) => l.rotulo).join(" ")} ${Object.entries(it.dados)
+          .filter(([k, v]) => !k.startsWith("_") && typeof v === "string" && v.trim() && !/^(https?:\/\/|\/api\/)/i.test(v.trim()))
+          .map(([, v]) => (v as string).replace(/<[^>]*>/g, " ").slice(0, 300))
+          .join(" ")}`,
+      })),
     [itens],
   );
   const { motor, resultado } = useBusca(docsBusca, consulta);
@@ -116,13 +163,21 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
   const resumo = useMemo(() => {
     const porAno = new Map<number, number>();
     const porGrupo = new Map<string, number>();
+    const valorAno = new Map<number, number>();
+    let valorTotal = 0;
     for (const it of itens) {
       if (it.ano) porAno.set(it.ano, (porAno.get(it.ano) ?? 0) + 1);
       if (it.grupo) porGrupo.set(it.grupo, (porGrupo.get(it.grupo) ?? 0) + 1);
+      if (it.valor !== null) {
+        valorTotal += it.valor;
+        if (it.ano) valorAno.set(it.ano, (valorAno.get(it.ano) ?? 0) + it.valor);
+      }
     }
     const anos = [...porAno.keys()].sort((a, b) => a - b);
     return {
       anos,
+      valorTotal,
+      valorPorAno: anos.map((a) => ({ ano: String(a), total: Math.round((valorAno.get(a) ?? 0) * 100) / 100 })),
       porAno: anos.map((a) => ({ ano: String(a), total: porAno.get(a) ?? 0 })),
       porGrupo: [...porGrupo.entries()].map(([nome, total]) => ({ nome, total })).sort((a, b) => b.total - a.total),
     };
@@ -270,17 +325,27 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
               )}
             </div>
             <div style={entradaEscalonada(4)}>
-              <StatTile
-                label="Mais recente"
-                value={<span className="text-xl leading-tight">{itens[0].ano ?? "—"}</span>}
-                hint={itens[0].titulo.length > 60 ? `${itens[0].titulo.slice(0, 57)}…` : itens[0].titulo}
-                icon={<FileText size={20} />}
-                tone="warn"
-              />
+              {config.valor ? (
+                <StatTile
+                  label={config.rotuloValor ?? "Valor total"}
+                  value={<span className="text-2xl leading-tight">{formatarMoedaCompacta(resumo.valorTotal)}</span>}
+                  hint={formatarMoeda(resumo.valorTotal)}
+                  icon={<Wallet size={20} />}
+                  tone="warn"
+                />
+              ) : (
+                <StatTile
+                  label="Mais recente"
+                  value={<span className="text-xl leading-tight">{itens[0].ano ?? "—"}</span>}
+                  hint={itens[0].titulo.length > 60 ? `${itens[0].titulo.slice(0, 57)}…` : itens[0].titulo}
+                  icon={<FileText size={20} />}
+                  tone="warn"
+                />
+              )}
             </div>
           </div>
 
-          <div className={`grid gap-4 ${temGrupos && resumo.porAno.length > 1 ? "lg:grid-cols-2" : ""}`}>
+          <div className={`grid gap-4 ${(resumo.porAno.length > 1 ? 1 : 0) + (temGrupos ? 1 : 0) + (config.valor && resumo.porAno.length > 1 ? 1 : 0) >= 2 ? "lg:grid-cols-2" : ""}`}>
             {/* gráfico de uma barra só não diz nada: só aparece com 2 exercícios ou mais */}
             {resumo.porAno.length > 1 && (
               <Card className="p-5" style={entradaEscalonada(5)}>
@@ -311,11 +376,47 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
                 </div>
               </Card>
             )}
-            {temGrupos && (
+            {config.valor && resumo.porAno.length > 1 && (
               <Card className="p-5" style={entradaEscalonada(6)}>
+                <p className="text-sm font-semibold text-ink">{config.rotuloValor ?? "Valor"} por exercício</p>
+                <div className="mt-2 h-56">
+                  <ResponsiveContainer>
+                    <BarChart data={resumo.valorPorAno} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid vertical={false} stroke="rgb(var(--color-border))" strokeDasharray="3 3" />
+                      <XAxis dataKey="ano" stroke="rgb(var(--color-ink-muted))" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis
+                        stroke="rgb(var(--color-ink-muted))"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                        width={64}
+                        tickFormatter={(v: number) => formatarMoedaCompacta(v).replace("R$ ", "")}
+                      />
+                      <Tooltip cursor={{ fill: "rgb(var(--color-ink) / 0.05)" }} formatter={(v: unknown) => [formatarMoeda(Number(v)), config.rotuloValor ?? "Valor"]} />
+                      <Bar
+                        dataKey="total"
+                        name={config.rotuloValor ?? "Valor"}
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={48}
+                        isAnimationActive={animar}
+                        animationBegin={ATRASO_GRAFICO}
+                        animationDuration={DURACAO_GRAFICO}
+                        animationEasing="ease-out"
+                      >
+                        {resumo.valorPorAno.map((a, i) => (
+                          <Cell key={a.ano} fill={corDoGrafico(i + 3)} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+            )}
+            {temGrupos && (
+              <Card className="p-5" style={entradaEscalonada(7)}>
                 <p className="text-sm font-semibold text-ink">Por {config.grupo!.rotulo.toLocaleLowerCase("pt-BR")}</p>
                 <div className="mt-4 space-y-3">
-                  {resumo.porGrupo.map((g, i) => (
+                  {(verTodosGrupos ? resumo.porGrupo : resumo.porGrupo.slice(0, 10)).map((g, i) => (
                     <button
                       key={g.nome}
                       type="button"
@@ -342,6 +443,11 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
                       </div>
                     </button>
                   ))}
+                  {resumo.porGrupo.length > 10 && (
+                    <button type="button" onClick={() => setVerTodosGrupos((v) => !v)} className="text-xs font-semibold text-petrol hover:underline">
+                      {verTodosGrupos ? "Mostrar só os 10 maiores" : `Mostrar todos (${resumo.porGrupo.length})`}
+                    </button>
+                  )}
                 </div>
               </Card>
             )}

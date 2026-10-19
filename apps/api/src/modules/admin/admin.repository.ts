@@ -6,6 +6,7 @@ import {
   type ReferenciaConstrutor,
   type StatusEntidadeCertificadora,
 } from "@prisma/client";
+import { urlPortalBase } from "../transparencia-api/fontes";
 import { prisma } from "../../db/prisma";
 import { slugify } from "../../utils/slugify";
 import { HttpError } from "../../middleware/errorHandler";
@@ -45,6 +46,8 @@ export const adminRepository = {
       portalMenuApiUrl: t.portalMenuApiUrl,
       portalRodapeApiUrl: t.portalRodapeApiUrl,
       portalCorPrimaria: t.portalCorPrimaria,
+      portalCorDestaque: t.portalCorDestaque,
+      portalEstiloPaginas: t.portalEstiloPaginas,
       observacao: t.observacao,
       plan: t.plan,
       nivelProGestaoAlvo: t.nivelProGestaoAlvo,
@@ -52,6 +55,8 @@ export const adminRepository = {
       centralClientCode: t.centralClientCode,
       // a chave em si nunca sai da API — só se ela existe (a tela mostra "cadastrada")
       transparenciaApiChaveConfigurada: Boolean(t.transparenciaApiChave),
+      // o portal de transparência (dados abertos) é derivado da URL do menu — sem chave
+      transparenciaPortalConfigurado: urlPortalBase(t.portalMenuApiUrl) !== null,
       createdAt: t.createdAt,
       membros: t.memberships.map((m) => ({
         membershipId: m.id,
@@ -112,6 +117,8 @@ export const adminRepository = {
       portalMenuApiUrl: string | null;
       portalRodapeApiUrl: string | null;
       portalCorPrimaria: string | null;
+      portalCorDestaque: string | null;
+      portalEstiloPaginas: string;
       observacao: string | null;
       seguradosCount: number;
       plan: Plan;

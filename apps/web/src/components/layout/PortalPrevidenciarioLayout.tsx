@@ -7,6 +7,16 @@ import { AcessibilidadeWidgets } from "./AcessibilidadeWidgets";
 // --nav-active/--footer-bg do modelo de referência (ver acessoainformacao.html).
 const COR_PADRAO = "#0a4d53";
 
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+// "#107078" -> "16 112 120" (o formato das variáveis de cor do Tailwind neste projeto, que aceita opacidade)
+function hexParaTripleto(hex: string, escurecer = 0): string {
+  const n = parseInt(hex.slice(1), 16);
+  const f = 1 - escurecer;
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v * f));
+  return c.join(" ");
+}
+
 const REDES_SOCIAIS: { key: keyof PortalPrevidenciarioRodape; label: string }[] = [
   { key: "facebook", label: "Facebook" },
   { key: "instagram", label: "Instagram" },
@@ -30,6 +40,7 @@ export function PortalPrevidenciarioLayout({
   tenantNome,
   tenantLogoUrl,
   corPrimaria,
+  corDestaque,
   siteUrl,
   slug,
   itemAtivoId,
@@ -41,6 +52,8 @@ export function PortalPrevidenciarioLayout({
   tenantNome: string;
   tenantLogoUrl?: string | null;
   corPrimaria?: string | null;
+  // segunda cor da identidade do cliente (ícones e marcações); só vale junto com a primária
+  corDestaque?: string | null;
   // site principal do órgão: a logo do topo leva pra lá (sem ele, cai no início do próprio portal)
   siteUrl?: string | null;
   slug?: string;
@@ -51,10 +64,26 @@ export function PortalPrevidenciarioLayout({
   children: ReactNode;
 }) {
   const [abertoId, setAbertoId] = useState<string | null>(null);
-  const cor = corPrimaria && /^#[0-9a-fA-F]{6}$/.test(corPrimaria) ? corPrimaria : COR_PADRAO;
+  const cor = corPrimaria && HEX.test(corPrimaria) ? corPrimaria : COR_PADRAO;
+  // Cliente com cor própria: os botões, links e destaques da página (que usam a variável "petrol" do tema)
+  // passam a usar a cor dele, não o ciano padrão. O destaque é escurecido um pouco para ler bem sobre branco.
+  // As variáveis --tema-* só entram em jogo via index.css (regra com menos força que a do alto contraste).
+  const temaProprio = !!corPrimaria && HEX.test(corPrimaria);
+  const destaqueProprio = temaProprio && !!corDestaque && HEX.test(corDestaque);
+  const estiloTema = temaProprio
+    ? ({
+        "--tema-petrol": hexParaTripleto(cor),
+        ...(destaqueProprio ? { "--tema-gold": hexParaTripleto(corDestaque as string, 0.28) } : {}),
+      } as React.CSSProperties)
+    : undefined;
 
   return (
-    <div className="portal-publico-claro flex min-h-screen flex-col bg-bg">
+    <div
+      className="portal-publico-claro flex min-h-screen flex-col bg-bg"
+      data-tema-proprio={temaProprio ? "" : undefined}
+      data-tema-destaque={destaqueProprio ? "" : undefined}
+      style={estiloTema}
+    >
       <header className="border-b border-border bg-white px-6 py-5">
         <div className="mx-auto flex max-w-7xl items-center">
           <a

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { prisma } from "../../db/prisma";
+import { hostsDoPortal, urlPortalBase } from "./fontes";
 
 // Cópia local dos PDFs/anexos apontados pelos registros da API Nexa (TransparenciaApiArquivo). Roda
 // logo depois de cada coleta: baixa o que ainda não temos, aos poucos (orçamento de tempo por rodada),
@@ -7,19 +8,27 @@ import { prisma } from "../../db/prisma";
 
 const LIMITE_BYTES = 50 * 1024 * 1024;
 const MAX_TENTATIVAS = 5;
-// só baixa de servidores da própria Nexa — a lista de links vem de uma API externa e não pode virar
-// um jeito de fazer o nosso servidor buscar endereço qualquer (rede interna, por exemplo)
+// só baixa de servidores conhecidos — a lista de links vem de uma API externa e não pode virar um jeito de
+// fazer o nosso servidor buscar endereço qualquer (rede interna, por exemplo). Sempre a Nexa; mais o
+// servidor do portal de transparência do próprio cliente (ver fontes.ts), informado por quem chama.
 const HOSTS_PERMITIDOS = [/(^|\.)nexasolucoes\.com\.br$/i];
+
+function hostPermitido(hostname: string, extras: string[]): boolean {
+  const h = hostname.toLowerCase();
+  if (HOSTS_PERMITIDOS.some((re) => re.test(h))) return true;
+  return extras.some((e) => h === e || h.endsWith(`.${e}`));
+}
 
 export function hashUrl(url: string): string {
   return createHash("sha1").update(url).digest("hex");
 }
 
-// qualquer campo "link…" (linkArquivo, linkArquivo_ata, linkArquivoAta, linkaAquivo_Ata…) com URL http(s)
+// qualquer campo de arquivo com URL http(s): "link…" (linkArquivo, linkArquivo_ata, LinkArquivo, linkaAquivo_Ata…)
+// da API Nexa e dos conjuntos do portal, e "Arquivo"/"DemaisArquivos" (contratos do portal de transparência)
 export function camposDeLink(dados: Record<string, unknown>): { campo: string; url: string }[] {
   const achados: { campo: string; url: string }[] = [];
   for (const [campo, valor] of Object.entries(dados)) {
-    if (/^link/i.test(campo) && typeof valor === "string" && /^https?:\/\//i.test(valor.trim())) {
+    if (/^(link|arquivo$|demaisarquivos$)/i.test(campo) && typeof valor === "string" && /^https?:\/\//i.test(valor.trim())) {
       achados.push({ campo, url: valor.trim() });
     }
   }
@@ -39,7 +48,7 @@ function nomeDoArquivo(url: string): string {
   }
 }
 
-async function baixar(url: string): Promise<Resultado> {
+async function baixar(url: string, hostsExtras: string[]): Promise<Resultado> {
   let alvo: URL;
   try {
     alvo = new URL(url);
@@ -47,7 +56,7 @@ async function baixar(url: string): Promise<Resultado> {
     return { status: "IGNORADO", erro: "URL inválida" };
   }
   if (alvo.protocol !== "https:" && alvo.protocol !== "http:") return { status: "IGNORADO", erro: "protocolo não suportado" };
-  if (!HOSTS_PERMITIDOS.some((re) => re.test(alvo.hostname))) return { status: "IGNORADO", erro: `servidor fora da lista permitida (${alvo.hostname})` };
+  if (!hostPermitido(alvo.hostname, hostsExtras)) return { status: "IGNORADO", erro: `servidor fora da lista permitida (${alvo.hostname})` };
 
   try {
     const resp = await fetch(alvo.href, { signal: AbortSignal.timeout(90_000) });
@@ -107,6 +116,8 @@ export async function statusArquivos(tenantId: string): Promise<StatusArquivos> 
 // Baixa o que falta, até estourar o orçamento de tempo. Devolve quantos baixou nesta rodada.
 export async function baixarArquivosPendentes(tenantId: string, orcamentoMs: number): Promise<{ baixados: number; falhas: string[] }> {
   const inicio = Date.now();
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { portalMenuApiUrl: true } });
+  const hostsExtras = hostsDoPortal(urlPortalBase(tenant?.portalMenuApiUrl));
   const urls = await urlsDoTenant(tenantId);
   const existentes = await prisma.transparenciaApiArquivo.findMany({ where: { tenantId }, select: { urlHash: true, status: true, tentativas: true, updatedAt: true } });
   const porHash = new Map(existentes.map((e) => [e.urlHash, e]));
@@ -125,7 +136,7 @@ export async function baixarArquivosPendentes(tenantId: string, orcamentoMs: num
   for (const url of [...novos, ...repetir]) {
     if (Date.now() - inicio > orcamentoMs) break;
     const hash = hashUrl(url);
-    const r = await baixar(url);
+    const r = await baixar(url, hostsExtras);
     const tentativasAntes = porHash.get(hash)?.tentativas ?? 0;
 
     if (r.status === "OK") {
