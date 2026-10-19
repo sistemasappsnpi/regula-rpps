@@ -6,7 +6,7 @@ import type { RegistroTransparenciaApi } from "../../lib/api";
 import type { DocBusca } from "../../lib/buscaInteligente";
 import { corDoGrafico } from "./paletaGraficos";
 import { ATRASO_GRAFICO, DURACAO_GRAFICO, entradaEscalonada, useAnimarGraficos } from "./animacao";
-import { CampoBusca, Destaque, ResumoBusca, useBusca } from "./CampoBusca";
+import { CampoBusca, consultaDaUrl, Destaque, ResumoBusca, useBusca } from "./CampoBusca";
 
 // Conteúdo da página "Entidades de investimento credenciadas" (API Nexa: EntidadeInvestimentoCredenciada).
 // Campos de cada registro: cnpj, instituicao, tipo, credenciamento (dd/mm/aaaa), renovacao (dd/mm/aaaa).
@@ -43,7 +43,7 @@ function rotuloTipo(tipo: string): string {
 }
 
 export function EntidadesCredenciadasView({ registros }: { registros: RegistroTransparenciaApi[] }) {
-  const [consulta, setConsulta] = useState("");
+  const [consulta, setConsulta] = useState(consultaDaUrl);
   const [tipoFiltro, setTipoFiltro] = useState("");
   const animar = useAnimarGraficos();
 

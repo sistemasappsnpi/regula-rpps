@@ -7,6 +7,16 @@ import { criarMotorBusca, norm, type DocBusca, type MotorBusca, type ResultadoBu
 // resumo do resultado ("mostrando resultados para…", "mais parecidos") e destaque dos termos nos textos.
 // Motor: lib/buscaInteligente.ts (porta do motor de busca do modelo do gerador de transparência).
 
+// ?q=texto na URL abre a página já pesquisada (ex.: .../atas-colegiados?q=conselho+fiscal) — é o que
+// permite um botão do site do órgão levar direto a um recorte (um colegiado, um tipo de documento…)
+export function consultaDaUrl(): string {
+  try {
+    return (new URLSearchParams(window.location.search).get("q") ?? "").slice(0, 120);
+  } catch {
+    return "";
+  }
+}
+
 export function useBusca(docs: DocBusca[], consulta: string): { motor: MotorBusca; resultado: ResultadoBusca | null } {
   const motor = useMemo(() => criarMotorBusca(docs), [docs]);
   // useDeferredValue: digitar nunca trava, mesmo em páginas com centenas de registros

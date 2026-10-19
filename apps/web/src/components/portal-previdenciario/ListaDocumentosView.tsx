@@ -6,7 +6,7 @@ import type { RegistroTransparenciaApi } from "../../lib/api";
 import type { DocBusca } from "../../lib/buscaInteligente";
 import { corDoGrafico } from "./paletaGraficos";
 import { ATRASO_GRAFICO, DURACAO_GRAFICO, entradaEscalonada, useAnimarGraficos, useMontado } from "./animacao";
-import { CampoBusca, Destaque, ResumoBusca, useBusca } from "./CampoBusca";
+import { CampoBusca, consultaDaUrl, Destaque, ResumoBusca, useBusca } from "./CampoBusca";
 
 // Molde das páginas "lista de documentos" da API Nexa (a maioria dos endpoints: cada registro é um
 // documento com ano/período, às vezes um grupo — colegiado, tipo — e um ou mais PDFs). Cada página só
@@ -74,9 +74,11 @@ function LinhaDocumento({ it, termos, mostrarAno, estilo }: { it: Item; termos: 
 }
 
 export function ListaDocumentosView({ registros, config }: { registros: RegistroTransparenciaApi[]; config: ConfigListaDocumentos }) {
-  const [consulta, setConsulta] = useState("");
-  // abre já filtrado pelo exercício mais recente; o filtro troca de exercício (ou mostra todos)
+  const [consulta, setConsulta] = useState(consultaDaUrl);
+  // abre já filtrado pelo exercício mais recente; o filtro troca de exercício (ou mostra todos).
+  // Em página pequena (poucos documentos) filtrar esconderia quase tudo, então abre mostrando todos.
   const [anoFiltro, setAnoFiltro] = useState(() => {
+    if (registros.length <= 12) return "";
     const anos = registros.map((r) => config.ano(r)).filter((a): a is number => a !== null);
     return anos.length ? String(Math.max(...anos)) : "";
   });
@@ -278,8 +280,9 @@ export function ListaDocumentosView({ registros, config }: { registros: Registro
             </div>
           </div>
 
-          <div className={`grid gap-4 ${temGrupos ? "lg:grid-cols-2" : ""}`}>
-            {resumo.porAno.length > 0 && (
+          <div className={`grid gap-4 ${temGrupos && resumo.porAno.length > 1 ? "lg:grid-cols-2" : ""}`}>
+            {/* gráfico de uma barra só não diz nada: só aparece com 2 exercícios ou mais */}
+            {resumo.porAno.length > 1 && (
               <Card className="p-5" style={entradaEscalonada(5)}>
                 <p className="text-sm font-semibold text-ink">{config.rotuloItens.charAt(0).toLocaleUpperCase("pt-BR") + config.rotuloItens.slice(1)} por exercício</p>
                 <div className="mt-2 h-56">
