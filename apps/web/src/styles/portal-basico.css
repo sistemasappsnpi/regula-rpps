@@ -638,3 +638,64 @@ a.pb-card-titulo:hover {
     justify-content: center;
   }
 }
+
+/* ---- detalhes do item (todos os campos que a API entrega) ---- */
+.pb-card-bloco {
+  margin-bottom: 0.5rem;
+}
+.pb-card-bloco .pb-card {
+  margin-bottom: 0;
+}
+.pb-detalhes-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.2rem 0 0 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--pb-cor);
+  cursor: pointer;
+}
+.pb-detalhes-botao:hover {
+  text-decoration: underline;
+}
+.pb-detalhes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 1.5rem;
+  margin: 0.35rem 0 0.6rem;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--pb-borda);
+  border-left: 3px solid var(--pb-cor);
+  border-radius: 0.5rem;
+}
+.pb-detalhe dt {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pb-suave);
+  margin: 0;
+}
+.pb-detalhe dd {
+  margin: 0.1rem 0 0;
+  color: #1f2937;
+  word-break: break-word;
+}
+.pb-detalhe-link {
+  color: var(--pb-cor);
+  font-weight: 500;
+}
+.pb-detalhe-link:hover {
+  text-decoration: underline;
+}
+@media (max-width: 600px) {
+  .pb-detalhes {
+    grid-template-columns: 1fr;
+  }
+}

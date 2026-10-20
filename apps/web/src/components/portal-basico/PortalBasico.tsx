@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUp, Calendar, ChevronDown, Clock, FileText, Hash, Mail, MapPin, Menu, Phone, Search, Share2, Trash2 } from "lucide-react";
 import type { PaginaIndiceTransparencia, PortalPrevidenciario, RegistroTransparenciaApi } from "../../lib/api";
 import type { ConfigListaDocumentos } from "../portal-previdenciario/ListaDocumentosView";
+import { formatarDataIso } from "../../lib/textos";
+import { DetalhesBasico } from "./DetalhesBasico";
 import "../../styles/portal-basico.css";
 
 // Página do estilo BÁSICO (Tenant.portalEstiloPaginas = "basico"): réplica enxuta do visual dos portais de
@@ -20,6 +22,7 @@ interface Item {
   ordem: number;
   grupo: string;
   data: string | null; // aaaa-mm-dd
+  dados: RegistroTransparenciaApi;
   links: { rotulo: string; url: string }[];
 }
 
@@ -83,6 +86,52 @@ function baixar(nome: string, tipo: string, conteudo: string) {
   URL.revokeObjectURL(url);
 }
 
+function CartaoBasico({ it }: { it: Item }) {
+  const [aberto, setAberto] = useState(false);
+  const principal = it.links[0]?.url;
+  return (
+    <div className="pb-card-bloco">
+      <div className="pb-card">
+                        <span className="pb-card-icone">
+                          <FileText size={22} />
+                        </span>
+                        <div className="pb-card-corpo">
+                          {principal ? (
+                            <a className="pb-card-titulo" href={principal} target="_blank" rel="noreferrer">
+                              {it.titulo || "Sem título"}
+                            </a>
+                          ) : (
+                            <span className="pb-card-titulo">{it.titulo || "Sem título"}</span>
+                          )}
+                          {it.data && (
+                            <span className="pb-card-data">
+                              <Calendar size={11} /> {formatarData(it.data)}
+                            </span>
+                          )}
+                          {it.detalhe && <p className="pb-card-desc">{it.detalhe}</p>}
+                          {(it.grupo || recente(it.data)) && (
+                            <div className="pb-card-tags">
+                              {recente(it.data) && <span className="pb-novo">NOVO</span>}
+                              {it.grupo && <span className="pb-tag">{it.grupo}</span>}
+                              {it.ano !== null && !it.data && <span className="pb-tag">Exercício {it.ano}</span>}
+                            </div>
+                          )}
+                        </div>
+                        <div className="pb-card-acoes">
+                          {it.links.map((l, k) => (
+                            <a key={l.rotulo} className="pb-acessar" href={l.url} target="_blank" rel="noreferrer">
+                              {k === 0 ? "Acessar" : l.rotulo} <ArrowRight size={15} />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+      <button type="button" className="pb-detalhes-botao" onClick={() => setAberto((a) => !a)} aria-expanded={aberto}>
+        {aberto ? "Ocultar detalhes" : "Ver todos os campos"} <ChevronDown size={14} style={{ transform: aberto ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
+      </button>
+      {aberto && <DetalhesBasico dados={it.dados} />}
+    </div>
+  );
+}
 // 1 … 4 5 [6] 7 8 … 60
 function janela(atual: number, total: number): (number | "…")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -167,6 +216,7 @@ export function PortalBasico({
         ordem: config.ordem(r, i),
         grupo: config.grupo?.valor(r).trim() ?? "",
         data,
+        dados: r,
         links: config.links
           .map((l) => ({ rotulo: l.rotulo, campo: l.campo, url: typeof r[l.campo] === "string" ? (r[l.campo] as string).trim() : "" }))
           // link da origem (http) ou da nossa cópia (/api/…); campo de ARQUIVO só vira botão se for arquivo de verdade
@@ -434,45 +484,7 @@ export function PortalBasico({
           ) : exibidos.length === 0 ? (
             <div className="pb-vazio">Nenhum registro encontrado para os filtros informados.</div>
           ) : (
-            exibidos.map((it, i) => {
-              const principal = it.links[0]?.url;
-              return (
-                <div key={`${paginaAtual}-${i}`} className="pb-card">
-                  <span className="pb-card-icone">
-                    <FileText size={22} />
-                  </span>
-                  <div className="pb-card-corpo">
-                    {principal ? (
-                      <a className="pb-card-titulo" href={principal} target="_blank" rel="noreferrer">
-                        {it.titulo || "Sem título"}
-                      </a>
-                    ) : (
-                      <span className="pb-card-titulo">{it.titulo || "Sem título"}</span>
-                    )}
-                    {it.data && (
-                      <span className="pb-card-data">
-                        <Calendar size={11} /> {formatarData(it.data)}
-                      </span>
-                    )}
-                    {it.detalhe && <p className="pb-card-desc">{it.detalhe}</p>}
-                    {(it.grupo || recente(it.data)) && (
-                      <div className="pb-card-tags">
-                        {recente(it.data) && <span className="pb-novo">NOVO</span>}
-                        {it.grupo && <span className="pb-tag">{it.grupo}</span>}
-                        {it.ano !== null && !it.data && <span className="pb-tag">Exercício {it.ano}</span>}
-                      </div>
-                    )}
-                  </div>
-                  <div className="pb-card-acoes">
-                    {it.links.map((l, k) => (
-                      <a key={l.rotulo} className="pb-acessar" href={l.url} target="_blank" rel="noreferrer">
-                        {k === 0 ? "Acessar" : l.rotulo} <ArrowRight size={15} />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              );
-            })
+            exibidos.map((it, i) => <CartaoBasico key={`${paginaAtual}-${i}`} it={it} />)
           )}
 
           {totalPaginas > 1 && (
