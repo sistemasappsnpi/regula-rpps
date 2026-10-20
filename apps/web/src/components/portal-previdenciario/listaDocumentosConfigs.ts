@@ -408,6 +408,60 @@ export const CONFIGS_PORTAL: Record<string, ConfigListaDocumentos> = {
     links: [{ rotulo: "Acessar", campo: "Link" }],
   },
 
+  // ---- exportações JSON das páginas do portal (campos como o portal os nomeia) ----
+  decretos: {
+    rotuloItens: "decretos",
+    titulo: (r) => txt(r, "Coluna"),
+    detalhe: (r) => txt(r, "Descricao"),
+    ano: (r) => dataBr(txt(r, "Data"))?.ano ?? anoEm(txt(r, "Coluna")),
+    ordem: (r, i) => (dataBr(txt(r, "Data"))?.chave ?? 0) * 1000 - i,
+    links: [],
+  },
+
+  "prestacao-de-contas": {
+    rotuloItens: "demonstrativos",
+    titulo: (r) => txt(r, "Titulo"),
+    detalhe: (r) => partes(txt(r, "Descrição"), txt(r, "Data") ? `Publicado em ${txt(r, "Data")}` : ""),
+    ano: (r) => anoEm(txt(r, "Titulo")) ?? dataBr(txt(r, "Data"))?.ano ?? null,
+    ordem: (r, i) => (dataBr(txt(r, "Data"))?.chave ?? 0) * 1000 - i,
+    grupo: { rotulo: "Demonstrativo", rotuloPlural: "Demonstrativos", valor: (r) => tituloAmigavel(txt(r, "Titulo").split(" - ")[0]) },
+    links: [],
+  },
+
+  "perguntas-frequentes": {
+    rotuloItens: "perguntas",
+    titulo: (r) => txt(r, "Pergunta"),
+    detalhe: (r) => {
+      const resposta = textoPuro(txt(r, "Resposta"));
+      return resposta.length > 260 ? `${resposta.slice(0, 257)}…` : resposta;
+    },
+    ano: () => null,
+    ordem: (_r, i) => -i,
+    links: [],
+  },
+
+  glossario: {
+    rotuloItens: "termos",
+    titulo: (r) => txt(r, "Descricao"),
+    detalhe: (r) => {
+      const t = textoPuro(txt(r, "Explicativo"));
+      return t.length > 260 ? `${t.slice(0, 257)}…` : t;
+    },
+    ano: () => null,
+    ordem: (_r, i) => -i,
+    links: [],
+  },
+
+  "transparencia-de-beneficios": {
+    rotuloItens: "processos",
+    titulo: (r) => `Processo ${txt(r, "Número processo")} — ${tituloAmigavel(txt(r, "Tipo do processo"))}`,
+    detalhe: (r) => partes(tituloAmigavel(txt(r, "Interessado")), txt(r, "Número protocolo") ? `Protocolo ${txt(r, "Número protocolo")}` : "", tituloAmigavel(txt(r, "Fase")), tituloAmigavel(txt(r, "Desc Situacao"))),
+    ano: (r) => dataBr(txt(r, "Data de solicitação"))?.ano ?? null,
+    ordem: (r, i) => (dataBr(txt(r, "Data de solicitação"))?.chave ?? 0) * 1000 - i,
+    grupo: { rotulo: "Tipo de processo", rotuloPlural: "Tipos de processo", valor: (r) => tituloAmigavel(txt(r, "Tipo do processo")) },
+    links: [],
+  },
+
   selos: {
     rotuloItens: "selos",
     titulo: (r) => txt(r, "DescSelo"),
@@ -449,8 +503,23 @@ export const CONFIG_ENTIDADES_BASICA: ConfigListaDocumentos = {
   links: [],
 };
 
+// Documentos de um colegiado (atas, cronograma, certidões…): col-<id> (todos os tipos) ou col-<id>-<tipo> (um tipo).
+export function configColegiado(comGrupo: boolean): ConfigListaDocumentos {
+  return {
+    rotuloItens: "documentos",
+    titulo: (r) => txt(r, "Descricao"),
+    detalhe: (r) => partes(txt(r, "TipoAcao") ? tituloAmigavel(txt(r, "TipoAcao")) : "", txt(r, "Local")),
+    ano: (r) => dataIso(txt(r, "Data"))?.ano ?? null,
+    ordem: ordemPorData("Data"),
+    ...(comGrupo ? { grupo: { rotulo: "Tipo de documento", rotuloPlural: "Tipos de documento", valor: (r: RegistroTransparenciaApi) => txt(r, "TipoDocumento") } } : {}),
+    links: [{ rotulo: "Abrir PDF", campo: "Arquivo" }],
+  };
+}
+
 // Qual configuração de lista vale para um código de página (ou null se a página não é uma lista).
 export function configDaLista(codigo: string): ConfigListaDocumentos | null {
+  if (/^col-\d+-\d+$/.test(codigo)) return configColegiado(false);
+  if (/^col-\d+$/.test(codigo)) return configColegiado(true);
   if (CONFIGS_LISTA_DOCUMENTOS[codigo]) return CONFIGS_LISTA_DOCUMENTOS[codigo];
   if (CONFIGS_PORTAL[codigo]) return CONFIGS_PORTAL[codigo];
   if (codigo === "publicacoes") return configPublicacoes(false);

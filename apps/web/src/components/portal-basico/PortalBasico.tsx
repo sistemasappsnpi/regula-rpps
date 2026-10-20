@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUp, Calendar, ChevronDown, Clock, FileText, Hash, Mail, MapPin, Menu, Phone, Search, Share2, Trash2 } from "lucide-react";
-import type { PortalPrevidenciario, RegistroTransparenciaApi } from "../../lib/api";
+import type { PaginaIndiceTransparencia, PortalPrevidenciario, RegistroTransparenciaApi } from "../../lib/api";
 import type { ConfigListaDocumentos } from "../portal-previdenciario/ListaDocumentosView";
 import "../../styles/portal-basico.css";
 
@@ -98,6 +98,14 @@ function janela(atual: number, total: number): (number | "…")[] {
   return saida;
 }
 
+// Página "Publicações" do estilo básico: um filtro de TIPO reúne tudo o que o cliente tem (tipos de publicação do
+// portal, documentos da API Nexa e outros conjuntos). Escolher um tipo troca a URL (?tipo=<código>) e a lista.
+export interface HubTipos {
+  paginas: PaginaIndiceTransparencia[];
+  tipo: string; // código escolhido ("" = todas as publicações)
+  onTipo: (codigo: string) => void;
+}
+
 export function PortalBasico({
   slug,
   dados,
@@ -105,6 +113,9 @@ export function PortalBasico({
   atualizadoEm,
   registros,
   config,
+  chave,
+  hub,
+  erroConteudo,
 }: {
   slug: string;
   dados: PortalPrevidenciario | null;
@@ -112,6 +123,10 @@ export function PortalBasico({
   atualizadoEm: string | null;
   registros: RegistroTransparenciaApi[];
   config: ConfigListaDocumentos | null;
+  // muda quando a página passa a mostrar outro conjunto de dados: zera os filtros e a paginação
+  chave: string;
+  hub?: HubTipos;
+  erroConteudo?: string | null;
 }) {
   const [rascunho, setRascunho] = useState<Filtros>(SEM_FILTROS);
   const [aplicado, setAplicado] = useState<Filtros>(SEM_FILTROS);
@@ -124,6 +139,13 @@ export function PortalBasico({
   const cor = tenant?.corPrimaria && /^#[0-9a-fA-F]{6}$/.test(tenant.corPrimaria) ? tenant.corPrimaria : COR_PADRAO;
   const nome = tenant?.name ?? "Portal da Transparência";
   const siteUrl = tenant?.site && /^https?:\/\//i.test(tenant.site) ? tenant.site : `/portal-previdenciario/${slug}`;
+
+  // outro conjunto de dados na tela: os filtros do anterior não valem mais
+  useEffect(() => {
+    setRascunho(SEM_FILTROS);
+    setAplicado(SEM_FILTROS);
+    setPagina(1);
+  }, [chave]);
 
   // fecha o menu "Exportar" ao clicar fora
   useEffect(() => {
@@ -287,7 +309,7 @@ export function PortalBasico({
             <li>
               <a href={`/portal-previdenciario/${slug}`}>Acesso à informação</a>
             </li>
-            <li>{titulo}</li>
+            <li>{hub ? "Publicações" : titulo}</li>
           </ol>
         </div>
       </div>
@@ -295,7 +317,7 @@ export function PortalBasico({
       <main className="pb-principal">
         <div className="pb-container">
           <div className="pb-painel-cab">
-            <h1 className="pb-painel-titulo">{titulo}</h1>
+            <h1 className="pb-painel-titulo">{hub ? "Publicações" : titulo}</h1>
             <p className="pb-painel-desc">Utilize os campos abaixo para refinar sua busca</p>
           </div>
 
@@ -310,7 +332,36 @@ export function PortalBasico({
                   </div>
                 </div>
               )}
-              {config?.grupo && grupos.length > 1 && (
+              {hub && (
+                <div className="pb-campo">
+                  <label>Filtro pelo tipo</label>
+                  <select value={hub.tipo} onChange={(e) => hub.onTipo(e.target.value)}>
+                    <option value="">Todos os tipos de publicação</option>
+                    {(
+                      [
+                        ["Publicações", "portal-tipo"],
+                        ["Documentos dos colegiados", "portal-colegiado"],
+                        ["Documentos da API Nexa", "nexa"],
+                        ["Outros", "portal"],
+                      ] as const
+                    ).map(([rotulo, origem]) => {
+                      const lista = hub.paginas
+                        .filter((p) => p.origem === origem && p.codigo !== "publicacoes")
+                        .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
+                      return lista.length === 0 ? null : (
+                        <optgroup key={origem} label={rotulo}>
+                          {lista.map((p) => (
+                            <option key={p.codigo} value={p.codigo}>
+                              {p.titulo} ({p.total})
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
+              {!hub && config?.grupo && grupos.length > 1 && (
                 <div className="pb-campo">
                   <label>{config.grupo.rotulo}</label>
                   <select value={rascunho.grupo} onChange={(e) => setRascunho({ ...rascunho, grupo: e.target.value })}>
@@ -366,7 +417,7 @@ export function PortalBasico({
 
           <div id="pb-lista" className="pb-lista-cab">
             <div>
-              <h2 className="pb-lista-titulo">Lista de {config?.rotuloItens ?? "registros"}</h2>
+              <h2 className="pb-lista-titulo">{hub ? (hub.tipo ? `Lista de ${titulo}` : "Lista de publicações") : `Lista de ${config?.rotuloItens ?? "registros"}`}</h2>
               <p className="pb-meta">Foram encontrados {filtrados.length} registros</p>
             </div>
             {atualizadoEm && (
@@ -376,7 +427,9 @@ export function PortalBasico({
             )}
           </div>
 
-          {!config ? (
+          {erroConteudo ? (
+            <div className="pb-vazio">{erroConteudo}</div>
+          ) : !config ? (
             <div className="pb-vazio">Carregando…</div>
           ) : exibidos.length === 0 ? (
             <div className="pb-vazio">Nenhum registro encontrado para os filtros informados.</div>

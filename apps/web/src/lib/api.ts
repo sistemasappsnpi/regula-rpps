@@ -355,6 +355,14 @@ export const api = {
     request<{ resultados: ResultadoColetaTransparenciaApi[]; arquivos: { total: number; baixados: number; pendentes: number; falhas: number; ignorados: number } }>(`/admin/tenants/${tenantId}/transparencia-api/coletar`, { method: "POST" }),
 
   // Página pública alimentada pela cópia local da API Nexa de Transparência.
+  // Índice das páginas de dados do cliente (código, título e quantidade) — alimenta o filtro de tipo do estilo básico.
+  portalPrevidenciarioPaginas: async (slug: string): Promise<{ paginas: PaginaIndiceTransparencia[] }> => {
+    const res = await fetch(`/api/public/portal-previdenciario/${slug}/transparencia-api`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Não foi possível carregar a lista de tipos.");
+    return data as { paginas: PaginaIndiceTransparencia[] };
+  },
+
   portalPrevidenciarioTransparenciaApi: async (slug: string, codigo: string): Promise<TransparenciaApiConteudo> => {
     const res = await fetch(`/api/public/portal-previdenciario/${slug}/transparencia-api/${codigo}`);
     const data = await res.json().catch(() => ({}));
@@ -541,6 +549,14 @@ export interface ResultadoColetaTransparenciaApi {
 
 // Cada endpoint da API Nexa tem seus próprios campos — a página de cada um sabe quais ler.
 export type RegistroTransparenciaApi = Record<string, unknown> & { _ano: number | null; _referencia: string | null };
+
+export interface PaginaIndiceTransparencia {
+  codigo: string;
+  titulo: string;
+  total: number;
+  // nexa = API Nexa (com chave) · portal = conjuntos do portal (licitações, contratos…) · portal-tipo = um tipo de publicação
+  origem: "nexa" | "portal" | "portal-tipo" | "portal-colegiado";
+}
 
 export interface TransparenciaApiConteudo {
   codigo: string;
@@ -789,7 +805,7 @@ export interface PortalPrevidenciarioRodape {
 }
 
 export interface PortalPrevidenciario {
-  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null; corDestaque: string | null; estiloPaginas: "completo" | "basico"; site: string | null };
+  tenant: { name: string; federatedEntity: string; slug: string; logoUrl: string | null; corPrimaria: string | null; corDestaque: string | null; estiloPaginas: "completo" | "basico"; site: string | null; transparenciaUrl?: string | null };
   menu: PortalPrevidenciarioMenuItem[] | null;
   menuConfigurado: boolean;
   rodape: PortalPrevidenciarioRodape | null;

@@ -1,13 +1,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Router } from "express";
+import { env } from "../../config/env";
 import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import { criarCache } from "../../middleware/publicProtect";
 import {
   CATALOGO_PORTAL,
   CATALOGO_TRANSPARENCIA_API,
+  ENDPOINT_COLEGIADOS,
   ENDPOINT_PUBLICACOES,
+  PREFIXO_COLEGIADO,
   PREFIXO_PUBLICACAO,
   endpointPorCodigo,
   paginaPortalPorCodigo,
@@ -134,6 +137,20 @@ function mapearRodape(bruto: unknown): PortalPrevidenciarioRodape | null {
   };
 }
 
+// Endereço da "transparência modelo" integrada a este cliente (portal do gerador com config.integracaoPrevidencia.slug =
+// <slug>): as páginas da Previdência mostram um link "Voltar à Transparência" para ele.
+const cacheTransparenciaIntegrada = criarCache<{ slug: string; pasta: string }[]>(60_000);
+async function urlTransparenciaIntegrada(slugCliente: string): Promise<string | null> {
+  const portais = await cacheTransparenciaIntegrada("integrados", async () => {
+    const linhas = await prisma.transparenciaPortal.findMany({ select: { pasta: true, config: true } });
+    return linhas
+      .map((l) => ({ pasta: l.pasta, slug: String(((l.config as Record<string, unknown> | null)?.integracaoPrevidencia as { slug?: unknown } | undefined)?.slug ?? "") }))
+      .filter((p) => p.slug !== "");
+  });
+  const achado = portais.find((p) => p.slug === slugCliente);
+  return achado ? `${env.webUrl.replace(/\/+$/, "")}/api/public/transparencia-portal/${achado.pasta}/` : null;
+}
+
 portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
   try {
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
@@ -162,6 +179,7 @@ portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
         corDestaque: tenant.portalCorDestaque,
         estiloPaginas: tenant.portalEstiloPaginas === "basico" ? "basico" : "completo",
         site: tenant.site,
+        transparenciaUrl: await urlTransparenciaIntegrada(tenant.slug).catch(() => null),
       },
       menu,
       menuConfigurado: Boolean(tenant.portalMenuApiUrl),
@@ -342,6 +360,7 @@ interface PaginaResolvida {
   titulo: string;
   endpoint: string;
   tipoSlug?: string; // páginas "pub-<tipo>": só as publicações desse tipo
+  colegiado?: { id: string; tipo: string | null }; // páginas "col-<id>[-<tipo>]": documentos de um colegiado
 }
 
 function resolverPagina(codigo: string): PaginaResolvida | null {
@@ -352,7 +371,14 @@ function resolverPagina(codigo: string): PaginaResolvida | null {
   if (codigo.startsWith(PREFIXO_PUBLICACAO) && codigo.length > PREFIXO_PUBLICACAO.length) {
     return { titulo: "Publicações", endpoint: ENDPOINT_PUBLICACOES, tipoSlug: codigo.slice(PREFIXO_PUBLICACAO.length) };
   }
+  const col = codigo.match(/^col-(\d+)(?:-(\d+))?$/);
+  if (col) return { titulo: "Documentos do colegiado", endpoint: ENDPOINT_COLEGIADOS, colegiado: { id: col[1], tipo: col[2] ?? null } };
   return null;
+}
+
+function campoTexto(dados: unknown, campo: string): string {
+  const v = dados && typeof dados === "object" ? (dados as Record<string, unknown>)[campo] : "";
+  return typeof v === "string" ? v.trim() : "";
 }
 
 function tipoDe(dados: unknown): string {
@@ -378,6 +404,13 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api/:codigo", async (
         registros = registros.filter((r) => slugDoTipo(tipoDe(r.dados)) === pagina.tipoSlug);
         if (registros.length === 0) return null;
         titulo = tituloAmigavel(tipoDe(registros[0].dados));
+      }
+      if (pagina.colegiado) {
+        const { id, tipo } = pagina.colegiado;
+        registros = registros.filter((r) => campoTexto(r.dados, "ColegiadoId") === id && (tipo === null || campoTexto(r.dados, "TipoDocumentoId") === tipo));
+        if (registros.length === 0) return null;
+        const nome = tituloAmigavel(campoTexto(registros[0].dados, "Colegiado"));
+        titulo = tipo === null ? nome : `${nome} — ${campoTexto(registros[0].dados, "TipoDocumento")}`;
       }
 
       // links de PDF/anexo: onde já temos a cópia, aponta pro nosso arquivo (não pro servidor de origem)
@@ -436,7 +469,7 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api", async (req, res
       });
       const total = new Map(grupos.map((g) => [g.endpoint, g._count._all]));
 
-      const paginas: { codigo: string; titulo: string; total: number; origem: "nexa" | "portal" | "portal-tipo" }[] = [];
+      const paginas: { codigo: string; titulo: string; total: number; origem: "nexa" | "portal" | "portal-tipo" | "portal-colegiado" }[] = [];
       for (const e of CATALOGO_TRANSPARENCIA_API) if (total.get(e.codigo)) paginas.push({ codigo: e.codigo, titulo: e.titulo, total: total.get(e.codigo)!, origem: "nexa" });
       for (const p of CATALOGO_PORTAL) if (total.get(p.endpoint)) paginas.push({ codigo: p.codigo, titulo: p.titulo, total: total.get(p.endpoint)!, origem: "portal" });
 
@@ -455,6 +488,32 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api", async (req, res
       }
       for (const [slug, v] of [...porTipo.entries()].sort((a, b) => a[1].titulo.localeCompare(b[1].titulo, "pt-BR"))) {
         paginas.push({ codigo: `${PREFIXO_PUBLICACAO}${slug}`, titulo: v.titulo, total: v.total, origem: "portal-tipo" });
+      }
+
+      // documentos dos colegiados: uma página por colegiado e uma por (colegiado, tipo de documento)
+      const docs = await prisma.transparenciaApiRegistro.findMany({
+        where: { tenantId: tenant.id, endpoint: ENDPOINT_COLEGIADOS, removidoEm: null },
+        select: { dados: true },
+      });
+      const porColegiado = new Map<string, { nome: string; total: number }>();
+      const porCombo = new Map<string, { titulo: string; total: number }>();
+      for (const r of docs) {
+        const id = campoTexto(r.dados, "ColegiadoId");
+        const tipo = campoTexto(r.dados, "TipoDocumentoId");
+        if (!id) continue;
+        const nome = tituloAmigavel(campoTexto(r.dados, "Colegiado"));
+        const g = porColegiado.get(id) ?? { nome, total: 0 };
+        g.total++;
+        porColegiado.set(id, g);
+        const c = porCombo.get(`${id}-${tipo}`) ?? { titulo: `${nome} — ${campoTexto(r.dados, "TipoDocumento")}`, total: 0 };
+        c.total++;
+        porCombo.set(`${id}-${tipo}`, c);
+      }
+      for (const [id, g] of [...porColegiado.entries()].sort((a, b) => a[1].nome.localeCompare(b[1].nome, "pt-BR"))) {
+        paginas.push({ codigo: `${PREFIXO_COLEGIADO}${id}`, titulo: `${g.nome} — todos os documentos`, total: g.total, origem: "portal-colegiado" });
+      }
+      for (const [chave, c] of [...porCombo.entries()].sort((a, b) => a[1].titulo.localeCompare(b[1].titulo, "pt-BR"))) {
+        paginas.push({ codigo: `${PREFIXO_COLEGIADO}${chave}`, titulo: c.titulo, total: c.total, origem: "portal-colegiado" });
       }
       return { paginas };
     });

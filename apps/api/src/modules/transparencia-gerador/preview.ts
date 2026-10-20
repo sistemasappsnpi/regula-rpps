@@ -6,6 +6,7 @@ import { Router, type Response } from "express";
 import { prisma } from "../../db/prisma";
 import { criarCache } from "../../middleware/publicProtect";
 import { apiUrlDe, baixarJson, lerArquivoModelo, slug } from "./gerador.service";
+import { integrarBotoes } from "../transparencia-api/integracao-previdencia";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Cfg = Record<string, any>;
@@ -286,6 +287,13 @@ async function dadosDe(pasta: string, d: "transparencia" | "menu", p: { config: 
   return salvo ? { raw: salvo, fonte: "cache" } : null;
 }
 
+// Portal integrado à Previdência (config.integracaoPrevidencia.slug): os botões que já têm página nossa passam a abrir
+// ela; os demais ficam com o link original. Só mexe no JSON de botões que este portal serve (o oficial não muda).
+async function comIntegracao(config: Cfg, raw: string): Promise<string> {
+  const slugCliente = (config.integracaoPrevidencia as Cfg | undefined)?.slug;
+  return typeof slugCliente === "string" && slugCliente !== "" ? integrarBotoes(raw, slugCliente) : raw;
+}
+
 function naoEncontrado(res: Response) {
   res.status(404).type("text/plain; charset=utf-8").send("Portal não encontrado.");
 }
@@ -331,7 +339,7 @@ portalPreviewRouter.use(async (req, res, next) => {
       const r = await dadosDe(pasta, d, p);
       if (!r) return void res.status(502).json({ error: "API de origem indisponivel e sem copia local" });
       res.setHeader("X-Data-Source", r.fonte);
-      return void res.type("application/json; charset=utf-8").send(r.raw);
+      return void res.type("application/json; charset=utf-8").send(d === "transparencia" ? await comIntegracao(config, r.raw) : r.raw);
     }
     if (arq === "feedback.php") {
       // na pré-visualização o voto não é guardado
@@ -340,7 +348,7 @@ portalPreviewRouter.use(async (req, res, next) => {
     const dado = arq.match(/^dados\/cache_(transparencia|menu|ordem)\.json$/)?.[1];
     if (dado) {
       const t = dado === "menu" ? p.cacheMenu : dado === "ordem" ? p.cacheOrdem : p.cacheTransparencia;
-      return t ? void res.type("application/json; charset=utf-8").send(t) : void res.status(404).end();
+      return t ? void res.type("application/json; charset=utf-8").send(dado === "transparencia" ? await comIntegracao(config, t) : t) : void res.status(404).end();
     }
     if (p.logoNome && arq === p.logoNome && p.logoDados) return void res.type(p.logoMime ?? "application/octet-stream").send(Buffer.from(p.logoDados));
     if (p.iconeNome && arq === p.iconeNome && p.iconeDados) return void res.type(p.iconeMime ?? "application/octet-stream").send(Buffer.from(p.iconeDados));

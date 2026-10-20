@@ -64,6 +64,12 @@ export const CATALOGO_PORTAL: PaginaPortal[] = [
   { codigo: "processos-seletivos", titulo: "Processos seletivos", endpoint: "portal-processos-seletivos" },
   { codigo: "servicos-online", titulo: "Serviços online", endpoint: "portal-servicos-online" },
   { codigo: "selos", titulo: "Selos e certificações", endpoint: "portal-selos" },
+  // exportações JSON das páginas do portal (ver EXPORTS_PORTAL em portal-dados-abertos.ts)
+  { codigo: "decretos", titulo: "Decretos municipais", endpoint: "portal-decretos" },
+  { codigo: "prestacao-de-contas", titulo: "Prestação de contas do governo", endpoint: "portal-prestacao-contas" },
+  { codigo: "perguntas-frequentes", titulo: "Perguntas frequentes (FAQ)", endpoint: "portal-faq" },
+  { codigo: "glossario", titulo: "Glossário", endpoint: "portal-glossario" },
+  { codigo: "transparencia-de-beneficios", titulo: "Transparência de benefícios", endpoint: "portal-beneficios" },
 ];
 
 export function paginaPortalPorCodigo(codigo: string): PaginaPortal | undefined {
@@ -73,6 +79,10 @@ export function paginaPortalPorCodigo(codigo: string): PaginaPortal | undefined 
 // Cada tipo de publicação (INVESTIMENTOS, ATAS, DAIR…) vira uma página própria: /pub-<tipo>.
 export const PREFIXO_PUBLICACAO = "pub-";
 export const ENDPOINT_PUBLICACOES = "portal-publicacoes";
+
+// Documentos de cada colegiado (atas, cronograma, certidões…): /col-<id> (todos) e /col-<id>-<tipo> (um tipo).
+export const PREFIXO_COLEGIADO = "col-";
+export const ENDPOINT_COLEGIADOS = "portal-colegiados";
 
 export function slugDoTipo(tipo: string): string {
   return tipo
