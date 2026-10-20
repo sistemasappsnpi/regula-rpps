@@ -42,8 +42,8 @@ function esperar(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function buscarConjunto(base: string, d: string, ano: string): Promise<Record<string, unknown>[]> {
-  const url = `${base}/dadosabertosexportar?d=${encodeURIComponent(d)}&a=${encodeURIComponent(ano)}&f=json&itens_por_pagina=${POR_CHAMADA}`;
+async function buscarConjunto(base: string, d: string, ano: string, extra = ""): Promise<Record<string, unknown>[]> {
+  const url = `${base}/dadosabertosexportar?d=${encodeURIComponent(d)}&a=${encodeURIComponent(ano)}&f=json&itens_por_pagina=${POR_CHAMADA}${extra}`;
   const resp = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   if (!resp.ok) throw new Error(`o portal respondeu HTTP ${resp.status}`);
   const texto = (await resp.text()).trim();
@@ -52,6 +52,38 @@ async function buscarConjunto(base: string, d: string, ano: string): Promise<Rec
   const corpo = JSON.parse(texto) as unknown;
   if (!Array.isArray(corpo)) return [];
   return corpo.filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === "object" && !Array.isArray(i));
+}
+
+// Categorias (tipos) de publicação do portal: ids que o filtro "tipo" da página /publicacoes oferece. A API de dados
+// abertos aceita `cat=<id>`, e é isso que permite passar do teto de 200 registros por exercício.
+const categoriasEmCache = new Map<string, { em: number; ids: string[] }>();
+export async function categoriasDoPortal(base: string): Promise<string[]> {
+  const guardado = categoriasEmCache.get(base);
+  if (guardado && Date.now() - guardado.em < 24 * 60 * 60_000) return guardado.ids;
+  const resp = await fetch(`${base}/publicacoes`, { signal: AbortSignal.timeout(30_000) });
+  if (!resp.ok) throw new Error(`o portal respondeu HTTP ${resp.status}`);
+  const html = await resp.text();
+  const select = html.match(/name=.cat.[\s\S]*?<\/select>|name=.cat.[\s\S]*?<select>/i)?.[0] ?? "";
+  const ids = [...select.matchAll(/<option\s+value=.(\d+).>/gi)].map((m) => m[1]);
+  categoriasEmCache.set(base, { em: Date.now(), ids });
+  return ids;
+}
+
+// Todas as publicações de um exercício: uma chamada e, se bater no teto, uma por categoria (cat=<id>).
+export async function buscarExercicioCompleto(base: string, d: string, ano: string): Promise<{ itens: Record<string, unknown>[]; completo: boolean }> {
+  const geral = await buscarConjunto(base, d, ano);
+  if (geral.length < LIMIAR_TETO || d !== "publicacoes") return { itens: geral, completo: geral.length < LIMIAR_TETO };
+
+  const mapa = new Map<string, Record<string, unknown>>();
+  for (const r of geral) mapa.set(JSON.stringify(r), r);
+  let completo = true;
+  for (const cat of await categoriasDoPortal(base)) {
+    const doCat = await buscarConjunto(base, d, ano, `&cat=${cat}`);
+    if (doCat.length >= LIMIAR_TETO) completo = false; // nem por categoria coube: não dá para garantir
+    for (const r of doCat) mapa.set(JSON.stringify(r), r);
+    await esperar(120);
+  }
+  return { itens: [...mapa.values()], completo };
 }
 
 async function coletarConjunto(tenantId: string, base: string, ds: DatasetPortal): Promise<ResultadoColeta> {
@@ -70,12 +102,20 @@ async function coletarConjunto(tenantId: string, base: string, ds: DatasetPortal
         let anoEstourou = false;
         const anoFinal = new Date().getFullYear() + 1;
         for (let ano = anoFinal; ano >= ANO_INICIAL; ano--) {
-          const doAno = await buscarConjunto(base, ds.d, String(ano));
-          if (doAno.length >= LIMIAR_TETO) anoEstourou = true;
+          const { itens: doAno, completo: anoCompleto } = await buscarExercicioCompleto(base, ds.d, String(ano));
+          if (!anoCompleto) anoEstourou = true;
           for (const r of doAno) mapa.set(JSON.stringify(r), r);
           await esperar(150);
         }
         for (const r of recentes) mapa.set(JSON.stringify(r), r);
+        // registros com exercício vazio ou fora do intervalo varrido não aparecem em nenhum `a=<ano>`: pede cada categoria
+        // sem ano (as 200 mais novas de cada uma), o que pega esses "soltos"
+        if (ds.d === "publicacoes") {
+          for (const cat of await categoriasDoPortal(base)) {
+            for (const r of await buscarConjunto(base, ds.d, "", `&cat=${cat}`)) mapa.set(JSON.stringify(r), r);
+            await esperar(120);
+          }
+        }
         itens = [...mapa.values()];
         // só vale como "completa" se nenhum exercício bateu no teto (aí não dá pra saber se faltou algo)
         completo = !anoEstourou;
@@ -248,3 +288,6 @@ export async function coletarPortal(tenantId: string, base: string): Promise<Res
   }
   return resultados;
 }
+
+// só para os testes de conferência (scripts fora do projeto)
+export { buscarConjunto as buscarConjuntoParaTeste };
