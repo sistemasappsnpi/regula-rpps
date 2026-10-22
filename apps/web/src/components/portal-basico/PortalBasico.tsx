@@ -391,13 +391,20 @@ export function PortalBasico({
                       [
                         ["Publicações", "portal-tipo"],
                         ["Documentos dos colegiados", "portal-colegiado"],
-                        ["Documentos da API Nexa", "nexa"],
+                        ["Documentos", "nexa"],
                         ["Outros", "portal"],
                       ] as const
                     ).map(([rotulo, origem]) => {
                       const lista = hub.paginas
                         .filter((p) => p.origem === origem && p.codigo !== "publicacoes")
                         .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
+                      const opcoes = lista.map((p) => (
+                        <option key={p.codigo} value={p.codigo}>
+                          {p.titulo} ({p.total})
+                        </option>
+                      ));
+                      // documentos do sistema (API): lista direta, sem cabeçalho de grupo e sem citar o fornecedor
+                      if (origem === "nexa") return opcoes;
                       return lista.length === 0 ? null : (
                         <optgroup key={origem} label={rotulo}>
                           {lista.map((p) => (
