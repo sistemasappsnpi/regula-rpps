@@ -8,7 +8,7 @@ import { sincronizarRegistros, type ResultadoColeta } from "./sincronizar";
 
 export type { ResultadoColeta } from "./sincronizar";
 
-// Duas fontes de dados por cliente, e o cliente pode ter uma ou as duas:
+// Duas fontes de dados por cliente (quem tem a chave da Nexa usa só ela):
 //  1) API Nexa de Transparência (manual, com chave por órgão) — Tenant.transparenciaApiChave;
 //  2) dados abertos do portal de transparência do órgão (sem chave) — derivado de Tenant.portalMenuApiUrl.
 
@@ -88,7 +88,9 @@ export function iniciarColetaAgendada(): void {
 export async function coletarTudo(tenantId: string): Promise<ResultadoColeta[]> {
   const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { transparenciaApiChave: true, portalMenuApiUrl: true } });
   if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
-  const base = urlPortalBase(tenant.portalMenuApiUrl);
+  // Cliente com API própria (chave da Nexa) coleta SÓ ela: não copiamos também os dados abertos do portal do órgão
+  // (decisão do Luis para o Angraprev). Sem chave, a fonte é o portal (IPRES).
+  const base = tenant.transparenciaApiChave ? null : urlPortalBase(tenant.portalMenuApiUrl);
   if (!tenant.transparenciaApiChave && !base) {
     throw new HttpError(400, "Este RPPS não tem fonte de dados: cadastre a chave da API Nexa ou a URL da API do menu do portal de transparência.");
   }
