@@ -108,6 +108,7 @@ export async function verificarEnderecos(
 /* ---------- execução em segundo plano (centenas de links levam minutos; a requisição não espera) ---------- */
 
 const emAndamento = new Map<string, Andamento>();
+const execucoes = new Map<string, Promise<void>>();
 
 export function andamentoDe(pasta: string): Andamento {
   return emAndamento.get(slug(pasta)) ?? { andamento: false, feitos: 0, total: 0 };
@@ -155,7 +156,7 @@ export async function iniciarVerificacao(pastaEntrada: string): Promise<Andament
   const estado: Andamento = { andamento: true, feitos: 0, total: hrefs.length };
   emAndamento.set(pasta, estado);
 
-  void (async () => {
+  const execucao = (async () => {
     try {
       const status = await verificarEnderecos(hrefs, (u) => statusDoLink(u), 8, (n) => {
         estado.feitos = n;
@@ -181,5 +182,41 @@ export async function iniciarVerificacao(pastaEntrada: string): Promise<Andament
       estado.erro = "A verificação falhou no meio do caminho. Tente de novo.";
     }
   })();
+  execucoes.set(pasta, execucao);
   return estado;
+}
+
+/* ---------- verificação automática ---------- */
+
+const INTERVALO_VERIFICACAO_MS = 60 * 60_000;
+let verificacaoAgendadaRodando = false;
+
+// A cada 1 h verifica os links de todos os portais cadastrados, um de cada vez (não sobrecarrega os servidores
+// dos clientes). Roda dentro do próprio processo da API, como a coleta da Transparência API: se uma rodada
+// passar de 1 h, a seguinte espera em vez de empilhar.
+export function iniciarVerificacaoAgendada(): void {
+  const rodar = async () => {
+    if (verificacaoAgendadaRodando) return;
+    verificacaoAgendadaRodando = true;
+    try {
+      const portais = await prisma.transparenciaPortal.findMany({ select: { pasta: true } });
+      for (const { pasta } of portais) {
+        try {
+          const estado = await iniciarVerificacao(pasta);
+          if (!estado.andamento) continue;
+          await execucoes.get(pasta);
+          console.log(`[links] ${pasta}: ${andamentoDe(pasta).total} links verificados`);
+        } catch (err) {
+          // um portal sem API nem cópia não pode impedir a verificação dos outros
+          console.error(`[links] ${pasta}:`, err instanceof Error ? err.message : err);
+        }
+      }
+    } catch (err) {
+      console.error("[links] verificação agendada falhou:", err instanceof Error ? err.message : err);
+    } finally {
+      verificacaoAgendadaRodando = false;
+    }
+  };
+  setTimeout(rodar, 2 * 60_000).unref();
+  setInterval(rodar, INTERVALO_VERIFICACAO_MS).unref();
 }

@@ -141,7 +141,7 @@ export function MonitoramentoPortal({ pasta }: { pasta: string }) {
       {aba === "links" && (
         <div className="space-y-3">
           <p className="text-ink-muted">
-            Confere se cada link publicado ainda abre. A verificação roda aqui no Regula e pode levar alguns minutos; você pode sair da tela e voltar.
+            Confere se cada link publicado ainda abre. O Regula verifica todos os portais sozinho a cada 1 hora; o botão abaixo roda na hora. Leva alguns minutos e você pode sair da tela e voltar.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" onClick={verificar} disabled={rodando}>

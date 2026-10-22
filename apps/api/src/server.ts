@@ -1,6 +1,7 @@
 import { createApp } from "./app";
 import { env, assertProductionEnv } from "./config/env";
 import { iniciarColetaAgendada } from "./modules/transparencia-api/coletor";
+import { iniciarVerificacaoAgendada } from "./modules/transparencia-gerador/links";
 
 assertProductionEnv();
 
@@ -11,3 +12,4 @@ app.listen(env.port, () => {
 });
 
 iniciarColetaAgendada();
+iniciarVerificacaoAgendada();

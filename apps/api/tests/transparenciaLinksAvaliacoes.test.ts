@@ -11,6 +11,7 @@ vi.mock("../src/db/prisma", () => ({
     transparenciaPortal: {
       findUnique: async ({ where }: any) => store[where.pasta] ?? null,
       update: async ({ where, data }: any) => Object.assign(store[where.pasta], data),
+      findMany: async () => Object.values(store).map((p: any) => ({ pasta: p.pasta })),
     },
   },
 }));
@@ -70,6 +71,31 @@ describe("verificador de links", () => {
     expect(r.size).toBe(20);
     expect(r.get("https://x.gov.br/3")).toBe(404);
     expect(maximo).toBeLessThanOrEqual(4);
+  });
+});
+
+describe("verificação automática", () => {
+  it("verifica todos os portais a cada 1 h e um portal com problema não trava os outros", async () => {
+    vi.useFakeTimers();
+    store.cli.cacheTransparencia = JSON.stringify([
+      { Grupo: "A", Descricao: "ok", Link: "https://x.gov.br/ok" },
+      { Grupo: "A", Descricao: "quebrado", Link: "https://x.gov.br/sumiu" },
+    ]);
+    vi.stubGlobal("fetch", async (url: string) => new Response(null, { status: url.endsWith("/sumiu") ? 404 : 200 }));
+    links.iniciarVerificacaoAgendada();
+
+    await vi.advanceTimersByTimeAsync(2 * 60_000 + 1000); // primeira rodada
+    await vi.waitFor(() => expect(store.cli.relatorioLinks).toBeTruthy());
+    expect(store.cli.relatorioLinks).toMatchObject({ totalLinks: 2, quebrados: 1 });
+    expect(store.cli.relatorioLinks.itensQuebrados[0].href).toBe("https://x.gov.br/sumiu");
+
+    const primeira = store.cli.relatorioLinks.verificadoEm;
+    store.cli.relatorioLinks = null;
+    await vi.advanceTimersByTimeAsync(60 * 60_000); // hora seguinte
+    await vi.waitFor(() => expect(store.cli.relatorioLinks).toBeTruthy());
+    expect(store.cli.relatorioLinks.verificadoEm).not.toBe(primeira);
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 });
 
