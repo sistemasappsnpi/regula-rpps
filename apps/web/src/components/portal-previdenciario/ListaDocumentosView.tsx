@@ -28,6 +28,8 @@ export interface ConfigListaDocumentos {
   grupo?: { rotulo: string; rotuloPlural: string; valor: (r: RegistroTransparenciaApi) => string };
   // campos do registro que são links de PDF
   links: { rotulo: string; campo: string }[];
+  // quando os botões dependem do registro (lista que junta vários tipos); se existir, vale no lugar de `links`
+  linksDe?: (r: RegistroTransparenciaApi) => { rotulo: string; campo: string }[];
   // páginas com dinheiro (licitações, contratos): valor de cada registro, em reais. Liga o cartão de total,
   // o gráfico de valor por exercício e o valor em cada linha.
   valor?: (r: RegistroTransparenciaApi) => number | null;

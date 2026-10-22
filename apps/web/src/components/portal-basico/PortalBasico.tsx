@@ -217,7 +217,7 @@ export function PortalBasico({
         grupo: config.grupo?.valor(r).trim() ?? "",
         data,
         dados: r,
-        links: config.links
+        links: (config.linksDe?.(r) ?? config.links)
           .map((l) => ({ rotulo: l.rotulo, campo: l.campo, url: typeof r[l.campo] === "string" ? (r[l.campo] as string).trim() : "" }))
           // link da origem (http) ou da nossa cópia (/api/…); campo de ARQUIVO só vira botão se for arquivo de verdade
           .filter((l) => {
@@ -386,7 +386,7 @@ export function PortalBasico({
                 <div className="pb-campo">
                   <label>Filtro pelo tipo</label>
                   <select value={hub.tipo} onChange={(e) => hub.onTipo(e.target.value)}>
-                    <option value="">Todos os tipos de publicação</option>
+                    <option value="">Todos os tipos</option>
                     {(
                       [
                         ["Publicações", "portal-tipo"],

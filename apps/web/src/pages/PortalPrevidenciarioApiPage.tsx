@@ -7,6 +7,7 @@ import { PortalPrevidenciarioLayout } from "../components/layout/PortalPrevidenc
 import { EntidadesCredenciadasView } from "../components/portal-previdenciario/EntidadesCredenciadasView";
 import { ListaDocumentosView } from "../components/portal-previdenciario/ListaDocumentosView";
 import { PortalBasico } from "../components/portal-basico/PortalBasico";
+import type { ConfigListaDocumentos } from "../components/portal-previdenciario/ListaDocumentosView";
 import { CONFIG_ENTIDADES_BASICA, configDaLista } from "../components/portal-previdenciario/listaDocumentosConfigs";
 import { PortalPrevidenciarioDocumentoPage } from "./PortalPrevidenciarioDocumentoPage";
 import { useAutoRefresh } from "../lib/useAutoRefresh";
@@ -43,20 +44,48 @@ function PortalPrevidenciarioApiPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [erroConteudo, setErroConteudo] = useState<string | null>(null);
   const [paginas, setPaginas] = useState<PaginaIndiceTransparencia[]>([]);
+  const [paginasProntas, setPaginasProntas] = useState(false);
   const ultimaRequisicao = useRef(0);
 
   // No estilo BÁSICO, a página "publicacoes" é um ponto único: o filtro de tipo (?tipo=<código>) troca o conjunto
-  // de dados exibido (tipos de publicação, documentos da API Nexa, licitações, contratos…).
+  // de dados exibido. Quando o cliente tem a API Nexa, o hub mostra SÓ os documentos da Nexa (cópia fiel, todos os
+  // campos); só sem Nexa ele cai para tudo o que o portal do órgão publica.
   const hub = dados?.tenant.estiloPaginas === "basico" && codigo === "publicacoes";
   // Estilo básico tem UMA página só (publicacoes): os endereços antigos (pub-dair, acordaos-tce, licitacoes…)
   // levam para ela com o tipo já escolhido, em vez de existirem como páginas separadas.
   const redireciona = dados?.tenant.estiloPaginas === "basico" && !!codigo && codigo !== "publicacoes";
-  const tipoUrl = params.get("tipo") ?? "";
+  const paginasHub = useMemo(() => {
+    const nexa = paginas.filter((p) => p.origem === "nexa");
+    return nexa.length > 0 ? nexa : paginas;
+  }, [paginas]);
+  const soNexa = paginasHub.length > 0 && paginasHub.every((p) => p.origem === "nexa");
+  const tipoPedido = params.get("tipo") ?? "";
+  // tipo fora da lista do hub (endereço antigo de uma página do portal) vale como "todos"
+  const tipoUrl = !paginasProntas || paginasHub.some((p) => p.codigo === tipoPedido) ? tipoPedido : "";
+  const todosNexa = hub && !tipoUrl && soNexa;
   const codigoEfetivo = hub && tipoUrl ? tipoUrl : codigo;
-  const config = useMemo(
-    () => (codigoEfetivo === "entidades-credenciadas" ? CONFIG_ENTIDADES_BASICA : configDaLista(codigoEfetivo ?? "")),
-    [codigoEfetivo],
-  );
+  const configDe = (c: string) => (c === "entidades-credenciadas" ? CONFIG_ENTIDADES_BASICA : configDaLista(c));
+  const config = useMemo(() => {
+    if (!todosNexa) return configDe(codigoEfetivo ?? "");
+    // lista única com os tipos da Nexa: cada registro usa a config do seu próprio tipo (marcado em _codigo/_titulo)
+    const por = (r: RegistroTransparenciaApi) => configDe(String(r._codigo ?? ""));
+    return {
+      rotuloItens: "documentos",
+      titulo: (r) => por(r)?.titulo(r) ?? "",
+      detalhe: (r) => por(r)?.detalhe?.(r) ?? "",
+      ano: (r) => por(r)?.ano(r) ?? null,
+      // as escalas de "ordem" de cada tipo não se misturam: ano primeiro, depois a ordem do próprio tipo
+      ordem: (r, i) => {
+        const c = por(r);
+        const ano = c?.ano(r) ?? 0;
+        return ano * 1e9 + 5e8 + Math.max(-4e8, Math.min(4e8, c?.ordem(r, i) ?? 0));
+      },
+      grupo: { rotulo: "Tipo", rotuloPlural: "Tipos", valor: (r) => String(r._titulo ?? "") },
+      links: [],
+      linksDe: (r) => por(r)?.links ?? [],
+    } as ConfigListaDocumentos;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todosNexa, codigoEfetivo]);
 
   const carregarDados = useCallback(() => {
     if (!slug) return;
@@ -68,7 +97,31 @@ function PortalPrevidenciarioApiPage() {
 
   const carregarConteudo = useCallback(() => {
     if (!slug || !codigoEfetivo || redireciona) return;
+    if (hub && !paginasProntas) return; // ainda não sabemos se o cliente tem Nexa
     const id = ++ultimaRequisicao.current; // resposta atrasada de um tipo anterior não pode sobrescrever o atual
+    const falhou = (err: unknown) => {
+      if (id !== ultimaRequisicao.current) return;
+      const msg = err instanceof Error ? err.message : "Página não encontrada.";
+      // no hub um tipo inválido não derruba a página: mostra a mensagem na lista
+      if (hub) setErroConteudo(msg);
+      else setErro(msg);
+    };
+    if (todosNexa) {
+      Promise.all(
+        paginasHub.map((p) =>
+          api.portalPrevidenciarioTransparenciaApi(slug, p.codigo).then((c) => ({ p, c })),
+        ),
+      )
+        .then((partes) => {
+          if (id !== ultimaRequisicao.current) return;
+          const registros = partes.flatMap(({ p, c }) => c.registros.map((r) => ({ ...r, _codigo: p.codigo, _titulo: p.titulo })));
+          const atualizadoEm = partes.map(({ c }) => c.atualizadoEm).filter(Boolean).sort().pop() ?? null;
+          setConteudo({ codigo: "publicacoes", titulo: "Publicações", atualizadoEm, registros } as TransparenciaApiConteudo);
+          setErroConteudo(null);
+        })
+        .catch(falhou);
+      return;
+    }
     api
       .portalPrevidenciarioTransparenciaApi(slug, codigoEfetivo)
       .then((c) => {
@@ -76,14 +129,8 @@ function PortalPrevidenciarioApiPage() {
         setConteudo(c);
         setErroConteudo(null);
       })
-      .catch((err) => {
-        if (id !== ultimaRequisicao.current) return;
-        const msg = err instanceof Error ? err.message : "Página não encontrada.";
-        // no hub um tipo inválido não derruba a página: mostra a mensagem na lista
-        if (hub) setErroConteudo(msg);
-        else setErro(msg);
-      });
-  }, [slug, codigoEfetivo, hub, redireciona]);
+      .catch(falhou);
+  }, [slug, codigoEfetivo, hub, redireciona, todosNexa, paginasHub, paginasProntas]);
 
   useEffect(() => {
     carregarDados();
@@ -98,9 +145,9 @@ function PortalPrevidenciarioApiPage() {
     api
       .portalPrevidenciarioPaginas(slug)
       .then((r) => setPaginas(r.paginas))
-      .catch(() => setPaginas([]));
-  }, [hub, slug]);
-  useAutoRefresh(() => {
+      .catch(() => setPaginas([]))
+      .finally(() => setPaginasProntas(true));
+  }, [hub, slug]);  useAutoRefresh(() => {
     carregarDados();
     carregarConteudo();
   });
@@ -133,7 +180,7 @@ function PortalPrevidenciarioApiPage() {
         hub={
           hub
             ? {
-                paginas,
+                paginas: paginasHub,
                 tipo: tipoUrl,
                 // "" volta para todas as publicações; qualquer outro valor vira ?tipo=<código> (voltar do navegador funciona)
                 onTipo: (c) => setParams(c ? { tipo: c } : {}),
