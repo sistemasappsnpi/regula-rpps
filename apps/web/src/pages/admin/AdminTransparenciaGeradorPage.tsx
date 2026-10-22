@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/Button";
 import { useConfirm } from "../../components/ui/confirm-context";
 import { CategoriasStep, type GrupoEdit } from "../../components/transparencia-gerador/CategoriasStep";
 import { SugestoesStep } from "../../components/transparencia-gerador/SugestoesStep";
+import { MonitoramentoPortal } from "../../components/transparencia-gerador/MonitoramentoPortal";
 import { PreviewMock } from "../../components/transparencia-gerador/PreviewMock";
 import { Campo, Check, INPUT, Passo, Status, type StatusTipo } from "../../components/transparencia-gerador/ui";
 import {
@@ -680,6 +681,7 @@ export function AdminTransparenciaGeradorPage() {
           </ul>
         </Card>
       )}
+      {editando && <MonitoramentoPortal pasta={pastaEdit} />}
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-4">
           <Passo n={1} titulo="APIs de dados abertos" dica={<>Cole a URL de cada API. Pode ser a URL completa, só o endereço do portal (<code>transparencia.cliente.gov.br</code>) ou deixar em branco se não houver.</>}>
@@ -941,6 +943,11 @@ export function AdminTransparenciaGeradorPage() {
                         <li>Descompacte o ZIP e envie o conteúdo para uma hospedagem com <b>PHP</b> (o portal gerado é PHP, não roda no Regula).</li>
                         <li>A pasta <code>dados/</code> precisa de permissão de escrita (cache da API e votos de feedback).</li>
                         <li>Depois de publicar, abra <code>/diagnostico.php</code> no portal para conferir se a API responde.</li>
+                        <li>
+                          Informe o endereço público do portal (em “Textos, SEO e recursos”) para o Regula ler as avaliações. O painel do próprio portal fica em
+                          <code> /admin.php</code> (usuário e senha aparecem acima, ao editar o cliente); para atualizar o ZIP de um portal já no ar,
+                          publique por cima e mantenha a pasta <code>dados/</code>.
+                        </li>
                       </ol>
                     </div>
                   </>

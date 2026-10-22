@@ -5,7 +5,9 @@ import {
   LIMITE_IMAGEM, calcularSugestoes, carregarCliente, excluirCliente, gerarCliente, iconesDoModelo,
   listarClientes, montarZip, slug, testarMenu, testarTransparencia, type ArquivoEnviado,
 } from "./gerador.service";
+import { dadosDeAcesso, lerAvaliacoes, segredoPhp } from "./avaliacoes";
 import { importarPorLink } from "./importar-link";
+import { andamentoDe, iniciarVerificacao, ultimoRelatorio } from "./links";
 import { importarPorApis, renovarPortal, renovarTodos } from "./renovar";
 
 // Gerador de Portal da Transparência. Montado em /admin/transparencia-gerador (ver admin.routes.ts,
@@ -45,12 +47,46 @@ transparenciaGeradorRouter.delete("/clientes/:pasta", async (req, res, next) => 
 
 transparenciaGeradorRouter.get("/clientes/:pasta/zip", async (req, res, next) => {
   try {
-    const zip = await montarZip(req.params.pasta);
+    const zip = await montarZip(req.params.pasta, segredoPhp(req.params.pasta));
     if (!zip) throw new HttpError(404, "Cliente não encontrado.");
     res.setHeader("Content-Type", "application/zip");
     res.setHeader("Content-Disposition", `attachment; filename="portal-${slug(req.params.pasta)}.zip"`);
     res.setHeader("Content-Length", String(zip.length));
     res.end(zip);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Verificador de links quebrados: dispara em segundo plano e a tela consulta o andamento.
+transparenciaGeradorRouter.post("/clientes/:pasta/links/verificar", async (req, res, next) => {
+  try {
+    res.status(202).json({ ok: true, ...(await iniciarVerificacao(req.params.pasta)) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+transparenciaGeradorRouter.get("/clientes/:pasta/links", async (req, res, next) => {
+  try {
+    res.json({ ok: true, ...andamentoDe(req.params.pasta), relatorio: await ultimoRelatorio(req.params.pasta) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Avaliações dos visitantes (lidas do portal publicado) e dados de acesso ao painel admin.php do pacote.
+transparenciaGeradorRouter.get("/clientes/:pasta/avaliacoes", async (req, res, next) => {
+  try {
+    res.json(await lerAvaliacoes(req.params.pasta));
+  } catch (err) {
+    next(err);
+  }
+});
+
+transparenciaGeradorRouter.get("/clientes/:pasta/acesso", async (req, res, next) => {
+  try {
+    res.json({ ok: true, ...(await dadosDeAcesso(req.params.pasta)) });
   } catch (err) {
     next(err);
   }

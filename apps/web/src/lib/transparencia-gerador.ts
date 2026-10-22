@@ -116,6 +116,54 @@ export interface ResultadoGerar {
   avisos?: string[];
 }
 
+export interface LinkProblema {
+  href: string;
+  status: number;
+  tipo: "quebrado" | "restrito";
+  usos: { grupo: string; descricao: string }[];
+}
+
+export interface RelatorioLinks {
+  verificadoEm: string;
+  origem: "api" | "cache";
+  totalLinks: number;
+  quebrados: number;
+  restritos: number;
+  semLink: number;
+  itensQuebrados: LinkProblema[];
+  itensRestritos: LinkProblema[];
+  itensSemLink: { grupo: string; descricao: string }[];
+}
+
+export interface EstadoLinks {
+  ok: boolean;
+  andamento: boolean;
+  feitos: number;
+  total: number;
+  erro?: string;
+  relatorio: RelatorioLinks | null;
+}
+
+export interface LinhaAvaliacao {
+  grupo: string;
+  up: number;
+  down: number;
+  total: number;
+  pct: number | null;
+}
+
+export type ResultadoAvaliacoes =
+  | { ok: true; url: string; atualizadoEm: string | null; linhas: LinhaAvaliacao[]; up: number; down: number }
+  | { ok: false; motivo: string; erro: string };
+
+export interface AcessoPortal {
+  urlPublicada: string;
+  painel: string;
+  usuario: string;
+  senha: string;
+  externo: boolean;
+}
+
 async function chamar<T>(path: string, init: RequestInit = {}, jsonBody = true): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = { ...(init.headers as Record<string, string> | undefined) };
@@ -160,6 +208,11 @@ export const geradorApi = {
   // Consulta de novo a origem do portal (link ou APIs) e atualiza dados, identidade e modelo.
   renovar: (pasta: string) => chamar<ResultadoRenovacao>(`/clientes/${encodeURIComponent(pasta)}/renovar`, { method: "POST" }),
   renovarTodos: () => chamar<{ ok: boolean; resultados: ResultadoRenovacao[] }>("/renovar-todos", { method: "POST" }),
+  // Verificador de links quebrados (roda no servidor, em segundo plano) e avaliações lidas do portal publicado.
+  estadoLinks: (pasta: string) => chamar<EstadoLinks>(`/clientes/${encodeURIComponent(pasta)}/links`),
+  verificarLinks: (pasta: string) => chamar<EstadoLinks>(`/clientes/${encodeURIComponent(pasta)}/links/verificar`, { method: "POST" }),
+  avaliacoes: (pasta: string) => chamar<ResultadoAvaliacoes>(`/clientes/${encodeURIComponent(pasta)}/avaliacoes`),
+  acesso: (pasta: string) => chamar<AcessoPortal & { ok: boolean }>(`/clientes/${encodeURIComponent(pasta)}/acesso`),
   // Link público de visualização do portal gerado (a barra final é necessária para os links relativos do portal)
   urlVisualizacao: (pasta: string) => `${window.location.origin}/api/public/transparencia-portal/${encodeURIComponent(pasta)}/`,
   excluir: (pasta: string) => chamar<{ ok: boolean }>(`/clientes/${encodeURIComponent(pasta)}`, { method: "DELETE" }),

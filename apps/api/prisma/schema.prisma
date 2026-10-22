@@ -861,6 +861,7 @@ model TransparenciaPortal {
   cacheTransparencia String? @db.LongText
   cacheMenu        String?  @db.LongText
   cacheOrdem       String?  @db.LongText
+  relatorioLinks   Json? // último resultado do verificador de links quebrados (links.ts)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

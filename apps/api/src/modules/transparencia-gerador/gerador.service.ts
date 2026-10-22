@@ -654,17 +654,19 @@ export function apiUrlDe(api: Cfg, d: string): string {
 
 /* ---------- pacote para publicar ---------- */
 
-export async function montarZip(pasta: string): Promise<Buffer | null> {
+// `segredo` = conteúdo do segredo.php (acesso ao painel admin.php e token das avaliações; ver avaliacoes.ts).
+export async function montarZip(pasta: string, segredo?: string): Promise<Buffer | null> {
   const p = await prisma.transparenciaPortal.findUnique({ where: { pasta: slug(pasta) } });
   if (!p) return null;
   const modelo = path.join(pastaAssets(), "modelo");
   const arquivos: Record<string, Uint8Array> = {};
 
   for (const rel of listarArquivos(modelo)) {
-    if (rel === "config.json" || rel.startsWith("dados/cache_") || rel === "dados/feedback_data.json") continue;
+    if (rel === "config.json" || rel.startsWith("dados/cache_") || rel === "dados/feedback_data.json" || rel === "dados/link_check_report.json") continue;
     arquivos[rel] = fs.readFileSync(path.join(modelo, rel));
   }
   arquivos["config.json"] = Buffer.from(JSON.stringify(p.config, null, 4) + "\n", "utf8");
+  if (segredo) arquivos["segredo.php"] = Buffer.from(segredo, "utf8");
   if (p.logoNome && p.logoDados) arquivos[p.logoNome] = p.logoDados;
   if (p.iconeNome && p.iconeDados) arquivos[p.iconeNome] = p.iconeDados;
   if (p.cacheTransparencia) arquivos["dados/cache_transparencia.json"] = Buffer.from(p.cacheTransparencia, "utf8");

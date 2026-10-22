@@ -40,6 +40,54 @@ function h($s) {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
+// Acesso do painel interno (admin.php, link-check.php) e da leitura de avaliações pelo Regula (feedback_dados.php).
+// Vem de segredo.php, que o Regula coloca no ZIP: array('usuario' => ..., 'senha' => ..., 'token' => ...).
+// Sem esse arquivo o painel fica desligado (nunca há senha padrão).
+function portal_segredo() {
+    static $s = null;
+    if ($s !== null) return $s;
+    $f = __DIR__ . '/segredo.php';
+    $s = is_file($f) ? include $f : array();
+    if (!is_array($s)) $s = array();
+    return $s;
+}
+
+function igual_seguro($a, $b) {
+    $a = (string)$a; $b = (string)$b;
+    if (function_exists('hash_equals')) return hash_equals($a, $b);
+    if (strlen($a) !== strlen($b)) return false;
+    $r = 0;
+    for ($i = 0; $i < strlen($a); $i++) $r |= ord($a[$i]) ^ ord($b[$i]);
+    return $r === 0;
+}
+
+function require_basic_auth() {
+    $seg = portal_segredo();
+    if (empty($seg['senha']) || empty($seg['usuario'])) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Painel desativado: falta o arquivo segredo.php (baixe o ZIP do portal no Regula).';
+        exit;
+    }
+    $user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : null;
+    $pass = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : null;
+    if ($user === null) { // PHP via CGI/FastCGI: o cabeçalho chega por outra variável (ver .htaccess)
+        $hdr = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATION']
+            : (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) ? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] : '');
+        if (stripos($hdr, 'basic ') === 0) {
+            $dec = explode(':', (string)base64_decode(substr($hdr, 6)), 2);
+            if (count($dec) === 2) { $user = $dec[0]; $pass = $dec[1]; }
+        }
+    }
+    if ($user === null || !igual_seguro($user, $seg['usuario']) || !igual_seguro($pass, $seg['senha'])) {
+        header('WWW-Authenticate: Basic realm="Painel do portal"');
+        http_response_code(401);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Acesso restrito.';
+        exit;
+    }
+}
+
 // Mistura uma cor hex com branco (t > 0) ou preto (t < 0). Usado para derivar a paleta a partir de 2 cores.
 function mix_color($hex, $t) {
     $hex = ltrim($hex, '#');

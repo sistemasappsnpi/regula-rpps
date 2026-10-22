@@ -69,6 +69,58 @@ async function buscar(url: string, timeoutMs: number, maxBytes: number): Promise
   }
 }
 
+/**
+ * Código HTTP final de um link (verificador de links quebrados), ou 0 se não houve resposta / host não permitido.
+ * Tenta HEAD e, se o servidor recusar (ou não responder), repete com GET sem ler o corpo.
+ */
+export async function statusDoLink(url: string, timeoutMs = 12000): Promise<number> {
+  const tentar = async (method: "HEAD" | "GET"): Promise<number> => {
+    try {
+      const signal = AbortSignal.timeout(timeoutMs);
+      let atual = url;
+      for (let i = 0; i < 6; i++) {
+        if (!hostPermitido(atual)) return 0;
+        const res = await fetch(atual, {
+          method,
+          headers: { "User-Agent": "Mozilla/5.0 (PortalTransparencia-LinkChecker/1.0)", Accept: "*/*" },
+          signal,
+          redirect: "manual",
+        });
+        const destino = res.headers.get("location");
+        if (res.status >= 300 && res.status < 400 && destino) {
+          void res.body?.cancel();
+          atual = new URL(destino, atual).toString();
+          continue;
+        }
+        void res.body?.cancel();
+        return res.status;
+      }
+      return 0;
+    } catch {
+      return 0;
+    }
+  };
+  const head = await tentar("HEAD");
+  if (head !== 0 && head !== 403 && head !== 405 && head !== 501) return head;
+  const get = await tentar("GET");
+  return get !== 0 ? get : head;
+}
+
+/** Corpo e código HTTP de uma resposta (leitura de dados de outro portal); null se não houve resposta. */
+export async function fetchComStatus(
+  url: string, headers: Record<string, string> = {}, timeoutMs = 15000,
+): Promise<{ status: number; texto: string } | null> {
+  try {
+    if (!hostPermitido(url)) return null;
+    const res = await fetch(url, { headers: { "User-Agent": USER_AGENT, ...headers }, signal: AbortSignal.timeout(timeoutMs), redirect: "follow" });
+    const corpo = await res.arrayBuffer();
+    if (corpo.byteLength > 5 * 1024 * 1024) return null;
+    return { status: res.status, texto: decodificar(corpo) };
+  } catch {
+    return null;
+  }
+}
+
 /** Devolve o corpo como texto, ou null se não houve resposta. Qualquer status HTTP conta como resposta. */
 export async function fetchTexto(url: string, timeoutMs = 20000): Promise<string | null> {
   const r = await buscar(url, timeoutMs, 50 * 1024 * 1024);
