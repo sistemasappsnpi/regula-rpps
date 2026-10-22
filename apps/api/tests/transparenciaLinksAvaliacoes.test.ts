@@ -12,6 +12,9 @@ vi.mock("../src/db/prisma", () => ({
       findUnique: async ({ where }: any) => store[where.pasta] ?? null,
       update: async ({ where, data }: any) => Object.assign(store[where.pasta], data),
       findMany: async () => Object.values(store).map((p: any) => ({ pasta: p.pasta })),
+      upsert: async ({ where, create, update }: any) => {
+        store[where.pasta] = store[where.pasta] ? { ...store[where.pasta], ...update } : { id: "n", ...create };
+      },
     },
   },
 }));
@@ -144,6 +147,52 @@ describe("avaliações do portal publicado", () => {
     vi.stubGlobal("fetch", async () => new Response("{}", { status: 403 }));
     expect(await av.lerAvaliacoes("cli")).toMatchObject({ ok: false, motivo: "token" });
     vi.unstubAllGlobals();
+  });
+});
+
+describe("pacote Câmara", () => {
+  it("lista o tipo Câmara com textos, cores e a quantidade de itens do catálogo", async () => {
+    const { listarTipos } = await import("../src/modules/transparencia-gerador/tipos");
+    const t = listarTipos();
+    expect(t).toHaveLength(1);
+    expect(t[0]).toMatchObject({ id: "camara", preset: "camara", rotulo: "Câmara Municipal" });
+    expect(t[0].itens).toBeGreaterThan(50);
+    expect(t[0].textos.titulo).toBeTruthy();
+  });
+
+  it("aplica o pacote sem sobrescrever o que o cliente já definiu", async () => {
+    const pacote = { tipo: "camara", perfis: [{ id: "p" }], temas: ["a b"], sinonimos: { voto: "x", pl: "y" }, glossario: { PL: "z" }, descricoesItens: {} };
+    const cfg: any = { sinonimos: { voto: "meu" }, temas: [] };
+    svc.aplicarTipo(cfg, pacote);
+    expect(cfg.tipo).toBe("camara");
+    expect(cfg.sinonimos).toEqual({ voto: "meu", pl: "y" });
+    expect(cfg.perfis).toHaveLength(1);
+    expect(cfg.temas).toEqual(["a b"]);
+    const outro: any = { tipo: "rpps" };
+    svc.aplicarTipo(outro, pacote);
+    expect(outro.tipo).toBe("rpps");
+    expect(outro.perfis).toBeUndefined();
+  });
+
+  it("cria o portal de exemplo da Câmara, que entra na lista como exemplo do tipo camara", async () => {
+    store.camaraexemplo = undefined as any;
+    const { criarExemploCamara, PASTA_EXEMPLO_CAMARA } = await import("../src/modules/transparencia-gerador/tipos");
+    const r = await criarExemploCamara();
+    expect(r.pasta).toBe(PASTA_EXEMPLO_CAMARA);
+    const p = store[PASTA_EXEMPLO_CAMARA];
+    expect(p.config).toMatchObject({ tipo: "camara", exemplo: true, cliente: { nome: "Câmara de Vila Modelo" } });
+    expect(JSON.parse(p.cacheTransparencia).length).toBeGreaterThan(50);
+    expect(p.config.perfis.length).toBeGreaterThan(3);
+    const { renderIndex } = await import("../src/modules/transparencia-gerador/preview");
+    const html = renderIndex(p.config, { versao: "1", sprite: "", previa: true });
+    expect(html).toContain("Transparência da Câmara");
+    expect(html).toContain("Câmara Municipal de Vila Modelo");
+    // todo botão tem nome, grupo e descrição curta
+    for (const it of JSON.parse(p.cacheTransparencia)) {
+      expect(it.Descricao).toBeTruthy();
+      expect(p.config.grupos.ordem).toContain(it.Grupo);
+      expect(p.config.descricoesItens[it.Descricao]).toBeTruthy();
+    }
   });
 });
 

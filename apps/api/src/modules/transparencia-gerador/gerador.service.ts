@@ -363,9 +363,12 @@ export async function listarClientes() {
     orderBy: { nome: "asc" },
   });
   // `externo` = portal que já existia fora do gerador e foi cadastrado pelo link (ver importar-link.ts)
+  // `tipo` = "rpps" (padrão dos portais antigos) ou o tipo do pacote usado (ex.: "camara"); `exemplo` = portal de demonstração
   return rows.map((r) => ({
     pasta: r.pasta, nome: r.nome, atualizadoEm: r.updatedAt,
     externo: str((r.config as Cfg | null)?.externo?.url) || null,
+    tipo: str((r.config as Cfg | null)?.tipo) || "rpps",
+    exemplo: !!(r.config as Cfg | null)?.exemplo,
   }));
 }
 
@@ -386,6 +389,30 @@ export async function carregarCliente(pasta: string) {
 export async function excluirCliente(pasta: string): Promise<boolean> {
   const r = await prisma.transparenciaPortal.deleteMany({ where: { pasta: slug(pasta) } });
   return r.count > 0;
+}
+
+/** Aplica o `tipo.json` de um preset ao config: objetos somam (o que o cliente já definiu vence), listas só entram se estiverem vazias. */
+export function aplicarTipo(config: Cfg, pacote: Cfg | null): void {
+  if (!pacote || typeof pacote.tipo !== "string") return;
+  if (!vazio(config.tipo) && config.tipo !== pacote.tipo) return; // portal de outro tipo não é reescrito
+  config.tipo = pacote.tipo;
+  for (const k of ["sinonimos", "glossario", "descricoesItens"]) {
+    if (pacote[k] && typeof pacote[k] === "object") config[k] = { ...pacote[k], ...(config[k] ?? {}) };
+  }
+  for (const k of ["perfis", "temas"]) {
+    if (Array.isArray(pacote[k]) && !(Array.isArray(config[k]) && config[k].length > 0)) config[k] = pacote[k];
+  }
+}
+
+/** Arquivo de um preset (ex.: transparencia.local.json), usado pela pré-visualização quando o portal não tem API nem cópia. */
+export function lerArquivoPreset(preset: string, nome: string): string | null {
+  if (!/^[a-z0-9-]+$/.test(preset) || !/^[\w.-]+$/.test(nome)) return null;
+  const file = path.join(pastaAssets(), "presets", preset, nome);
+  try {
+    return fs.readFileSync(file, "utf8").replace(/^﻿/, "");
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -499,6 +526,8 @@ export async function gerarCliente(entrada: Cfg, arquivos: { logo?: ArquivoEnvia
     if (g && (!config.grupos?.ordem || config.grupos.ordem.length === 0)) config.grupos = { ...(config.grupos ?? {}), ...g };
   }
   const temLocal = (arquivo: string) => !!dados.preset && fs.existsSync(path.join(pastaAssets(), "presets", dados.preset, arquivo));
+  // pacote de um tipo de portal (ex.: Câmara): perfis, temas, sinônimos, glossário e descrições do tipo; o que o cliente já tem vence
+  if (dados.preset) aplicarTipo(config, lerJsonArquivo(path.join(pastaAssets(), "presets", dados.preset, "tipo.json")));
 
   config.grupos = config.grupos ?? {};
   // primeira cópia dos dados (o portal abre mesmo se a API estiver lenta no primeiro acesso)

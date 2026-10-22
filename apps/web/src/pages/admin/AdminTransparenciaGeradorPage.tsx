@@ -26,6 +26,7 @@ import {
   type OrdemGrupo,
   type ResultadoGerar,
   type ResultadoRenovacao,
+  type TipoPortal,
 } from "../../lib/transparencia-gerador";
 
 const FORM_INICIAL = {
@@ -87,6 +88,11 @@ export function AdminTransparenciaGeradorPage() {
   const set = useCallback(<K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v })), []);
 
   const [clientes, setClientes] = useState<ClienteResumo[]>([]);
+  // aba do gerador: portal de RPPS (padrão) ou de Câmara; cada uma lista só os seus clientes e começa com o seu pacote
+  const [aba, setAba] = useState<"rpps" | "camara">("rpps");
+  const [tipos, setTipos] = useState<TipoPortal[]>([]);
+  const [criandoExemplo, setCriandoExemplo] = useState(false);
+  const [erroExemplo, setErroExemplo] = useState<string | null>(null);
   const [pastaEdit, setPastaEdit] = useState("");
   const [sprite, setSprite] = useState<{ svg: string; ids: string[] } | null>(null);
 
@@ -131,7 +137,26 @@ export function AdminTransparenciaGeradorPage() {
   useEffect(() => {
     listarClientes();
     geradorApi.icones().then(setSprite).catch(() => setSprite(null));
+    geradorApi.tipos().then(setTipos).catch(() => setTipos([]));
   }, [listarClientes]);
+
+  const tipoCamara = tipos.find((t) => t.id === "camara") ?? null;
+  const clientesDaAba = clientes.filter((c) => (c.tipo ?? "rpps") === aba);
+  const exemploCamara = clientes.find((c) => c.tipo === "camara" && c.exemplo) ?? null;
+
+  async function criarExemplo() {
+    setErroExemplo(null);
+    setCriandoExemplo(true);
+    try {
+      const r = await geradorApi.criarExemploCamara();
+      if (!r.ok) throw new Error(r.erro ?? "Não foi possível criar o exemplo.");
+      await listarClientes();
+    } catch (e) {
+      setErroExemplo(e instanceof Error ? e.message : "Não foi possível criar o exemplo.");
+    } finally {
+      setCriandoExemplo(false);
+    }
+  }
 
   const rodapeEfetivo = form.autoF ? mix(form.corPrimaria, -0.32) : form.corRodape;
 
@@ -285,8 +310,27 @@ export function AdminTransparenciaGeradorPage() {
 
   /* ---------- cliente existente ---------- */
 
-  function limpar() {
-    setForm(FORM_INICIAL);
+  // formulário de um cliente novo: o da aba Câmara já começa com os textos e as cores do pacote
+  function formDaAba(a: "rpps" | "camara"): Form {
+    if (a !== "camara" || !tipoCamara) return FORM_INICIAL;
+    return {
+      ...FORM_INICIAL,
+      titulo: tipoCamara.textos.titulo ?? FORM_INICIAL.titulo,
+      subtitulo: tipoCamara.textos.subtitulo ?? FORM_INICIAL.subtitulo,
+      placeholderBusca: tipoCamara.textos.placeholderBusca ?? FORM_INICIAL.placeholderBusca,
+      corPrimaria: tipoCamara.cores.primaria ?? FORM_INICIAL.corPrimaria,
+      corDestaque: tipoCamara.cores.destaque ?? FORM_INICIAL.corDestaque,
+    };
+  }
+
+  function trocarAba(a: "rpps" | "camara") {
+    if (a === aba) return;
+    setAba(a);
+    limpar(a);
+  }
+
+  function limpar(abaAlvo: "rpps" | "camara" = aba) {
+    setForm(formDaAba(abaAlvo));
     setPastaEdit("");
     setGrupos([]);
     setExtras({});
@@ -496,7 +540,7 @@ export function AdminTransparenciaGeradorPage() {
     });
     const dados: Record<string, unknown> = {
       pasta: editando ? pastaEdit : form.pasta.trim() || slug(nome),
-      preset: form.preset ? "atricon" : "",
+      preset: aba === "camara" ? (tipoCamara?.preset ?? "camara") : form.preset ? "atricon" : "",
       cliente: {
         nome,
         nomeCompleto: form.nomeCompleto.trim() || nome,
@@ -584,15 +628,73 @@ export function AdminTransparenciaGeradorPage() {
             onChange={(e) => (e.target.value ? carregarCliente(e.target.value) : limpar())}
           >
             <option value="">— novo cliente —</option>
-            {clientes.map((c) => (
+            {clientesDaAba.map((c) => (
               <option key={c.pasta} value={c.pasta}>
-                {c.nome} ({c.pasta}){c.externo ? " · importado" : ""}
+                {c.nome} ({c.pasta}){c.externo ? " · importado" : ""}{c.exemplo ? " · exemplo" : ""}
               </option>
             ))}
           </select>
         </label>
       </header>
 
+      <div className="flex gap-1 rounded-lg border border-border p-0.5 sm:w-fit" role="tablist" aria-label="Tipo de portal">
+        {([["rpps", "Previdência (RPPS)"], ["camara", "Câmara Municipal"]] as const).map(([a, rot]) => (
+          <button
+            key={a}
+            type="button"
+            role="tab"
+            aria-selected={aba === a}
+            onClick={() => trocarAba(a)}
+            className={`rounded-md px-4 py-1.5 text-sm font-semibold ${aba === a ? "bg-petrol text-on-petrol" : "text-ink-muted hover:text-ink"}`}
+          >
+            {rot}
+          </button>
+        ))}
+      </div>
+
+      {aba === "camara" && (
+        <Card className="space-y-3 p-5 text-sm">
+          <h2 className="text-base font-semibold text-ink">Portal da transparência de Câmara Municipal</h2>
+          <p className="text-ink-muted">
+            Mesmo motor dos portais de previdência, com o vocabulário do Legislativo: grupos de Atividade Legislativa, Vereadores, Orçamento e Finanças,
+            Pessoal, Licitações, Participe e Dados; atalhos como “Como meu vereador votou” e “Quero acompanhar um projeto”; glossário (PL, veto, quórum,
+            duodécimo…) e sinônimos de busca. Ao cadastrar um cliente nesta aba, o pacote vai junto
+            {tipoCamara ? ` (${tipoCamara.itens} botões de partida, com os links em branco para você preencher)` : ""}. Painel de avaliações e verificação de links valem igual.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" onClick={criarExemplo} disabled={criandoExemplo || !tipoCamara}>
+              <RefreshCw size={16} className={criandoExemplo ? "animate-spin" : ""} />{" "}
+              {criandoExemplo ? "Criando…" : exemploCamara ? "Refazer portal de exemplo" : "Criar portal de exemplo"}
+            </Button>
+            {exemploCamara && (
+              <>
+                <a
+                  href={geradorApi.urlVisualizacao(exemploCamara.pasta)}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold hover:border-petrol"
+                >
+                  <ExternalLink size={16} /> Abrir portal de exemplo
+                </a>
+                <input
+                  readOnly
+                  className={`${INPUT} min-w-[280px] flex-1`}
+                  value={geradorApi.urlVisualizacao(exemploCamara.pasta)}
+                  aria-label="Link do portal de exemplo"
+                  onFocus={(e) => e.currentTarget.select()}
+                />
+              </>
+            )}
+          </div>
+          <p className="text-xs text-ink-muted">
+            O exemplo é a “Câmara Municipal de Vila Modelo” (fictícia), publicado pelo próprio Regula, só para demonstração: os botões ainda não levam a lugar
+            nenhum. O link abre sem login e não é indexado por buscadores.
+          </p>
+          {erroExemplo && <div className="rounded-lg bg-crit/10 px-3 py-2 text-crit">{erroExemplo}</div>}
+        </Card>
+      )}
+
+      {aba === "rpps" && (
       <section className="rounded-xl border border-border bg-surface p-4 text-sm shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-semibold text-ink">
@@ -655,6 +757,7 @@ export function AdminTransparenciaGeradorPage() {
           </div>
         )}
       </section>
+      )}
 
       {renovacoes && (
         <Card className="space-y-2 p-4 text-sm">
@@ -714,9 +817,16 @@ export function AdminTransparenciaGeradorPage() {
                 </div>
                 {stM && <Status tipo={stM.tipo}>{stM.texto}</Status>}
               </Campo>
-              <Check checked={form.preset} onChange={(v) => set("preset", v)}>
-                Usar o catálogo Atricon (128 itens) como reserva, para cliente sem API ou com API incompleta
-              </Check>
+              {aba === "camara" ? (
+                <p className="rounded-lg bg-bg px-3 py-2 text-xs text-ink-muted">
+                  Pacote Câmara: sem API, o portal já nasce com {tipoCamara?.itens ?? "os"} botões de uma Câmara (links em branco, para preencher no passo 5) e,
+                  se houver API, ela substitui o catálogo.
+                </p>
+              ) : (
+                <Check checked={form.preset} onChange={(v) => set("preset", v)}>
+                  Usar o catálogo Atricon (128 itens) como reserva, para cliente sem API ou com API incompleta
+                </Check>
+              )}
             </div>
           </Passo>
 
@@ -845,7 +955,7 @@ export function AdminTransparenciaGeradorPage() {
             titulo="Sugestões de botões"
             dica={<>Compara o que o cliente já publica com a <b>cartilha da Atricon</b> (Programa Nacional de Transparência Pública) e com o <b>portal da MesquitaPrev</b>, RPPS já preparado para auditoria do Pró-Gestão. Cada sugestão traz a base legal (passe o mouse na etiqueta) e se é obrigatória, essencial ou só recomendada — marque o que faltar, confira o nome, escolha a categoria e cole o link.</>}
           >
-            <SugestoesStep catalogos={catalogos} gruposDoPortal={grupos.map((g) => g.nome)} extras={extras} onExtras={setExtras} />
+            <SugestoesStep catalogos={aba === "camara" ? catalogos.filter((c) => c.id !== "progestao") : catalogos} gruposDoPortal={grupos.map((g) => g.nome)} extras={extras} onExtras={setExtras} />
           </Passo>
 
           <details className="rounded-2xl border border-border bg-surface p-5 shadow-soft">

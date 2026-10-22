@@ -200,6 +200,8 @@ export async function renovarPortal(pastaEntrada: string): Promise<ResultadoReno
   const antes = await prisma.transparenciaPortal.findUnique({ where: { pasta } });
   if (!antes) throw new HttpError(404, "Cliente não encontrado.");
   const config = antes.config as Cfg;
+  // portal de demonstração: não tem API de origem; refazê-lo é pelo botão "Criar portal de exemplo"
+  if (config?.exemplo) return { pasta, nome: antes.nome, ok: true, alterado: false, mudancas: [], avisos: [] };
 
   const arq = (nome: string | null, dados: Uint8Array | null): ArquivoEnviado | undefined =>
     nome && dados ? { nome, buffer: Buffer.from(dados) } : undefined;

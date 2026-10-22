@@ -1,0 +1,122 @@
+[
+  {
+    "Id": "1",
+    "NMenu": null,
+    "Nome": "Início",
+    "Pagina": "https://camara.vilamodelo.leg.br/",
+    "NovaPag": "",
+    "Ordem": "1"
+  },
+  {
+    "Id": "2",
+    "NMenu": null,
+    "Nome": "A Câmara",
+    "Pagina": null,
+    "NovaPag": "",
+    "Ordem": "2"
+  },
+  {
+    "Id": "3",
+    "NMenu": "2",
+    "Nome": "Mesa Diretora",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "1"
+  },
+  {
+    "Id": "4",
+    "NMenu": "2",
+    "Nome": "Comissões",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "2"
+  },
+  {
+    "Id": "5",
+    "NMenu": "2",
+    "Nome": "História",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "3"
+  },
+  {
+    "Id": "6",
+    "NMenu": "2",
+    "Nome": "Fale conosco",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "4"
+  },
+  {
+    "Id": "7",
+    "NMenu": null,
+    "Nome": "Vereadores",
+    "Pagina": null,
+    "NovaPag": "",
+    "Ordem": "3"
+  },
+  {
+    "Id": "8",
+    "NMenu": "7",
+    "Nome": "Perfis",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "1"
+  },
+  {
+    "Id": "9",
+    "NMenu": "7",
+    "Nome": "Gabinetes",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "2"
+  },
+  {
+    "Id": "10",
+    "NMenu": "7",
+    "Nome": "Agenda",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "3"
+  },
+  {
+    "Id": "11",
+    "NMenu": null,
+    "Nome": "Legislativo",
+    "Pagina": null,
+    "NovaPag": "",
+    "Ordem": "4"
+  },
+  {
+    "Id": "12",
+    "NMenu": "11",
+    "Nome": "Projetos",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "1"
+  },
+  {
+    "Id": "13",
+    "NMenu": "11",
+    "Nome": "Sessões",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "2"
+  },
+  {
+    "Id": "14",
+    "NMenu": "11",
+    "Nome": "Leis",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "3"
+  },
+  {
+    "Id": "15",
+    "NMenu": null,
+    "Nome": "Transparência",
+    "Pagina": "#",
+    "NovaPag": "",
+    "Ordem": "5"
+  }
+]

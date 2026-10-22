@@ -1,0 +1,241 @@
+{
+  "tipo": "camara",
+  "rotulo": "Câmara Municipal",
+  "textos": {
+    "titulo": "Transparência da Câmara",
+    "subtitulo": "Acompanhe projetos, votações, vereadores e as contas da Casa em uma página só. Use a busca ou o índice ao lado para ir direto ao que precisa.",
+    "placeholderBusca": "Ex.: projeto de lei, como meu vereador votou, verba indenizatória, sessão ao vivo..."
+  },
+  "cores": {
+    "primaria": "#14385c",
+    "destaque": "#c9a227"
+  },
+  "perfis": [
+    {
+      "id": "projeto",
+      "label": "Quero acompanhar um projeto",
+      "icon": "i-doc-check",
+      "match": [
+        "tramitacao de projetos",
+        "pauta do plenario",
+        "pauta das comissoes",
+        "atas das sessoes",
+        "leis e atos infralegais",
+        "comissoes permanentes"
+      ],
+      "words": "projeto lei tramitacao pauta comissao requerimento indicacao mocao veto parecer"
+    },
+    {
+      "id": "voto",
+      "label": "Como meu vereador votou",
+      "icon": "i-megaphone",
+      "match": [
+        "votacoes nominais",
+        "presenca nas sessoes",
+        "atividade parlamentar",
+        "perfil dos vereadores",
+        "composicao da casa"
+      ],
+      "words": "vereador voto votou votacao presenca mandato bancada partido"
+    },
+    {
+      "id": "sessao",
+      "label": "Assistir às sessões",
+      "icon": "i-calendar",
+      "match": [
+        "sessoes ao vivo (tv camara)",
+        "calendario de sessoes",
+        "pauta do plenario",
+        "audiencias publicas"
+      ],
+      "words": "sessao ao vivo transmissao plenario tv camara audiencia horario"
+    },
+    {
+      "id": "gasto",
+      "label": "Como a Casa gasta",
+      "icon": "i-coins",
+      "match": [
+        "despesas (execucao orcamentaria)",
+        "verba indenizatoria",
+        "diarias e viagens",
+        "subsidio dos vereadores",
+        "receitas e duodecimo",
+        "folha de pagamento"
+      ],
+      "words": "gasto gastos despesa verba indenizatoria diaria subsidio salario duodecimo orcamento"
+    },
+    {
+      "id": "fornecedor",
+      "label": "Sou fornecedor",
+      "icon": "i-briefcase",
+      "match": [
+        "licitacoes",
+        "contratos e aditivos",
+        "dispensas e inexigibilidades",
+        "plano de contratacoes anual",
+        "fornecedores sancionados"
+      ],
+      "words": "fornecedor licitar licitante licitacao empresa contratar contrato compra pregao edital"
+    },
+    {
+      "id": "falar",
+      "label": "Falar com a Câmara",
+      "icon": "i-message",
+      "match": [
+        "e-sic (pedido de informacao)",
+        "ouvidoria",
+        "sugestao legislativa",
+        "enderecos, telefones e horarios",
+        "perguntas frequentes"
+      ],
+      "words": "ouvidoria contato atendimento reclamacao denuncia duvida pergunta sugestao sic"
+    }
+  ],
+  "temas": [
+    "projeto lei tramitacao pauta plenario comissao ata sessao votacao requerimento indicacao mocao veto emenda parecer cpi",
+    "vereador mandato presenca verba indenizatoria diaria gabinete subsidio agenda atividade parlamentar bancada partido",
+    "orcamento duodecimo receita despesa rgf lrf balanco execucao prestacao conta tribunal limite empenho restos pagar",
+    "licitacao contrato compra dispensa pregao ata registro preco fornecedor plano contratacao sancionado pncp",
+    "folha subsidio servidor cargo concurso estagiario terceirizado remuneracao quadro salario",
+    "ouvidoria sic lai lgpd atendimento sugestao audiencia carta servico manifestacao participacao",
+    "lei organica regimento interno resolucao decreto legislativo ato mesa diretora normativo"
+  ],
+  "sinonimos": {
+    "pl": "tramitacao de projetos leis e atos infralegais",
+    "projeto de lei": "tramitacao de projetos",
+    "projeto": "tramitacao de projetos",
+    "voto": "votacoes nominais",
+    "votou": "votacoes nominais",
+    "votacao": "votacoes nominais pauta do plenario",
+    "presenca": "presenca nas sessoes",
+    "falta": "presenca nas sessoes",
+    "ao vivo": "sessoes ao vivo (tv camara)",
+    "tv": "sessoes ao vivo (tv camara)",
+    "sessao": "sessoes ao vivo (tv camara) atas das sessoes calendario de sessoes",
+    "salario do vereador": "subsidio dos vereadores",
+    "subsidio": "subsidio dos vereadores",
+    "gasto": "despesas (execucao orcamentaria) verba indenizatoria diarias e viagens",
+    "gastos": "despesas (execucao orcamentaria) verba indenizatoria diarias e viagens",
+    "verba": "verba indenizatoria",
+    "viagem": "diarias e viagens",
+    "duodecimo": "receitas e duodecimo limite de despesa da camara",
+    "contas do prefeito": "julgamento das contas do prefeito",
+    "cpi": "comissoes parlamentares de inquerito (cpi)",
+    "regimento": "regimento interno",
+    "lei organica": "lei organica",
+    "reclamar": "ouvidoria",
+    "pedir informacao": "e-sic (pedido de informacao)",
+    "cnpj": "licitacoes contratos e aditivos",
+    "pcca": "cargos e salarios"
+  },
+  "glossario": {
+    "PL": "Projeto de Lei — proposta de nova lei apresentada por vereador, pelo prefeito ou por iniciativa popular.",
+    "Requerimento": "Pedido de um vereador à Mesa, ao Plenário ou ao Executivo, para informação ou providência.",
+    "Indicação": "Sugestão de um vereador ao Executivo para que tome uma providência de sua competência.",
+    "Moção": "Manifestação da Câmara de apoio, repúdio, aplauso ou pesar sobre um assunto.",
+    "Veto": "Recusa total ou parcial do prefeito a um projeto aprovado pela Câmara; os vereadores podem rejeitar o veto.",
+    "Quórum": "Número mínimo de vereadores presentes para abrir a sessão ou votar uma matéria.",
+    "Ordem do Dia": "Parte da sessão em que as matérias da pauta são discutidas e votadas.",
+    "Duodécimo": "Parcela mensal do orçamento repassada pelo Executivo à Câmara.",
+    "Verba indenizatória": "Ressarcimento de despesas do exercício do mandato, nas regras fixadas pela Casa.",
+    "CPI": "Comissão Parlamentar de Inquérito — investiga fato determinado, por prazo certo.",
+    "Subsídio": "Remuneração do vereador, fixada por lei de iniciativa da própria Câmara.",
+    "PNCP": "Portal Nacional de Contratações Públicas — onde licitações e contratos devem ser publicados."
+  },
+  "descricoesItens": {
+    "Tramitação de Projetos": "Acompanhe cada projeto de lei, requerimento e indicação: autor, situação, pareceres e votações.",
+    "Pauta do Plenário": "Matérias que serão discutidas e votadas na próxima sessão.",
+    "Pauta das Comissões": "Reuniões e matérias em análise em cada comissão permanente.",
+    "Atas das Sessões": "Registro oficial do que aconteceu em cada sessão ordinária, extraordinária e solene.",
+    "Votações Nominais": "Como cada vereador votou em cada matéria.",
+    "Sessões ao Vivo (TV Câmara)": "Transmissão ao vivo das sessões e acervo das gravações.",
+    "Calendário de Sessões": "Datas, horários e tipo de cada sessão do ano legislativo.",
+    "Leis e Atos Infralegais": "Leis, decretos legislativos, resoluções e demais atos publicados pela Casa.",
+    "Julgamento das Contas do Prefeito": "Parecer do Tribunal de Contas e resultado do julgamento pelo Plenário.",
+    "Comissões Permanentes": "Composição, competências e pareceres de cada comissão.",
+    "Comissões Parlamentares de Inquérito (CPI)": "CPIs instauradas, integrantes, prazos e relatórios finais.",
+    "Composição da Casa": "Vereadores em exercício, partidos, bancadas e suplentes.",
+    "Perfil dos Vereadores": "Biografia, contatos e gabinete de cada vereador.",
+    "Presença nas Sessões": "Frequência de cada vereador nas sessões e nas comissões.",
+    "Atividade Parlamentar": "Projetos, requerimentos e indicações apresentados por vereador.",
+    "Verba Indenizatória": "Valores ressarcidos a cada vereador, com a nota fiscal e a finalidade.",
+    "Diárias e Viagens": "Quem viajou, para onde, por quanto tempo e quanto custou.",
+    "Gabinetes e Assessores": "Servidores lotados em cada gabinete e suas remunerações.",
+    "Agenda dos Vereadores": "Compromissos e audiências públicas dos vereadores.",
+    "Mesa Diretora": "Presidente, vice-presidente e secretários do biênio.",
+    "Estrutura Organizacional": "Organograma, competências e responsáveis por cada setor.",
+    "Lei Orgânica": "Lei Orgânica do Município, em texto atualizado.",
+    "Regimento Interno": "Regras de funcionamento das sessões, comissões e votações.",
+    "Agenda do Presidente": "Compromissos oficiais do presidente da Casa.",
+    "Endereços, Telefones e Horários": "Onde e quando ser atendido na Câmara.",
+    "Escola do Legislativo": "Cursos, palestras e visitas guiadas abertos à população.",
+    "Receitas e Duodécimo": "Repasses mensais do Executivo e demais receitas da Câmara.",
+    "Despesas (Execução Orçamentária)": "Empenhos, liquidações e pagamentos, com filtro por fornecedor e data.",
+    "Limite de Despesa da Câmara": "Acompanhamento do limite de gastos do Legislativo municipal.",
+    "Relatório de Gestão Fiscal (RGF)": "Demonstrativo quadrimestral de pessoal e limites da LRF.",
+    "Orçamento Anual da Câmara": "Dotações previstas para o ano e alterações ao longo do exercício.",
+    "Balanços e Demonstrativos": "Balanço financeiro, patrimonial e demais demonstrações contábeis.",
+    "Prestação de Contas ao Tribunal de Contas": "Contas anuais da Mesa Diretora e o parecer do Tribunal.",
+    "Restos a Pagar": "Despesas de anos anteriores ainda não pagas.",
+    "Subsídio dos Vereadores": "Valor do subsídio, lei que o fixou e descontos.",
+    "Folha de Pagamento": "Remuneração mensal de todos os servidores, nominal.",
+    "Quadro de Servidores": "Efetivos, comissionados e cedidos, por cargo e lotação.",
+    "Cargos e Salários": "Tabela de cargos, atribuições e faixas salariais.",
+    "Concursos e Seleções": "Editais, resultados e convocações.",
+    "Terceirizados e Estagiários": "Relação de prestadores de serviço e estagiários.",
+    "Licitações": "Editais, atas, resultados e recursos de cada licitação.",
+    "Dispensas e Inexigibilidades": "Contratações diretas, com a justificativa e o valor.",
+    "Contratos e Aditivos": "Contratos vigentes, aditivos, valores e fiscais responsáveis.",
+    "Atas de Registro de Preços": "Preços registrados e fornecedores vencedores.",
+    "Plano de Contratações Anual": "O que a Câmara pretende contratar no ano.",
+    "Fornecedores Sancionados": "Empresas impedidas de contratar com a Casa.",
+    "Portal Nacional de Contratações Públicas (PNCP)": "Publicações da Câmara no portal nacional.",
+    "e-SIC (Pedido de Informação)": "Peça qualquer informação pública e acompanhe o protocolo.",
+    "Ouvidoria": "Elogios, sugestões, reclamações e denúncias.",
+    "Sugestão Legislativa": "Proponha um projeto à Comissão de Legislação Participativa.",
+    "Audiências Públicas": "Datas, pautas, listas de presença e registros das audiências.",
+    "Iniciativa Popular": "Como apresentar um projeto de lei com assinaturas de eleitores.",
+    "Carta de Serviços ao Cidadão": "Serviços oferecidos pela Câmara, prazos e como solicitar.",
+    "Perguntas Frequentes": "Respostas às dúvidas mais comuns sobre a Câmara.",
+    "Dados Abertos": "Bases em formato aberto (CSV/JSON) para baixar e reutilizar.",
+    "LGPD e Privacidade": "Como a Câmara trata os seus dados pessoais.",
+    "Encarregado de Dados (DPO)": "Quem responde pela proteção de dados e como falar com essa pessoa.",
+    "Acessibilidade": "Recursos do portal e como pedir ajuda.",
+    "Radar da Transparência Pública": "Avaliação da transparência da Câmara pelos tribunais de contas."
+  },
+  "grupos": {
+    "ordemAutomatica": false,
+    "ordem": [
+      "Atividade Legislativa",
+      "Vereadores",
+      "Institucional",
+      "Orçamento e Finanças",
+      "Pessoal",
+      "Licitações e Contratos",
+      "Participe",
+      "Dados e Governo Digital"
+    ],
+    "ordemItens": {},
+    "ocultar": [],
+    "icones": {
+      "Atividade Legislativa": "i-landmark",
+      "Vereadores": "i-users",
+      "Institucional": "i-sitemap",
+      "Orçamento e Finanças": "i-coins",
+      "Pessoal": "i-briefcase",
+      "Licitações e Contratos": "i-scale",
+      "Participe": "i-megaphone",
+      "Dados e Governo Digital": "i-database"
+    },
+    "descricoes": {
+      "Atividade Legislativa": "Projetos, pautas, atas, votações e leis: tudo o que a Câmara discute e decide.",
+      "Vereadores": "Quem são os vereadores, como atuam e quanto custa o mandato.",
+      "Institucional": "A estrutura da Casa, a Mesa Diretora e as normas que regem o Legislativo.",
+      "Orçamento e Finanças": "De onde vem o dinheiro da Câmara e como ele é gasto.",
+      "Pessoal": "Subsídios, servidores, cargos e concursos da Câmara.",
+      "Licitações e Contratos": "Compras e contratações da Câmara, do edital ao pagamento.",
+      "Participe": "Peça informação, sugira uma lei, reclame ou participe de uma audiência.",
+      "Dados e Governo Digital": "Dados abertos, proteção de dados pessoais e acessibilidade."
+    }
+  }
+}

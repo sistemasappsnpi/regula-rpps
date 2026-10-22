@@ -12,6 +12,21 @@ export interface ClienteResumo {
   atualizadoEm?: string;
   /** Link do portal original, quando foi cadastrado pelo link (e não criado no gerador). */
   externo?: string | null;
+  /** "rpps" (padrão dos portais antigos) ou o tipo do pacote usado, ex.: "camara". */
+  tipo?: string;
+  /** Portal de demonstração (não tem API de origem). */
+  exemplo?: boolean;
+}
+
+export interface TipoPortal {
+  id: string;
+  /** Nome do preset enviado ao gerar o portal. */
+  preset: string;
+  rotulo: string;
+  textos: { titulo?: string; subtitulo?: string; placeholderBusca?: string };
+  cores: { primaria?: string; destaque?: string };
+  /** Quantidade de botões do catálogo do tipo. */
+  itens: number;
 }
 
 export interface ResumoLink {
@@ -208,6 +223,9 @@ export const geradorApi = {
   // Consulta de novo a origem do portal (link ou APIs) e atualiza dados, identidade e modelo.
   renovar: (pasta: string) => chamar<ResultadoRenovacao>(`/clientes/${encodeURIComponent(pasta)}/renovar`, { method: "POST" }),
   renovarTodos: () => chamar<{ ok: boolean; resultados: ResultadoRenovacao[] }>("/renovar-todos", { method: "POST" }),
+  // Tipos de portal além do RPPS (aba Câmara) e o portal fictício de demonstração.
+  tipos: () => chamar<TipoPortal[]>("/tipos"),
+  criarExemploCamara: () => chamar<ResultadoGerar>("/exemplos/camara", { method: "POST" }),
   // Verificador de links quebrados (roda no servidor, em segundo plano) e avaliações lidas do portal publicado.
   estadoLinks: (pasta: string) => chamar<EstadoLinks>(`/clientes/${encodeURIComponent(pasta)}/links`),
   verificarLinks: (pasta: string) => chamar<EstadoLinks>(`/clientes/${encodeURIComponent(pasta)}/links/verificar`, { method: "POST" }),

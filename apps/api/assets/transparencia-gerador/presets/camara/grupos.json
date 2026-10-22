@@ -1,0 +1,32 @@
+{
+  "ordem": [
+    "Atividade Legislativa",
+    "Vereadores",
+    "Institucional",
+    "Orçamento e Finanças",
+    "Pessoal",
+    "Licitações e Contratos",
+    "Participe",
+    "Dados e Governo Digital"
+  ],
+  "icones": {
+    "Atividade Legislativa": "i-landmark",
+    "Vereadores": "i-users",
+    "Institucional": "i-sitemap",
+    "Orçamento e Finanças": "i-coins",
+    "Pessoal": "i-briefcase",
+    "Licitações e Contratos": "i-scale",
+    "Participe": "i-megaphone",
+    "Dados e Governo Digital": "i-database"
+  },
+  "descricoes": {
+    "Atividade Legislativa": "Projetos, pautas, atas, votações e leis: tudo o que a Câmara discute e decide.",
+    "Vereadores": "Quem são os vereadores, como atuam e quanto custa o mandato.",
+    "Institucional": "A estrutura da Casa, a Mesa Diretora e as normas que regem o Legislativo.",
+    "Orçamento e Finanças": "De onde vem o dinheiro da Câmara e como ele é gasto.",
+    "Pessoal": "Subsídios, servidores, cargos e concursos da Câmara.",
+    "Licitações e Contratos": "Compras e contratações da Câmara, do edital ao pagamento.",
+    "Participe": "Peça informação, sugira uma lei, reclame ou participe de uma audiência.",
+    "Dados e Governo Digital": "Dados abertos, proteção de dados pessoais e acessibilidade."
+  }
+}

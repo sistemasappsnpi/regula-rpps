@@ -8,6 +8,7 @@ import {
 import { dadosDeAcesso, lerAvaliacoes, segredoPhp } from "./avaliacoes";
 import { importarPorLink } from "./importar-link";
 import { andamentoDe, iniciarVerificacao, ultimoRelatorio } from "./links";
+import { criarExemploCamara, listarTipos } from "./tipos";
 import { importarPorApis, renovarPortal, renovarTodos } from "./renovar";
 
 // Gerador de Portal da Transparência. Montado em /admin/transparencia-gerador (ver admin.routes.ts,
@@ -87,6 +88,23 @@ transparenciaGeradorRouter.get("/clientes/:pasta/avaliacoes", async (req, res, n
 transparenciaGeradorRouter.get("/clientes/:pasta/acesso", async (req, res, next) => {
   try {
     res.json({ ok: true, ...(await dadosDeAcesso(req.params.pasta)) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Tipos de portal além do RPPS (aba Câmara) e o portal fictício de demonstração.
+transparenciaGeradorRouter.get("/tipos", (_req, res, next) => {
+  try {
+    res.json(listarTipos());
+  } catch (err) {
+    next(err);
+  }
+});
+
+transparenciaGeradorRouter.post("/exemplos/camara", async (_req, res, next) => {
+  try {
+    res.json({ ok: true, ...(await criarExemploCamara()) });
   } catch (err) {
     next(err);
   }

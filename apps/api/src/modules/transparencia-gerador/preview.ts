@@ -5,7 +5,7 @@
 import { Router, type Response } from "express";
 import { prisma } from "../../db/prisma";
 import { criarCache } from "../../middleware/publicProtect";
-import { apiUrlDe, baixarJson, lerArquivoModelo, slug } from "./gerador.service";
+import { apiUrlDe, baixarJson, lerArquivoModelo, lerArquivoPreset, slug } from "./gerador.service";
 import { integrarBotoes } from "../transparencia-api/integracao-previdencia";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -270,9 +270,10 @@ const CONTENT_TYPES: Record<string, string> = {
 const vivo = new Map<string, { em: number; raw: string }>();
 const cachePortal = criarCache<Awaited<ReturnType<typeof prisma.transparenciaPortal.findUnique>>>(30_000);
 
-async function dadosDe(pasta: string, d: "transparencia" | "menu", p: { config: unknown; cacheTransparencia: string | null; cacheMenu: string | null }) {
+async function dadosDe(pasta: string, d: "transparencia" | "menu", p: { config: unknown; cacheTransparencia: string | null; cacheMenu: string | null; preset?: string | null }) {
   const config = p.config as Cfg;
-  const salvo = d === "menu" ? p.cacheMenu : p.cacheTransparencia;
+  // sem cópia salva, vale o catálogo local do preset (como o pacote PHP faz com dados/<d>.local.json)
+  const salvo = (d === "menu" ? p.cacheMenu : p.cacheTransparencia) ?? (p.preset ? lerArquivoPreset(p.preset, `${d}.local.json`) : null);
   const url = apiUrlDe((config.api ?? {}) as Cfg, d);
   if (!url) return salvo ? { raw: salvo, fonte: "cache" } : null;
   const ttl = Math.max(0, Number(config.api?.cacheSegundos ?? 60)) * 1000;
