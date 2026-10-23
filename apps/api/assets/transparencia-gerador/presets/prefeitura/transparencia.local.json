@@ -1,0 +1,822 @@
+[
+  {
+    "Id": "1",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Estrutura Organizacional",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "2",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Prefeito e Vice-Prefeito",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "3",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Secretarias e Responsáveis",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "4",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Agenda do Prefeito",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "5",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Endereços, Telefones e Horários",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "6",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Lei Orgânica do Município",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "7",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Leis e Decretos Municipais",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "8",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Plano Diretor",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "9",
+    "Grupo": "Informações Institucionais",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Conselhos Municipais",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "10",
+    "Grupo": "Receita",
+    "Amparo": "Lei Complementar Nº 131/2009 (Transparência)",
+    "NomeImagem": "",
+    "Descricao": "Receitas Arrecadadas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "11",
+    "Grupo": "Receita",
+    "Amparo": "Lei Complementar Nº 131/2009 (Transparência)",
+    "NomeImagem": "",
+    "Descricao": "Classificação Orçamentária da Receita",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "12",
+    "Grupo": "Receita",
+    "Amparo": "Lei Complementar Nº 131/2009 (Transparência)",
+    "NomeImagem": "",
+    "Descricao": "Transferências Recebidas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "13",
+    "Grupo": "Receita",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Dívida Ativa",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "14",
+    "Grupo": "Despesa",
+    "Amparo": "Lei Complementar Nº 131/2009 (Transparência)",
+    "NomeImagem": "",
+    "Descricao": "Despesas Empenhadas, Liquidadas e Pagas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "15",
+    "Grupo": "Despesa",
+    "Amparo": "Lei Complementar Nº 131/2009 (Transparência)",
+    "NomeImagem": "",
+    "Descricao": "Despesas por Fornecedor",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "16",
+    "Grupo": "Despesa",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Restos a Pagar",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "17",
+    "Grupo": "Despesa",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Gastos com Publicidade",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "18",
+    "Grupo": "Despesa",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Diárias e Passagens",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "19",
+    "Grupo": "Despesa",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Frota e Abastecimento",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "20",
+    "Grupo": "Convênios e Transferências",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Convênios Recebidos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "21",
+    "Grupo": "Convênios e Transferências",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Convênios Concedidos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "22",
+    "Grupo": "Convênios e Transferências",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Parcerias com Organizações da Sociedade Civil",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "23",
+    "Grupo": "Pessoal",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Folha de Pagamento",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "24",
+    "Grupo": "Pessoal",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Quadro de Servidores",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "25",
+    "Grupo": "Pessoal",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Subsídio do Prefeito, Vice e Secretários",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "26",
+    "Grupo": "Pessoal",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Cargos e Salários",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "27",
+    "Grupo": "Pessoal",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Concursos e Seleções",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "28",
+    "Grupo": "Pessoal",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Terceirizados e Estagiários",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "29",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Licitações",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "30",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Dispensas e Inexigibilidades",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "31",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Contratos e Aditivos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "32",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Atas de Registro de Preços",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "33",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Plano de Contratações Anual",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "34",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Fornecedores Sancionados",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "35",
+    "Grupo": "Licitações e Contratos",
+    "Amparo": "Lei Nº 14.133/2021 (Licitações e Contratos)",
+    "NomeImagem": "",
+    "Descricao": "Portal Nacional de Contratações Públicas (PNCP)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "36",
+    "Grupo": "Obras",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Obras e Serviços de Engenharia",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "37",
+    "Grupo": "Obras",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Acompanhamento de Obras (Medições)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "38",
+    "Grupo": "Obras",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Obras Paralisadas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "39",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Plano Plurianual (PPA)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "40",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Lei de Diretrizes Orçamentárias (LDO)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "41",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Lei Orçamentária Anual (LOA)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "42",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Relatório Resumido da Execução Orçamentária (RREO)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "43",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Relatório de Gestão Fiscal (RGF)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "44",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Nº 4.320/1964 (Normas de Direito Financeiro)",
+    "NomeImagem": "",
+    "Descricao": "Balanço Geral e Demonstrativos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "45",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Constituição Federal, art. 31",
+    "NomeImagem": "",
+    "Descricao": "Contas do Prefeito e Parecer do Tribunal de Contas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "46",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Audiências Públicas Fiscais",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "47",
+    "Grupo": "Planejamento e Prestação de Contas",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Relatório de Controle Interno",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "48",
+    "Grupo": "Saúde",
+    "Amparo": "Lei Complementar Nº 141/2012 (Saúde)",
+    "NomeImagem": "",
+    "Descricao": "Plano Municipal de Saúde e Relatório de Gestão",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "49",
+    "Grupo": "Saúde",
+    "Amparo": "Lei Complementar Nº 141/2012 (Saúde)",
+    "NomeImagem": "",
+    "Descricao": "Gastos com Saúde (mínimo de 15%)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "50",
+    "Grupo": "Saúde",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Unidades e Serviços de Saúde",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "51",
+    "Grupo": "Saúde",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Lista de Espera na Saúde",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "52",
+    "Grupo": "Saúde",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Medicamentos e Estoque",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "53",
+    "Grupo": "Saúde",
+    "Amparo": "Lei Complementar Nº 141/2012 (Saúde)",
+    "NomeImagem": "",
+    "Descricao": "Conselho Municipal de Saúde",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "54",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Constituição Federal, art. 212 (Educação)",
+    "NomeImagem": "",
+    "Descricao": "Plano Municipal de Educação",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "55",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Constituição Federal, art. 212 (Educação)",
+    "NomeImagem": "",
+    "Descricao": "Gastos com Educação (mínimo de 25%)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "56",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Vagas e Matrículas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "57",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Lista de Espera em Creches",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "58",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Merenda Escolar",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "59",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Conselho do Fundeb",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "60",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Programas de Assistência Social",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "61",
+    "Grupo": "Educação e Assistência Social",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Conselho de Assistência Social",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "62",
+    "Grupo": "Renúncias de Receita",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Desonerações Tributárias",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "63",
+    "Grupo": "Renúncias de Receita",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Valores da Renúncia Fiscal",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "64",
+    "Grupo": "Renúncias de Receita",
+    "Amparo": "Lei Complementar Nº 101/2000 (LRF)",
+    "NomeImagem": "",
+    "Descricao": "Incentivos à Cultura e ao Esporte",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "65",
+    "Grupo": "Emendas Parlamentares",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Emendas Federais e Transferências Especiais",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "66",
+    "Grupo": "Emendas Parlamentares",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Emendas Estaduais",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "67",
+    "Grupo": "Emendas Parlamentares",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Execução das Emendas Recebidas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "68",
+    "Grupo": "Serviços ao Contribuinte",
+    "Amparo": "Código Tributário Nacional (Lei Nº 5.172/1966)",
+    "NomeImagem": "",
+    "Descricao": "IPTU e Taxas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "69",
+    "Grupo": "Serviços ao Contribuinte",
+    "Amparo": "Código Tributário Nacional (Lei Nº 5.172/1966)",
+    "NomeImagem": "",
+    "Descricao": "ISS e Nota Fiscal Eletrônica",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "70",
+    "Grupo": "Serviços ao Contribuinte",
+    "Amparo": "Código Tributário Nacional (Lei Nº 5.172/1966)",
+    "NomeImagem": "",
+    "Descricao": "Certidão Negativa de Débitos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "71",
+    "Grupo": "Serviços ao Contribuinte",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Alvará de Funcionamento",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "72",
+    "Grupo": "Serviços ao Contribuinte",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Consulta de Processos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "73",
+    "Grupo": "Serviços ao Contribuinte",
+    "Amparo": "Lei Nº 13.460/2017 (Direitos do Usuário)",
+    "NomeImagem": "",
+    "Descricao": "Carta de Serviços ao Cidadão",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "74",
+    "Grupo": "Participe",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "e-SIC (Pedido de Informação)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "75",
+    "Grupo": "Participe",
+    "Amparo": "Lei Nº 13.460/2017 (Direitos do Usuário)",
+    "NomeImagem": "",
+    "Descricao": "Ouvidoria",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "76",
+    "Grupo": "Participe",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Audiências Públicas e Consultas",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "77",
+    "Grupo": "Participe",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Perguntas Frequentes",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "78",
+    "Grupo": "Dados e Governo Digital",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Dados Abertos",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "79",
+    "Grupo": "Dados e Governo Digital",
+    "Amparo": "Lei Nº 13.709/2018 (LGPD)",
+    "NomeImagem": "",
+    "Descricao": "LGPD e Privacidade",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "80",
+    "Grupo": "Dados e Governo Digital",
+    "Amparo": "Lei Nº 13.709/2018 (LGPD)",
+    "NomeImagem": "",
+    "Descricao": "Encarregado de Dados (DPO)",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "81",
+    "Grupo": "Dados e Governo Digital",
+    "Amparo": "Lei Nº 13.146/2015 (Inclusão)",
+    "NomeImagem": "",
+    "Descricao": "Acessibilidade",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  },
+  {
+    "Id": "82",
+    "Grupo": "Dados e Governo Digital",
+    "Amparo": "Lei Nº 12.527/2011 (Acesso à Informação)",
+    "NomeImagem": "",
+    "Descricao": "Radar da Transparência Pública",
+    "MaisInformacoes": "",
+    "Cor": null,
+    "Link": "#"
+  }
+]

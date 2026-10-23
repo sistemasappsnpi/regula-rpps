@@ -1,0 +1,138 @@
+[
+  {
+    "Id": "1",
+    "NMenu": null,
+    "Nome": "Início",
+    "Pagina": "https://prefeitura.vilamodelo.gov.br/",
+    "NovaPag": "",
+    "Ordem": "1"
+  },
+  {
+    "Id": "2",
+    "NMenu": null,
+    "Nome": "A Cidade",
+    "Pagina": null,
+    "NovaPag": "",
+    "Ordem": "2"
+  },
+  {
+    "Id": "3",
+    "NMenu": "2",
+    "Nome": "Prefeito",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "1"
+  },
+  {
+    "Id": "4",
+    "NMenu": "2",
+    "Nome": "Secretarias",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "2"
+  },
+  {
+    "Id": "5",
+    "NMenu": "2",
+    "Nome": "História",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "3"
+  },
+  {
+    "Id": "6",
+    "NMenu": "2",
+    "Nome": "Fale conosco",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "4"
+  },
+  {
+    "Id": "7",
+    "NMenu": null,
+    "Nome": "Serviços",
+    "Pagina": null,
+    "NovaPag": "",
+    "Ordem": "3"
+  },
+  {
+    "Id": "8",
+    "NMenu": "7",
+    "Nome": "IPTU",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "1"
+  },
+  {
+    "Id": "9",
+    "NMenu": "7",
+    "Nome": "Nota fiscal",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "2"
+  },
+  {
+    "Id": "10",
+    "NMenu": "7",
+    "Nome": "Alvarás",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "3"
+  },
+  {
+    "Id": "11",
+    "NMenu": "7",
+    "Nome": "Certidões",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "4"
+  },
+  {
+    "Id": "12",
+    "NMenu": null,
+    "Nome": "Secretarias",
+    "Pagina": null,
+    "NovaPag": "",
+    "Ordem": "4"
+  },
+  {
+    "Id": "13",
+    "NMenu": "12",
+    "Nome": "Saúde",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "1"
+  },
+  {
+    "Id": "14",
+    "NMenu": "12",
+    "Nome": "Educação",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "2"
+  },
+  {
+    "Id": "15",
+    "NMenu": "12",
+    "Nome": "Obras",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "3"
+  },
+  {
+    "Id": "16",
+    "NMenu": "12",
+    "Nome": "Assistência Social",
+    "Pagina": "#",
+    "NovaPag": "_blank",
+    "Ordem": "4"
+  },
+  {
+    "Id": "17",
+    "NMenu": null,
+    "Nome": "Transparência",
+    "Pagina": "#",
+    "NovaPag": "",
+    "Ordem": "5"
+  }
+]

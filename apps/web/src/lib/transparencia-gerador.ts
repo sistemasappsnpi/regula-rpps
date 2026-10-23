@@ -23,6 +23,12 @@ export interface TipoPortal {
   /** Nome do preset enviado ao gerar o portal. */
   preset: string;
   rotulo: string;
+  /** Nome curto da aba (ex.: "Câmara Municipal"). */
+  abaRotulo: string;
+  /** O que o pacote do tipo traz, em uma frase corrida. */
+  descricao: string;
+  /** Nome do portal fictício de demonstração. */
+  exemploNome: string;
   textos: { titulo?: string; subtitulo?: string; placeholderBusca?: string };
   cores: { primaria?: string; destaque?: string };
   /** Quantidade de botões do catálogo do tipo. */
@@ -225,7 +231,7 @@ export const geradorApi = {
   renovarTodos: () => chamar<{ ok: boolean; resultados: ResultadoRenovacao[] }>("/renovar-todos", { method: "POST" }),
   // Tipos de portal além do RPPS (aba Câmara) e o portal fictício de demonstração.
   tipos: () => chamar<TipoPortal[]>("/tipos"),
-  criarExemploCamara: () => chamar<ResultadoGerar>("/exemplos/camara", { method: "POST" }),
+  criarExemplo: (tipo: string) => chamar<ResultadoGerar>(`/exemplos/${encodeURIComponent(tipo)}`, { method: "POST" }),
   // Verificador de links quebrados (roda no servidor, em segundo plano) e avaliações lidas do portal publicado.
   estadoLinks: (pasta: string) => chamar<EstadoLinks>(`/clientes/${encodeURIComponent(pasta)}/links`),
   verificarLinks: (pasta: string) => chamar<EstadoLinks>(`/clientes/${encodeURIComponent(pasta)}/links/verificar`, { method: "POST" }),

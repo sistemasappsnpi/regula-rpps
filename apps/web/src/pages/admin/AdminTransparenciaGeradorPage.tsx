@@ -88,8 +88,8 @@ export function AdminTransparenciaGeradorPage() {
   const set = useCallback(<K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v })), []);
 
   const [clientes, setClientes] = useState<ClienteResumo[]>([]);
-  // aba do gerador: portal de RPPS (padrão) ou de Câmara; cada uma lista só os seus clientes e começa com o seu pacote
-  const [aba, setAba] = useState<"rpps" | "camara">("rpps");
+  // aba do gerador: portal de RPPS (padrão) ou de um tipo (Câmara, Prefeitura); cada uma lista só os seus clientes e começa com o seu pacote
+  const [aba, setAba] = useState<string>("rpps"); // "rpps" ou o id de um tipo
   const [tipos, setTipos] = useState<TipoPortal[]>([]);
   const [criandoExemplo, setCriandoExemplo] = useState(false);
   const [erroExemplo, setErroExemplo] = useState<string | null>(null);
@@ -140,15 +140,15 @@ export function AdminTransparenciaGeradorPage() {
     geradorApi.tipos().then(setTipos).catch(() => setTipos([]));
   }, [listarClientes]);
 
-  const tipoCamara = tipos.find((t) => t.id === "camara") ?? null;
+  const tipoAba = tipos.find((t) => t.id === aba) ?? null; // pacote da aba atual (null na aba de RPPS)
   const clientesDaAba = clientes.filter((c) => (c.tipo ?? "rpps") === aba);
-  const exemploCamara = clientes.find((c) => c.tipo === "camara" && c.exemplo) ?? null;
+  const exemploDaAba = clientes.find((c) => c.tipo === aba && c.exemplo) ?? null;
 
   async function criarExemplo() {
     setErroExemplo(null);
     setCriandoExemplo(true);
     try {
-      const r = await geradorApi.criarExemploCamara();
+      const r = await geradorApi.criarExemplo(aba);
       if (!r.ok) throw new Error(r.erro ?? "Não foi possível criar o exemplo.");
       await listarClientes();
     } catch (e) {
@@ -310,26 +310,27 @@ export function AdminTransparenciaGeradorPage() {
 
   /* ---------- cliente existente ---------- */
 
-  // formulário de um cliente novo: o da aba Câmara já começa com os textos e as cores do pacote
-  function formDaAba(a: "rpps" | "camara"): Form {
-    if (a !== "camara" || !tipoCamara) return FORM_INICIAL;
+  // formulário de um cliente novo: o de uma aba de tipo já começa com os textos e as cores do pacote
+  function formDaAba(a: string): Form {
+    const tipo = tipos.find((t) => t.id === a);
+    if (!tipo) return FORM_INICIAL;
     return {
       ...FORM_INICIAL,
-      titulo: tipoCamara.textos.titulo ?? FORM_INICIAL.titulo,
-      subtitulo: tipoCamara.textos.subtitulo ?? FORM_INICIAL.subtitulo,
-      placeholderBusca: tipoCamara.textos.placeholderBusca ?? FORM_INICIAL.placeholderBusca,
-      corPrimaria: tipoCamara.cores.primaria ?? FORM_INICIAL.corPrimaria,
-      corDestaque: tipoCamara.cores.destaque ?? FORM_INICIAL.corDestaque,
+      titulo: tipo.textos.titulo ?? FORM_INICIAL.titulo,
+      subtitulo: tipo.textos.subtitulo ?? FORM_INICIAL.subtitulo,
+      placeholderBusca: tipo.textos.placeholderBusca ?? FORM_INICIAL.placeholderBusca,
+      corPrimaria: tipo.cores.primaria ?? FORM_INICIAL.corPrimaria,
+      corDestaque: tipo.cores.destaque ?? FORM_INICIAL.corDestaque,
     };
   }
 
-  function trocarAba(a: "rpps" | "camara") {
+  function trocarAba(a: string) {
     if (a === aba) return;
     setAba(a);
     limpar(a);
   }
 
-  function limpar(abaAlvo: "rpps" | "camara" = aba) {
+  function limpar(abaAlvo: string = aba) {
     setForm(formDaAba(abaAlvo));
     setPastaEdit("");
     setGrupos([]);
@@ -540,7 +541,7 @@ export function AdminTransparenciaGeradorPage() {
     });
     const dados: Record<string, unknown> = {
       pasta: editando ? pastaEdit : form.pasta.trim() || slug(nome),
-      preset: aba === "camara" ? (tipoCamara?.preset ?? "camara") : form.preset ? "atricon" : "",
+      preset: tipoAba ? tipoAba.preset : form.preset ? "atricon" : "",
       cliente: {
         nome,
         nomeCompleto: form.nomeCompleto.trim() || nome,
@@ -638,7 +639,7 @@ export function AdminTransparenciaGeradorPage() {
       </header>
 
       <div className="flex gap-1 rounded-lg border border-border p-0.5 sm:w-fit" role="tablist" aria-label="Tipo de portal">
-        {([["rpps", "Previdência (RPPS)"], ["camara", "Câmara Municipal"]] as const).map(([a, rot]) => (
+        {[{ id: "rpps", rot: "Previdência (RPPS)" }, ...tipos.map((t) => ({ id: t.id, rot: t.abaRotulo }))].map(({ id: a, rot }) => (
           <button
             key={a}
             type="button"
@@ -652,24 +653,22 @@ export function AdminTransparenciaGeradorPage() {
         ))}
       </div>
 
-      {aba === "camara" && (
+      {tipoAba && (
         <Card className="space-y-3 p-5 text-sm">
-          <h2 className="text-base font-semibold text-ink">Portal da transparência de Câmara Municipal</h2>
+          <h2 className="text-base font-semibold text-ink">Portal da transparência de {tipoAba.rotulo}</h2>
           <p className="text-ink-muted">
-            Mesmo motor dos portais de previdência, com o vocabulário do Legislativo: grupos de Atividade Legislativa, Vereadores, Orçamento e Finanças,
-            Pessoal, Licitações, Participe e Dados; atalhos como “Como meu vereador votou” e “Quero acompanhar um projeto”; glossário (PL, veto, quórum,
-            duodécimo…) e sinônimos de busca. Ao cadastrar um cliente nesta aba, o pacote vai junto
-            {tipoCamara ? ` (${tipoCamara.itens} botões de partida, com os links em branco para você preencher)` : ""}. Painel de avaliações e verificação de links valem igual.
+            {tipoAba.descricao} Ao cadastrar um cliente nesta aba, o pacote vai junto ({tipoAba.itens} botões de partida, com os links em branco para você
+            preencher). Painel de avaliações e verificação de links valem igual.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" onClick={criarExemplo} disabled={criandoExemplo || !tipoCamara}>
+            <Button type="button" onClick={criarExemplo} disabled={criandoExemplo}>
               <RefreshCw size={16} className={criandoExemplo ? "animate-spin" : ""} />{" "}
-              {criandoExemplo ? "Criando…" : exemploCamara ? "Refazer portal de exemplo" : "Criar portal de exemplo"}
+              {criandoExemplo ? "Criando…" : exemploDaAba ? "Refazer portal de exemplo" : "Criar portal de exemplo"}
             </Button>
-            {exemploCamara && (
+            {exemploDaAba && (
               <>
                 <a
-                  href={geradorApi.urlVisualizacao(exemploCamara.pasta)}
+                  href={geradorApi.urlVisualizacao(exemploDaAba.pasta)}
                   target="_blank"
                   rel="noopener"
                   className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold hover:border-petrol"
@@ -679,7 +678,7 @@ export function AdminTransparenciaGeradorPage() {
                 <input
                   readOnly
                   className={`${INPUT} min-w-[280px] flex-1`}
-                  value={geradorApi.urlVisualizacao(exemploCamara.pasta)}
+                  value={geradorApi.urlVisualizacao(exemploDaAba.pasta)}
                   aria-label="Link do portal de exemplo"
                   onFocus={(e) => e.currentTarget.select()}
                 />
@@ -687,7 +686,7 @@ export function AdminTransparenciaGeradorPage() {
             )}
           </div>
           <p className="text-xs text-ink-muted">
-            O exemplo é a “Câmara Municipal de Vila Modelo” (fictícia), publicado pelo próprio Regula, só para demonstração: os botões ainda não levam a lugar
+            O exemplo é a “{tipoAba.exemploNome}” (fictícia), publicado pelo próprio Regula, só para demonstração: os botões ainda não levam a lugar
             nenhum. O link abre sem login e não é indexado por buscadores.
           </p>
           {erroExemplo && <div className="rounded-lg bg-crit/10 px-3 py-2 text-crit">{erroExemplo}</div>}
@@ -817,9 +816,9 @@ export function AdminTransparenciaGeradorPage() {
                 </div>
                 {stM && <Status tipo={stM.tipo}>{stM.texto}</Status>}
               </Campo>
-              {aba === "camara" ? (
+              {tipoAba ? (
                 <p className="rounded-lg bg-bg px-3 py-2 text-xs text-ink-muted">
-                  Pacote Câmara: sem API, o portal já nasce com {tipoCamara?.itens ?? "os"} botões de uma Câmara (links em branco, para preencher no passo 5) e,
+                  Pacote {tipoAba.rotulo}: sem API, o portal já nasce com {tipoAba.itens} botões de partida (links em branco, para preencher no passo 5) e,
                   se houver API, ela substitui o catálogo.
                 </p>
               ) : (
@@ -856,7 +855,7 @@ export function AdminTransparenciaGeradorPage() {
               </label>
 
               <Campo label="Nome curto">
-                <input type="text" className={INPUT} value={form.nome} placeholder="Ex.: IPRES, Câmara de Saquarema" onChange={(e) => set("nome", e.target.value)} />
+                <input type="text" className={INPUT} value={form.nome} placeholder={aba === "prefeitura" ? "Ex.: Prefeitura de Saquarema" : aba === "camara" ? "Ex.: Câmara de Saquarema" : "Ex.: IPRES"} onChange={(e) => set("nome", e.target.value)} />
               </Campo>
               <Campo label="Nome institucional completo">
                 <input type="text" className={INPUT} value={form.nomeCompleto} placeholder="Instituto de Previdência dos Servidores..." onChange={(e) => set("nomeCompleto", e.target.value)} />
@@ -955,7 +954,7 @@ export function AdminTransparenciaGeradorPage() {
             titulo="Sugestões de botões"
             dica={<>Compara o que o cliente já publica com a <b>cartilha da Atricon</b> (Programa Nacional de Transparência Pública) e com o <b>portal da MesquitaPrev</b>, RPPS já preparado para auditoria do Pró-Gestão. Cada sugestão traz a base legal (passe o mouse na etiqueta) e se é obrigatória, essencial ou só recomendada — marque o que faltar, confira o nome, escolha a categoria e cole o link.</>}
           >
-            <SugestoesStep catalogos={aba === "camara" ? catalogos.filter((c) => c.id !== "progestao") : catalogos} gruposDoPortal={grupos.map((g) => g.nome)} extras={extras} onExtras={setExtras} />
+            <SugestoesStep catalogos={tipoAba ? catalogos.filter((c) => c.id !== "progestao") : catalogos} gruposDoPortal={grupos.map((g) => g.nome)} extras={extras} onExtras={setExtras} />
           </Passo>
 
           <details className="rounded-2xl border border-border bg-surface p-5 shadow-soft">

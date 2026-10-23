@@ -237,5 +237,8 @@
       "Participe": "Peça informação, sugira uma lei, reclame ou participe de uma audiência.",
       "Dados e Governo Digital": "Dados abertos, proteção de dados pessoais e acessibilidade."
     }
-  }
+  },
+  "abaRotulo": "Câmara Municipal",
+  "exemploNome": "Câmara Municipal de Vila Modelo",
+  "descricao": "Mesmo motor dos portais de previdência, com o vocabulário do Legislativo: grupos de Atividade Legislativa, Vereadores, Orçamento e Finanças, Pessoal, Licitações, Participe e Dados; atalhos como “Como meu vereador votou” e “Quero acompanhar um projeto”; glossário (PL, veto, quórum, duodécimo…) e sinônimos de busca."
 }

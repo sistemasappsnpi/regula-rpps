@@ -154,7 +154,8 @@ describe("pacote Câmara", () => {
   it("lista o tipo Câmara com textos, cores e a quantidade de itens do catálogo", async () => {
     const { listarTipos } = await import("../src/modules/transparencia-gerador/tipos");
     const t = listarTipos();
-    expect(t).toHaveLength(1);
+    expect(t.map((x) => x.id)).toEqual(["camara", "prefeitura"]);
+    expect(t.every((x) => x.abaRotulo && x.descricao && x.exemploNome)).toBe(true);
     expect(t[0]).toMatchObject({ id: "camara", preset: "camara", rotulo: "Câmara Municipal" });
     expect(t[0].itens).toBeGreaterThan(50);
     expect(t[0].textos.titulo).toBeTruthy();
@@ -193,6 +194,35 @@ describe("pacote Câmara", () => {
       expect(p.config.grupos.ordem).toContain(it.Grupo);
       expect(p.config.descricoesItens[it.Descricao]).toBeTruthy();
     }
+  });
+});
+
+describe("pacote Prefeitura", () => {
+  it("cria o portal de exemplo da Prefeitura, coerente e que renderiza", async () => {
+    const { criarExemplo, pastaExemplo } = await import("../src/modules/transparencia-gerador/tipos");
+    const r = await criarExemplo("prefeitura");
+    expect(r.pasta).toBe(pastaExemplo("prefeitura"));
+    const p = store["prefeitura-exemplo"];
+    expect(p.config).toMatchObject({ tipo: "prefeitura", exemplo: true, cliente: { nome: "Prefeitura de Vila Modelo" } });
+    const itens = JSON.parse(p.cacheTransparencia);
+    expect(itens.length).toBeGreaterThan(70);
+    const grupos: string[] = p.config.grupos.ordem;
+    expect(new Set(itens.map((i: any) => i.Grupo))).toEqual(new Set(grupos));
+    for (const it of itens) expect(p.config.descricoesItens[it.Descricao]).toBeTruthy();
+    // cada atalho de perfil aponta para botões que existem de verdade
+    const nomes = new Set(itens.map((i: any) => i.Descricao.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim()));
+    for (const perfil of p.config.perfis) for (const m of perfil.match) expect(nomes.has(m)).toBe(true);
+    const { renderIndex } = await import("../src/modules/transparencia-gerador/preview");
+    expect(renderIndex(p.config, { versao: "1", sprite: "", previa: true })).toContain("Prefeitura Municipal de Vila Modelo");
+  });
+
+  it("o exemplo de cada tipo é criado na subida, sem refazer o que já existe", async () => {
+    const { garantirExemplos } = await import("../src/modules/transparencia-gerador/tipos");
+    delete store["prefeitura-exemplo"];
+    store["camara-exemplo"].nome = "editado";
+    await garantirExemplos();
+    expect(store["prefeitura-exemplo"].config.exemplo).toBe(true);
+    expect(store["camara-exemplo"].nome).toBe("editado");
   });
 });
 

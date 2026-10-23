@@ -1,0 +1,53 @@
+{
+  "ordem": [
+    "Informações Institucionais",
+    "Receita",
+    "Despesa",
+    "Convênios e Transferências",
+    "Pessoal",
+    "Licitações e Contratos",
+    "Obras",
+    "Planejamento e Prestação de Contas",
+    "Saúde",
+    "Educação e Assistência Social",
+    "Renúncias de Receita",
+    "Emendas Parlamentares",
+    "Serviços ao Contribuinte",
+    "Participe",
+    "Dados e Governo Digital"
+  ],
+  "icones": {
+    "Informações Institucionais": "i-landmark",
+    "Receita": "i-coins",
+    "Despesa": "i-chart",
+    "Convênios e Transferências": "i-link2",
+    "Pessoal": "i-users",
+    "Licitações e Contratos": "i-scale",
+    "Obras": "i-briefcase",
+    "Planejamento e Prestação de Contas": "i-doc-check",
+    "Saúde": "i-shield",
+    "Educação e Assistência Social": "i-graduation",
+    "Renúncias de Receita": "i-target",
+    "Emendas Parlamentares": "i-megaphone",
+    "Serviços ao Contribuinte": "i-document",
+    "Participe": "i-message",
+    "Dados e Governo Digital": "i-database"
+  },
+  "descricoes": {
+    "Informações Institucionais": "Quem governa, como a Prefeitura se organiza e as leis do município.",
+    "Receita": "Quanto a Prefeitura arrecada e de onde vem o dinheiro.",
+    "Despesa": "Onde e como o dinheiro público é gasto, do empenho ao pagamento.",
+    "Convênios e Transferências": "Recursos que a Prefeitura recebe ou repassa por convênio e parceria.",
+    "Pessoal": "Servidores, salários, cargos e concursos.",
+    "Licitações e Contratos": "Compras e contratações da Prefeitura, do edital ao pagamento.",
+    "Obras": "Obras e serviços de engenharia: onde, quanto custam e em que fase estão.",
+    "Planejamento e Prestação de Contas": "O orçamento planejado, o executado e a análise das contas.",
+    "Saúde": "Serviços, gastos e acompanhamento da saúde pública do município.",
+    "Educação e Assistência Social": "Escolas, vagas, merenda e programas sociais.",
+    "Renúncias de Receita": "Impostos que o município deixou de cobrar por incentivo ou isenção.",
+    "Emendas Parlamentares": "Recursos que chegam ao município por emenda de deputados e senadores.",
+    "Serviços ao Contribuinte": "Impostos, certidões, alvarás e serviços para cidadãos e empresas.",
+    "Participe": "Peça informação, reclame, sugira ou participe de uma audiência.",
+    "Dados e Governo Digital": "Dados abertos, proteção de dados pessoais e acessibilidade."
+  }
+}

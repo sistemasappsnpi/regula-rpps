@@ -8,7 +8,7 @@ import {
 import { dadosDeAcesso, lerAvaliacoes, segredoPhp } from "./avaliacoes";
 import { importarPorLink } from "./importar-link";
 import { andamentoDe, iniciarVerificacao, ultimoRelatorio } from "./links";
-import { criarExemploCamara, listarTipos } from "./tipos";
+import { criarExemplo, ehTipoPortal, listarTipos } from "./tipos";
 import { importarPorApis, renovarPortal, renovarTodos } from "./renovar";
 
 // Gerador de Portal da Transparência. Montado em /admin/transparencia-gerador (ver admin.routes.ts,
@@ -102,9 +102,10 @@ transparenciaGeradorRouter.get("/tipos", (_req, res, next) => {
   }
 });
 
-transparenciaGeradorRouter.post("/exemplos/camara", async (_req, res, next) => {
+transparenciaGeradorRouter.post("/exemplos/:tipo", async (req, res, next) => {
   try {
-    res.json({ ok: true, ...(await criarExemploCamara()) });
+    if (!ehTipoPortal(req.params.tipo)) throw new HttpError(404, "Tipo de portal não encontrado.");
+    res.json({ ok: true, ...(await criarExemplo(req.params.tipo)) });
   } catch (err) {
     next(err);
   }
