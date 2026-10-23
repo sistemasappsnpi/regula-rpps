@@ -2,6 +2,7 @@
 // com um tipo.json (textos, cores, perfis, temas, sinônimos, glossário, descrições e ordem dos grupos), o catálogo
 // local de botões e, para a demonstração, o config de um portal fictício (exemplo.json).
 
+import { prisma } from "../../db/prisma";
 import { HttpError } from "../../middleware/errorHandler";
 import { importarPortal, lerArquivoPreset, slug } from "./gerador.service";
 
@@ -27,6 +28,20 @@ export function listarTipos() {
     const t = json(id, "tipo.json");
     return t ? [{ id, preset: id, rotulo: String(t.rotulo ?? id), textos: t.textos ?? {}, cores: t.cores ?? {}, itens: (json(id, "transparencia.local.json") as unknown as unknown[] | null)?.length ?? 0 }] : [];
   });
+}
+
+/** Na subida da API: se o portal de exemplo da Câmara ainda não existe, cria (nunca refaz um que já existe). */
+export async function garantirExemploCamara(): Promise<boolean> {
+  try {
+    const existe = await prisma.transparenciaPortal.findUnique({ where: { pasta: slug(PASTA_EXEMPLO_CAMARA) }, select: { id: true } });
+    if (existe) return false;
+    await criarExemploCamara();
+    console.log("[gerador] portal de exemplo da Câmara criado");
+    return true;
+  } catch (err) {
+    console.error("[gerador] exemplo da Câmara:", err instanceof Error ? err.message : err);
+    return false;
+  }
 }
 
 /** Cria (ou refaz) o portal fictício "Câmara Municipal de Vila Modelo", para mostrar o resultado a quem decide. */

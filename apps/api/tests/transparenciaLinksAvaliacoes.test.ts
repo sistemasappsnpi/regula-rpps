@@ -196,6 +196,18 @@ describe("pacote Câmara", () => {
   });
 });
 
+describe("exemplo da Câmara na subida da API", () => {
+  it("cria quando falta e não refaz o que já existe", async () => {
+    const { garantirExemploCamara, PASTA_EXEMPLO_CAMARA } = await import("../src/modules/transparencia-gerador/tipos");
+    delete store[PASTA_EXEMPLO_CAMARA];
+    expect(await garantirExemploCamara()).toBe(true);
+    expect(store[PASTA_EXEMPLO_CAMARA].config.exemplo).toBe(true);
+    store[PASTA_EXEMPLO_CAMARA].nome = "editado";
+    expect(await garantirExemploCamara()).toBe(false);
+    expect(store[PASTA_EXEMPLO_CAMARA].nome).toBe("editado");
+  });
+});
+
 describe("pacote do portal", () => {
   it("traz o painel, o verificador, as avaliações e o segredo em todo ZIP", async () => {
     store.cli.logoNome = null;
