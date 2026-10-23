@@ -486,7 +486,11 @@ portalPrevidenciarioPublicRouter.get("/:slug/transparencia-api", async (req, res
         atual.total++;
         porTipo.set(slug, atual);
       }
+      // O que está na chave da Nexa vale: um tipo de publicação do portal com o MESMO nome de uma página da Nexa (ex.:
+      // "Acórdãos TCE") não vira uma segunda página — as publicações continuam na lista geral de publicações.
+      const titulosNexa = new Set(paginas.filter((p) => p.origem === "nexa").map((p) => slugDoTipo(p.titulo)));
       for (const [slug, v] of [...porTipo.entries()].sort((a, b) => a[1].titulo.localeCompare(b[1].titulo, "pt-BR"))) {
+        if (titulosNexa.has(slug)) continue;
         paginas.push({ codigo: `${PREFIXO_PUBLICACAO}${slug}`, titulo: v.titulo, total: v.total, origem: "portal-tipo" });
       }
 

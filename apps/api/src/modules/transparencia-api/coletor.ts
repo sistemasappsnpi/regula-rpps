@@ -86,11 +86,14 @@ export function iniciarColetaAgendada(): void {
 
 // Um conjunto por vez (mesma lição do pool de conexões em portal-previdenciario.routes.ts).
 export async function coletarTudo(tenantId: string): Promise<ResultadoColeta[]> {
-  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { transparenciaApiChave: true, portalMenuApiUrl: true } });
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { transparenciaApiChave: true, portalMenuApiUrl: true, portalEstiloPaginas: true } });
   if (!tenant) throw new HttpError(404, "RPPS não encontrado.");
-  // Cliente com API própria (chave da Nexa) coleta SÓ ela: não copiamos também os dados abertos do portal do órgão
-  // (decisão do Luis para o Angraprev). Sem chave, a fonte é o portal (IPRES).
-  const base = tenant.transparenciaApiChave ? null : urlPortalBase(tenant.portalMenuApiUrl);
+  // Cliente com API própria (chave da Nexa) e estilo "básico" coleta SÓ ela: não copiamos também os dados abertos do
+  // portal do órgão (decisão do Luis para o Angraprev e o IPREV-CA). Com chave e estilo "completo" (IPRES, que também usa
+  // licitações, contratos, leis… que a Nexa não tem), a coleta é completa: a Nexa fiel à API e, junto, o portal.
+  // Sem chave, a fonte é só o portal.
+  const soNexa = Boolean(tenant.transparenciaApiChave) && tenant.portalEstiloPaginas === "basico";
+  const base = soNexa ? null : urlPortalBase(tenant.portalMenuApiUrl);
   if (!tenant.transparenciaApiChave && !base) {
     throw new HttpError(400, "Este RPPS não tem fonte de dados: cadastre a chave da API Nexa ou a URL da API do menu do portal de transparência.");
   }
