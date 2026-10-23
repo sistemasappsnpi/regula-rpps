@@ -100,8 +100,17 @@ export async function coletarTudo(tenantId: string): Promise<ResultadoColeta[]> 
 
   const resultados: ResultadoColeta[] = [];
   if (tenant.transparenciaApiChave) {
+    // Se a Nexa está fora (ex.: "sem conexões livres no banco deles"), 3 falhas seguidas encerram a rodada deste cliente:
+    // insistir nos outros endpoints só pesa num servidor que já está com problema. A próxima rodada tenta de novo.
+    let falhasSeguidas = 0;
     for (const ep of CATALOGO_TRANSPARENCIA_API) {
-      resultados.push(await coletarEndpoint(tenantId, tenant.transparenciaApiChave, ep));
+      if (falhasSeguidas >= 3) {
+        resultados.push({ codigo: ep.codigo, ok: false, erro: "não consultado: a API da Nexa está instável; tenta de novo na próxima rodada" });
+        continue;
+      }
+      const r = await coletarEndpoint(tenantId, tenant.transparenciaApiChave, ep);
+      falhasSeguidas = r.ok ? 0 : falhasSeguidas + 1;
+      resultados.push(r);
     }
   }
   if (base) resultados.push(...(await coletarPortal(tenantId, base)));

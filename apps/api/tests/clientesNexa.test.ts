@@ -84,6 +84,28 @@ describe("o que a coleta pega de cada cliente", () => {
     expect(coletarPortal).not.toHaveBeenCalled();
   });
 
+  it("Nexa fora do ar: desiste da rodada depois de 3 falhas seguidas, sem pedir os outros endpoints", async () => {
+    const chamadas: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      chamadas.push(url);
+      return new Response("{}", { status: 500 });
+    });
+    tenants.c = { id: "c", transparenciaApiChave: "K", portalMenuApiUrl: null, portalEstiloPaginas: "basico" };
+    const r = await coletarTudo("c");
+    expect(chamadas).toHaveLength(3);
+    expect(r.every((x) => !x.ok)).toBe(true);
+    expect(r.length).toBeGreaterThan(15);
+    expect(r[5].erro).toContain("instável");
+  });
+
+  it("uma falha isolada não interrompe a rodada", async () => {
+    let n = 0;
+    vi.stubGlobal("fetch", async () => new Response(++n === 2 ? "{}" : "[]", { status: n === 2 ? 500 : 200 }));
+    tenants.d = { id: "d", transparenciaApiChave: "K", portalMenuApiUrl: null, portalEstiloPaginas: "basico" };
+    const r = await coletarTudo("d");
+    expect(r.filter((x) => x.ok).length).toBe(r.length - 1);
+  });
+
   it("estilo completo com chave (IPRES): a Nexa e também o portal", async () => {
     tenants.b = { id: "b", transparenciaApiChave: "K", portalMenuApiUrl: "https://x.gov.br/dadosabertosexportar?d=menu", portalEstiloPaginas: "completo" };
     const r = await coletarTudo("b");
