@@ -90,6 +90,60 @@ export async function buscarExercicioCompleto(base: string, d: string, ano: stri
   return { itens: [...mapa.values()], completo };
 }
 
+// Leis e LRF: o dado aberto traz só o endereço da página de detalhe (Url); o PDF da norma está dentro dela
+// (/arquivos/<Id>/…pdf) e, para leis federais, o texto oficial é um link externo ("Baixar arquivo"). Sem isso o botão
+// "Ver norma" cai numa página genérica do portal. Cada página é lida uma vez: o resultado fica no próprio registro
+// (Arquivo / DemaisArquivos / TextoOficial; vazio = a página não tem), e as rodadas seguintes reaproveitam a cópia.
+const DETALHE_DATASETS = new Set(["leis", "LRF"]);
+const DETALHES_POR_RODADA = 120;
+
+function lerDetalhe(html: string, id: string, urlPagina: string): { Arquivo: string; DemaisArquivos: string; TextoOficial: string } {
+  const absoluto = (href: string) => {
+    try {
+      return new URL(href, urlPagina).href;
+    } catch {
+      return "";
+    }
+  };
+  const arquivos = [
+    ...new Set([...html.matchAll(/href="(\/arquivos\/(\d+)\/[^"]+)"/gi)].filter((m) => m[2] === id).map((m) => absoluto(m[1]))),
+  ].filter(Boolean);
+  const externo = [...html.matchAll(/<a[^>]*href="(https?:\/\/[^"]+)"[^>]*>(?:(?!<\/a>)[\s\S]){0,200}?Baixar arquivo/gi)].map((m) => m[1])[0] ?? "";
+  return { Arquivo: arquivos[0] ?? "", DemaisArquivos: arquivos[1] ?? "", TextoOficial: externo };
+}
+
+async function enriquecerComDetalhe(tenantId: string, ds: DatasetPortal, itens: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+  if (!DETALHE_DATASETS.has(ds.d)) return itens;
+  // o que já foi lido em rodadas anteriores (inclusive de registros antigos) não é lido de novo
+  const guardados = new Map<string, { Arquivo: string; DemaisArquivos: string; TextoOficial: string }>();
+  const antigos = await prisma.transparenciaApiRegistro.findMany({ where: { tenantId, endpoint: ds.endpoint }, select: { dados: true } });
+  for (const a of antigos) {
+    const d = a.dados as Record<string, unknown> | null;
+    if (d && typeof d.Arquivo === "string" && d.Id !== undefined) {
+      guardados.set(String(d.Id), { Arquivo: d.Arquivo, DemaisArquivos: String(d.DemaisArquivos ?? ""), TextoOficial: String(d.TextoOficial ?? "") });
+    }
+  }
+  let lidos = 0;
+  const saida: Record<string, unknown>[] = [];
+  for (const item of itens) {
+    const id = String(item.Id ?? "");
+    const url = typeof item.Url === "string" ? item.Url : "";
+    let det = id ? guardados.get(id) : undefined;
+    if (!det && id && url && lidos < DETALHES_POR_RODADA) {
+      lidos++;
+      try {
+        const resp = await fetch(url, { signal: AbortSignal.timeout(20_000) });
+        if (resp.ok) det = lerDetalhe(await resp.text(), id, url);
+      } catch {
+        // página fora do ar agora: o registro segue sem os campos e tenta de novo na próxima rodada
+      }
+      await esperar(200);
+    }
+    saida.push(det ? { ...item, ...det } : item);
+  }
+  return saida;
+}
+
 async function coletarConjunto(tenantId: string, base: string, ds: DatasetPortal): Promise<ResultadoColeta> {
   try {
     const recentes = await buscarConjunto(base, ds.d, "");
@@ -128,6 +182,7 @@ async function coletarConjunto(tenantId: string, base: string, ds: DatasetPortal
       }
     }
 
+    itens = await enriquecerComDetalhe(tenantId, ds, itens);
     const r = await sincronizarRegistros(tenantId, ds.endpoint, itens, completo);
     return { codigo: ds.endpoint, ok: true, ...r };
   } catch (err) {
@@ -295,3 +350,4 @@ export async function coletarPortal(tenantId: string, base: string): Promise<Res
 
 // só para os testes de conferência (scripts fora do projeto)
 export { buscarConjunto as buscarConjuntoParaTeste };
+export { lerDetalhe as lerDetalheParaTeste };

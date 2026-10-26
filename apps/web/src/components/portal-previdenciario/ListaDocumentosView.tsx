@@ -104,11 +104,14 @@ function LinhaDocumento({ it, termos, mostrarAno, estilo }: { it: Item; termos: 
 export function ListaDocumentosView({ registros, config }: { registros: RegistroTransparenciaApi[]; config: ConfigListaDocumentos }) {
   const [consulta, setConsulta] = useState(consultaDaUrl);
   // abre já filtrado pelo exercício mais recente; o filtro troca de exercício (ou mostra todos).
-  // Em página pequena (poucos documentos) filtrar esconderia quase tudo, então abre mostrando todos.
+  // Em página pequena (poucos documentos), ou quando o exercício mais recente tem só uns poucos (ex.: 43 normas, 1 em
+  // 2024), filtrar esconderia quase tudo e o total não bateria com a lista: abre mostrando todos.
   const [anoFiltro, setAnoFiltro] = useState(() => {
     if (registros.length <= 12) return "";
     const anos = registros.map((r) => config.ano(r)).filter((a): a is number => a !== null);
-    return anos.length ? String(Math.max(...anos)) : "";
+    if (!anos.length) return "";
+    const maisRecente = Math.max(...anos);
+    return anos.filter((a) => a === maisRecente).length >= 8 ? String(maisRecente) : "";
   });
   const [grupoFiltro, setGrupoFiltro] = useState("");
   const [visiveis, setVisiveis] = useState(POR_PAGINA);

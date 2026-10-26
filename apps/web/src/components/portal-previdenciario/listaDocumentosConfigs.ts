@@ -342,7 +342,12 @@ export const CONFIGS_PORTAL: Record<string, ConfigListaDocumentos> = {
     ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
     ordem: ordemPorData("Data"),
     grupo: { rotulo: "Tipo de norma", rotuloPlural: "Tipos de norma", valor: (r) => tituloAmigavel(txt(r, "Tipo")) },
-    links: [{ rotulo: "Ver norma", campo: "Url" }],
+    links: [
+      { rotulo: "Norma (PDF)", campo: "Arquivo" },
+      { rotulo: "Anexo (PDF)", campo: "DemaisArquivos" },
+      { rotulo: "Texto oficial", campo: "TextoOficial" },
+      PAGINA_NO_PORTAL,
+    ],
   },
 
   portarias: {
@@ -362,7 +367,11 @@ export const CONFIGS_PORTAL: Record<string, ConfigListaDocumentos> = {
     ano: (r) => exercicio(r) ?? dataIso(txt(r, "Data"))?.ano ?? null,
     ordem: ordemPorData("Data"),
     grupo: { rotulo: "Demonstrativo", rotuloPlural: "Demonstrativos", valor: (r) => txt(r, "DescLei") },
-    links: [{ rotulo: "Ver demonstrativo", campo: "Url" }],
+    links: [
+      { rotulo: "Demonstrativo (PDF)", campo: "Arquivo" },
+      { rotulo: "Anexo (PDF)", campo: "DemaisArquivos" },
+      PAGINA_NO_PORTAL,
+    ],
   },
 
   noticias: {
