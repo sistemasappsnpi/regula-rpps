@@ -55,7 +55,22 @@ async function buscarConjunto(base: string, d: string, ano: string, extra = ""):
   if (!texto.startsWith("[")) return [];
   const corpo = JSON.parse(texto) as unknown;
   if (!Array.isArray(corpo)) return [];
-  return corpo.filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === "object" && !Array.isArray(i));
+  return corpo
+    .filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === "object" && !Array.isArray(i))
+    .map((i) => consertarEnderecosSemHost(i, base));
+}
+
+// O portal às vezes grava o endereço sem o servidor ("https:///imagens/4.jpg", ex.: foto do gestor): vira o do próprio portal.
+function consertarEnderecosSemHost(item: Record<string, unknown>, base: string): Record<string, unknown> {
+  let mudou = false;
+  const saida: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(item)) {
+    if (typeof v === "string" && /^https?:\/\/\//i.test(v.trim())) {
+      saida[k] = `${base}/${v.trim().replace(/^https?:\/+/i, "")}`;
+      mudou = true;
+    } else saida[k] = v;
+  }
+  return mudou ? saida : item;
 }
 
 // Categorias (tipos) de publicação do portal: ids que o filtro "tipo" da página /publicacoes oferece. A API de dados
@@ -114,9 +129,13 @@ function lerDetalhe(html: string, id: string, urlPagina: string): { Arquivo: str
 
 async function enriquecerComDetalhe(tenantId: string, ds: DatasetPortal, itens: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
   if (!DETALHE_DATASETS.has(ds.d)) return itens;
+  return completarComDetalhe(tenantId, ds.endpoint, itens);
+}
+
+async function completarComDetalhe(tenantId: string, endpoint: string, itens: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
   // o que já foi lido em rodadas anteriores (inclusive de registros antigos) não é lido de novo
   const guardados = new Map<string, { Arquivo: string; DemaisArquivos: string; TextoOficial: string }>();
-  const antigos = await prisma.transparenciaApiRegistro.findMany({ where: { tenantId, endpoint: ds.endpoint }, select: { dados: true } });
+  const antigos = await prisma.transparenciaApiRegistro.findMany({ where: { tenantId, endpoint }, select: { dados: true } });
   for (const a of antigos) {
     const d = a.dados as Record<string, unknown> | null;
     if (d && typeof d.Arquivo === "string" && d.Id !== undefined) {
@@ -214,6 +233,49 @@ export const EXPORTS_PORTAL: ExportPortal[] = [
 const COLEGIADOS_A_CADA_MS = 60 * 60_000;
 const ultimaColeta = new Map<string, number>();
 
+function normalizarTitulo(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+// A exportação JSON (Decretos, Prestação de contas) não traz o ID nem o PDF; a página de listagem do portal traz todos os
+// cartões com o endereço de detalhe (<caminho>/<id>). Casa pelo título (na ordem, se houver títulos repetidos), grava Id e
+// Url no registro e deixa a leitura do PDF para completarComDetalhe. Título sem par fica como estava.
+const EXPORTS_COM_DETALHE: Record<string, string> = { "portal-decretos": "Coluna", "portal-prestacao-contas": "Titulo" };
+
+async function identificarPelaListagem(base: string, caminho: string, campoTitulo: string, itens: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+  let html = "";
+  try {
+    const resp = await fetch(`${base}/${caminho}`, { signal: AbortSignal.timeout(30_000) });
+    if (!resp.ok) return itens;
+    html = await resp.text();
+  } catch {
+    return itens;
+  }
+  // cartões da listagem: id, título (sem a data que alguns trazem junto) e data
+  const cartoes: { id: string; titulo: string; data: string; usado: boolean }[] = [];
+  const vistos = new Set<string>();
+  const ancora = new RegExp(`<a[^>]*href="(?:${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})?/?${caminho}/(\\d+)"[^>]*>([\\s\\S]*?)</a>`, "gi");
+  for (const m of html.matchAll(ancora)) {
+    const texto = limparTexto(m[2]);
+    const data = texto.match(/\d{2}\/\d{2}\/\d{4}/)?.[0] ?? "";
+    const titulo = normalizarTitulo(texto.replace(/\d{2}\/\d{2}\/\d{4}/, ""));
+    if (!titulo || titulo === "acessar" || vistos.has(m[1])) continue;
+    vistos.add(m[1]);
+    cartoes.push({ id: m[1], titulo, data, usado: false });
+  }
+  return itens.map((item) => {
+    const titulo = normalizarTitulo(String(item[campoTitulo] ?? ""));
+    const data = typeof item.Data === "string" ? item.Data.trim() : "";
+    // 1º título igual; 2º título do cartão é o começo do título do registro ("BALANÇO … - ANUAL 2017") e a data é a mesma
+    const cartao =
+      cartoes.find((c) => !c.usado && c.titulo === titulo && (!c.data || !data || c.data === data)) ??
+      (data ? cartoes.find((c) => !c.usado && c.data === data && titulo.startsWith(c.titulo)) : undefined);
+    if (!cartao) return item;
+    cartao.usado = true;
+    return { ...item, Id: Number(cartao.id), Url: `${base}/${caminho}/${cartao.id}` };
+  });
+}
+
 async function coletarExport(tenantId: string, base: string, ex: ExportPortal): Promise<ResultadoColeta> {
   try {
     const resp = await fetch(`${base}/${ex.caminho}/export?exp=json`, { signal: AbortSignal.timeout(30_000) });
@@ -224,6 +286,11 @@ async function coletarExport(tenantId: string, base: string, ex: ExportPortal): 
     if (texto.startsWith("[")) {
       const corpo = JSON.parse(texto) as unknown;
       if (Array.isArray(corpo)) itens = corpo.filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === "object" && !Array.isArray(i));
+    }
+    const campoTitulo = EXPORTS_COM_DETALHE[ex.endpoint];
+    if (campoTitulo && itens.length > 0) {
+      itens = await identificarPelaListagem(base, ex.caminho, campoTitulo, itens);
+      itens = await completarComDetalhe(tenantId, ex.endpoint, itens);
     }
     const r = await sincronizarRegistros(tenantId, ex.endpoint, itens, true);
     return { codigo: ex.endpoint, ok: true, ...r };
@@ -351,3 +418,4 @@ export async function coletarPortal(tenantId: string, base: string): Promise<Res
 // só para os testes de conferência (scripts fora do projeto)
 export { buscarConjunto as buscarConjuntoParaTeste };
 export { lerDetalhe as lerDetalheParaTeste };
+export { identificarPelaListagem as identificarPelaListagemParaTeste };

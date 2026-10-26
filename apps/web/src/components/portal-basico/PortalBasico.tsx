@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUp, Calendar, ChevronDown, Clock, FileText, Hash, Mail, MapPin, Menu, Phone, Search, Share2, Trash2 } from "lucide-react";
 import type { PaginaIndiceTransparencia, PortalPrevidenciario, RegistroTransparenciaApi } from "../../lib/api";
 import type { ConfigListaDocumentos } from "../portal-previdenciario/ListaDocumentosView";
-import { formatarDataIso } from "../../lib/textos";
+import { contatoDoRodape, formatarDataIso } from "../../lib/textos";
 import { DetalhesBasico } from "./DetalhesBasico";
 import "../../styles/portal-basico.css";
 
@@ -550,7 +550,7 @@ export function PortalBasico({
               )}
               {rodape?.email && (
                 <li>
-                  <Mail size={14} /> <a href={`mailto:${rodape.email}`}>{rodape.email}</a>
+                  <Mail size={14} /> <a href={contatoDoRodape(rodape.email).href}>{contatoDoRodape(rodape.email).texto}</a>
                 </li>
               )}
             </ul>

@@ -424,7 +424,11 @@ export const CONFIGS_PORTAL: Record<string, ConfigListaDocumentos> = {
     detalhe: (r) => txt(r, "Descricao"),
     ano: (r) => dataBr(txt(r, "Data"))?.ano ?? anoEm(txt(r, "Coluna")),
     ordem: (r, i) => (dataBr(txt(r, "Data"))?.chave ?? 0) * 1000 - i,
-    links: [],
+    links: [
+      { rotulo: "Decreto (PDF)", campo: "Arquivo" },
+      { rotulo: "Anexo (PDF)", campo: "DemaisArquivos" },
+      PAGINA_NO_PORTAL,
+    ],
   },
 
   "prestacao-de-contas": {
@@ -434,7 +438,11 @@ export const CONFIGS_PORTAL: Record<string, ConfigListaDocumentos> = {
     ano: (r) => anoEm(txt(r, "Titulo")) ?? dataBr(txt(r, "Data"))?.ano ?? null,
     ordem: (r, i) => (dataBr(txt(r, "Data"))?.chave ?? 0) * 1000 - i,
     grupo: { rotulo: "Demonstrativo", rotuloPlural: "Demonstrativos", valor: (r) => tituloAmigavel(txt(r, "Titulo").split(" - ")[0]) },
-    links: [],
+    links: [
+      { rotulo: "Demonstrativo (PDF)", campo: "Arquivo" },
+      { rotulo: "Anexo (PDF)", campo: "DemaisArquivos" },
+      PAGINA_NO_PORTAL,
+    ],
   },
 
   "perguntas-frequentes": {

@@ -224,6 +224,35 @@ export async function destinoDoBotao(b: Botao, ctx: Contexto): Promise<string | 
 }
 
 /**
+ * Menu do Portal Previdenciário: o que o órgão cadastra são endereços do site dele. Link relativo ("/publicacoes") cairia
+ * no nosso sistema em vez do portal do cliente, então vira /portal-previdenciario/<slug>/…; link absoluto com página
+ * equivalente (Nexa primeiro, depois os dados abertos) abre a nossa página; o resto fica como está. Nunca falha.
+ */
+export async function integrarMenu<T extends { nome: string; pagina: string; itens: T[] }>(menu: T[], slugCliente: string): Promise<T[]> {
+  const raiz = `/portal-previdenciario/${slugCliente}`;
+  let ctx: Contexto | null = null;
+  try {
+    ctx = await cacheContexto(slugCliente, () => carregarContexto(slugCliente));
+  } catch {
+    ctx = null;
+  }
+  const reescrever = async (it: T): Promise<T> => {
+    let pagina = it.pagina;
+    if (/^\/(?!\/)/.test(pagina)) pagina = `${raiz}${pagina}`;
+    else if (ctx && ctx.paginas.size > 0 && /^https?:\/\//i.test(pagina)) {
+      const destino = await destinoDoBotao({ Descricao: it.nome, Link: pagina }, ctx).catch(() => null);
+      if (destino) pagina = `${raiz}/${destino}`;
+    }
+    return { ...it, pagina, itens: await Promise.all(it.itens.map(reescrever)) };
+  };
+  try {
+    return await Promise.all(menu.map(reescrever));
+  } catch {
+    return menu;
+  }
+}
+
+/**
  * Reescreve o link dos botões (lista do `d=transparencia`) que têm página equivalente na Previdência. Nunca falha:
  * qualquer problema devolve a lista original, e o botão sem equivalente fica com o link original do órgão.
  */

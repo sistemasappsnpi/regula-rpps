@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { ArrowUp, ChevronDown, Clock, Mail, MapPin, Phone } from "lucide-react";
 import type { PortalPrevidenciarioMenuItem, PortalPrevidenciarioRodape } from "../../lib/api";
+import { contatoDoRodape } from "../../lib/textos";
 import { AcessibilidadeWidgets } from "./AcessibilidadeWidgets";
 
 // Cor padrão quando o tenant não configurou Tenant.portalCorPrimaria — mesma cor de
@@ -186,8 +187,8 @@ export function PortalPrevidenciarioLayout({
             {rodape?.email && (
               <p className="flex items-center gap-2">
                 <Mail size={14} className="shrink-0" />
-                <a href={`mailto:${rodape.email}`} className="hover:underline">
-                  {rodape.email}
+                <a href={contatoDoRodape(rodape.email).href} className="hover:underline">
+                  {contatoDoRodape(rodape.email).texto}
                 </a>
               </p>
             )}

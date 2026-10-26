@@ -47,6 +47,20 @@ export function dataIso(v: string): { ano: number; chave: number } | null {
 }
 
 // "2026-10-14" -> "14/10/2026"; qualquer outra coisa volta como veio
+// O campo "e-mail" do rodapé dos órgãos às vezes traz o endereço do webmail ("https://webmail.órgão…"), não um e-mail:
+// vira link normal, com o domínio como texto, em vez de um "mailto:https://…" que não abre nada.
+export function contatoDoRodape(valor: string): { href: string; texto: string } {
+  const v = valor.trim();
+  if (/^https?:\/\//i.test(v)) {
+    try {
+      return { href: v, texto: new URL(v).hostname.replace(/^www\./, "") };
+    } catch {
+      return { href: v, texto: v };
+    }
+  }
+  return { href: `mailto:${v}`, texto: v };
+}
+
 export function formatarDataIso(v: string): string {
   const m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? `${m[3]}/${m[2]}/${m[1]}` : v;

@@ -18,6 +18,7 @@ import {
   tituloAmigavel,
 } from "../transparencia-api/catalogo";
 import { camposDeLink, hashUrl } from "../transparencia-api/arquivos";
+import { integrarMenu } from "../transparencia-api/integracao-previdencia";
 
 // Rota pública (sem requireAuth), mesmo padrão de /public/transparencia: o Portal
 // Previdenciário deste RPPS é público por definição. Diferente da Transparência, aqui não há
@@ -166,7 +167,8 @@ portalPrevidenciarioPublicRouter.get("/:slug", async (req, res, next) => {
       tenant.portalRodapeApiUrl ? buscarJson(tenant.portalRodapeApiUrl) : Promise.resolve(null),
     ]);
 
-    const menu = Array.isArray(menuBruto) ? montarArvoreMenu(menuBruto as MenuBruto[]) : null;
+    const menuOriginal = Array.isArray(menuBruto) ? montarArvoreMenu(menuBruto as MenuBruto[]) : null;
+    const menu = menuOriginal ? await integrarMenu(menuOriginal, tenant.slug) : null;
     const rodape = mapearRodape(rodapeBruto);
 
     res.json({
