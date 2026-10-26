@@ -236,6 +236,7 @@ export async function integrarBotoes(raw: string, slugCliente: string): Promise<
 
     const raiz = env.webUrl.replace(/\/+$/, "");
     const saida: unknown[] = [];
+    const usados = new Set<string>();
     for (const item of itens) {
       if (!item || typeof item !== "object") {
         saida.push(item);
@@ -244,6 +245,7 @@ export async function integrarBotoes(raw: string, slugCliente: string): Promise<
       const b = item as Botao;
       const destino = await destinoDoBotao(b, ctx).catch(() => null);
       if (destino) {
+        usados.add(destino.split("?")[0]);
         saida.push({ ...b, LinkOriginal: b.Link ?? "", Link: `${raiz}/portal-previdenciario/${ctx.slug}/${destino}` });
         continue;
       }
@@ -251,6 +253,28 @@ export async function integrarBotoes(raw: string, slugCliente: string): Promise<
       const original = typeof b.Link === "string" ? b.Link : "";
       const certo = limparLink(original, ctx.base);
       saida.push(certo && certo !== original.trim() ? { ...b, LinkOriginal: original, Link: certo } : b);
+    }
+    // Todo item da Nexa com dados tem que ter botão: os que nenhum botão do órgão alcançou entram como botão novo
+    // (no grupo de mesmo nome que já existe na lista, para aparecer junto dos demais).
+    const grupos = new Map<string, string>();
+    for (const item of itens) {
+      const g = item && typeof item === "object" ? (item as Botao).Grupo : null;
+      if (typeof g === "string" && g.trim()) grupos.set(norm(g), g);
+    }
+    for (const e of CATALOGO_TRANSPARENCIA_API) {
+      if (!ctx.paginas.has(e.codigo) || usados.has(e.codigo)) continue;
+      const grupoPadrao = e.codigo === "relatorio-controle-interno" ? "Controles Internos" : "Governança Corporativa";
+      saida.push({
+        Id: `nexa-${e.codigo}`,
+        Grupo: grupos.get(norm(grupoPadrao)) ?? grupoPadrao,
+        Amparo: "Pró-Gestão",
+        NomeImagem: "bi bi-file-earmark-text-fill",
+        Descricao: e.titulo,
+        MaisInformacoes: null,
+        Cor: null,
+        Link: `${raiz}/portal-previdenciario/${ctx.slug}/${e.codigo}`,
+        LinkOriginal: "",
+      });
     }
     return JSON.stringify(saida);
   } catch {
