@@ -57,7 +57,7 @@ export const CONFIGS_LISTA_DOCUMENTOS: Record<string, ConfigListaDocumentos> = {
     detalhe: (r) => txt(r, "data"),
     ano: (r) => dataBr(txt(r, "data"))?.ano ?? null,
     ordem: (r) => dataBr(txt(r, "data"))?.chave ?? 0,
-    grupo: { rotulo: "Colegiado", rotuloPlural: "Colegiados", valor: (r) => txt(r, "colegiado") },
+    grupo: { rotulo: "Colegiado", rotuloPlural: "Colegiados", valor: (r) => tituloAmigavel(txt(r, "colegiado")) },
     links: [{ rotulo: "Abrir ata", campo: "linkArquivo" }],
   },
 
@@ -181,7 +181,7 @@ export const CONFIGS_LISTA_DOCUMENTOS: Record<string, ConfigListaDocumentos> = {
     titulo: (r) => `Calendário de reuniões ${txt(r, "ano")}`,
     ano: anoNumero,
     ordem: (r, i) => (anoNumero(r) ?? 0) * 1000 - i,
-    grupo: { rotulo: "Colegiado", rotuloPlural: "Colegiados", valor: (r) => txt(r, "colegiado") },
+    grupo: { rotulo: "Colegiado", rotuloPlural: "Colegiados", valor: (r) => tituloAmigavel(txt(r, "colegiado")) },
     links: [{ rotulo: "Abrir calendário", campo: "linkArquivo" }],
   },
 
@@ -238,7 +238,7 @@ export const CONFIGS_LISTA_DOCUMENTOS: Record<string, ConfigListaDocumentos> = {
     detalhe: (r) => partes(txt(r, "aprovador") ? `Aprovado pelo ${txt(r, "aprovador")}` : "", txt(r, "data") ? `em ${txt(r, "data")}` : "", txt(r, "ata_aprovacao")),
     ano: (r) => dataBr(txt(r, "data"))?.ano ?? null,
     ordem: (r) => dataBr(txt(r, "data"))?.chave ?? 0,
-    grupo: { rotulo: "Colegiado", rotuloPlural: "Colegiados", valor: (r) => txt(r, "colegiado") },
+    grupo: { rotulo: "Colegiado", rotuloPlural: "Colegiados", valor: (r) => tituloAmigavel(txt(r, "colegiado")) },
     links: [
       { rotulo: "Abrir regimento", campo: "linkArquivo" },
       { rotulo: "Ata de aprovação", campo: "linkArquivo_Ata" },

@@ -418,7 +418,8 @@ export function PortalBasico({
                   </select>
                 </div>
               )}
-              {!hub && config?.grupo && grupos.length > 1 && (
+              {/* com um tipo escolhido no hub (ex.: atas) o filtro do tipo vale (colegiado…); em "todos os tipos" misturaria eixos */}
+              {(!hub || hub.tipo) && config?.grupo && grupos.length > 1 && (
                 <div className="pb-campo">
                   <label>{config.grupo.rotulo}</label>
                   <select value={rascunho.grupo} onChange={(e) => setRascunho({ ...rascunho, grupo: e.target.value })}>
