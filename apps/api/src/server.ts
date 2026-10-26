@@ -2,6 +2,7 @@ import { createApp } from "./app";
 import { env, assertProductionEnv } from "./config/env";
 import { iniciarColetaAgendada } from "./modules/transparencia-api/coletor";
 import { garantirClientesNexa } from "./modules/transparencia-api/clientes-nexa";
+import { sincronizarConfigOficial } from "./modules/transparencia-gerador/config-oficial";
 import { iniciarVerificacaoAgendada } from "./modules/transparencia-gerador/links";
 import { garantirExemplos } from "./modules/transparencia-gerador/tipos";
 
@@ -16,4 +17,5 @@ app.listen(env.port, () => {
 // cadastra/atualiza os clientes da Nexa ANTES da primeira coleta (que roda 1 min depois de subir)
 void garantirClientesNexa().finally(() => iniciarColetaAgendada());
 void garantirExemplos();
+void sincronizarConfigOficial();
 iniciarVerificacaoAgendada();

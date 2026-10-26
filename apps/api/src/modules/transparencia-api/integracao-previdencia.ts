@@ -92,8 +92,43 @@ const REFINAMENTOS: Record<string, { pagina: string; q: string }> = {
   "seminarios convites": { pagina: "noticias", q: "seminário" },
 };
 
+// 1ª fonte: a API Nexa. Nome do botão (ou da categoria de publicação para a qual ele aponta), sem acento/caixa -> página
+// da Nexa. Vale só se aquela página tem registros copiados; senão o botão cai para os dados abertos e, por fim, ao link original.
+const NEXA_POR_NOME: Record<string, string> = {
+  "acordaos tce": "acordaos-tce",
+  "audiencias publicas": "audiencia-publica",
+  "cartilha previdenciaria": "cartilha-previdenciaria",
+  "cronograma das acoes de educacao previdenciaria": "acoes-educacao",
+  "avaliacao atuarial": "avaliacao-atuarial",
+  crp: "crp",
+  "certificado de regularidade previdenciaria": "crp",
+  "codigo de etica": "codigo-etica",
+  "limite de alcadas": "limite-alcada",
+  "limites de alcadas": "limite-alcada",
+  "pai politica de investimentos": "politica-investimento",
+  "politica anual de investimentos": "politica-investimento",
+  "politica de investimentos": "politica-investimento",
+  planejamento: "plano-acao-anual",
+  "planos de acao anual": "plano-acao-anual",
+  "demonstrativos financeiros e conatabeis": "demonstracoes-financeiras",
+  "demonstracoes financeiras e contabeis": "demonstracoes-financeiras",
+  "relacao de entidades credenciadas investimentos": "entidades-credenciadas",
+  "instituicoes cadastradas e credenciadas": "entidades-credenciadas",
+  "relatorios de investimentos": "relatorio-investimentos",
+  certidoes: "certidoes-negativas",
+  "certidoes negativas": "certidoes-negativas",
+};
+
+function paginaNexa(nome: string, ctx: Contexto): string | null {
+  const codigo = NEXA_POR_NOME[norm(nome)];
+  return codigo && ctx.paginas.has(codigo) ? codigo : null;
+}
+
 // Caminho (sem barras) do link do botão -> página da Previdência
 function paginaPorCaminho(caminho: string): string | null {
+  if (/^diarias$/.test(caminho)) return "diarias";
+  if (/^obras$/.test(caminho)) return "obras";
+  if (/^(pessoal|quadrodepessoal)$/.test(caminho)) return "quadro-de-pessoal";
   if (/^(licitacoes?|portalcompras)$/.test(caminho)) return "licitacoes";
   if (/^contratos?$/.test(caminho)) return "contratos";
   if (caminho === "leis") return "leis";
@@ -102,7 +137,7 @@ function paginaPorCaminho(caminho: string): string | null {
   if (/^(informa|noticias)$/.test(caminho)) return "noticias";
   if (caminho === "conselhos") return "conselhos";
   if (caminho === "processoseletivo") return "processos-seletivos";
-  if (caminho === "concursopublico") return "concursos-publicos";
+  if (caminho === "concursopublico" || caminho === "concursopublico.php") return "concursos-publicos";
   if (/^(servicos\.php|servicosonline)$/.test(caminho)) return "servicos-online";
   if (caminho === "contatos") return "gestao-e-atendimento";
   if (caminho === "selos") return "selos";
@@ -114,15 +149,29 @@ function paginaPorCaminho(caminho: string): string | null {
   return null;
 }
 
+// A API às vezes devolve o domínio duplicado ("https://x/https://y/…"), barras dobradas ou um caminho relativo
+// ("concursopublico.php"): devolve o endereço certo, ou o texto como veio se não der para interpretar.
+export function limparLink(original: string, base: string | null): string {
+  const t = original.trim();
+  if (!t) return "";
+  const semDuplicado = t.replace(/^(https?:\/\/[^/]+)\/+(https?:\/\/)/i, "$2");
+  try {
+    const u = new URL(semDuplicado, base ? `${base}/` : undefined);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return t;
+    u.pathname = u.pathname.replace(/\/{2,}/g, "/");
+    return u.href;
+  } catch {
+    return t;
+  }
+}
+
+// Ordem de decisão de cada botão: 1) API Nexa; 2) dados abertos do portal do órgão (as páginas copiadas dele);
+// 3) nenhuma das duas tem -> null, e o botão continua com o link original.
 export async function destinoDoBotao(b: Botao, ctx: Contexto): Promise<string | null> {
   const descricao = typeof b.Descricao === "string" ? b.Descricao : "";
   const original = typeof b.Link === "string" ? b.Link.trim() : "";
 
-  const ref = REFINAMENTOS[norm(descricao)];
-  if (ref && ctx.paginas.has(ref.pagina)) return `${ref.pagina}?q=${encodeURIComponent(ref.q)}`;
-
-  // a API às vezes devolve o domínio duplicado ("https://x/https://y/…") ou barras dobradas
-  const limpo = original.replace(/^(https?:\/\/[^/]+)\/+(https?:\/\/)/i, "$2");
+  const limpo = limparLink(original, ctx.base);
   let caminho = "";
   let cat = "";
   if (limpo) {
@@ -151,11 +200,21 @@ export async function destinoDoBotao(b: Botao, ctx: Contexto): Promise<string | 
     return ctx.paginas.has(pagina) ? pagina : null;
   }
 
+  // 1) Nexa, pelo nome do botão
+  const daNexa = paginaNexa(descricao, ctx);
+  if (daNexa) return daNexa;
+
+  const ref = REFINAMENTOS[norm(descricao)];
+  if (ref && ctx.paginas.has(ref.pagina)) return `${ref.pagina}?q=${encodeURIComponent(ref.q)}`;
+
   if (caminho === "publicacoes") {
     if (!cat) return ctx.paginas.has("publicacoes") ? "publicacoes" : null;
     if (!ctx.base) return null;
     const nome = await nomeDaCategoria(ctx.base, cat);
     if (!nome) return null;
+    // 1) Nexa, pelo nome da categoria; 2) a página do tipo de publicação, dos dados abertos
+    const nexaDaCategoria = paginaNexa(nome, ctx);
+    if (nexaDaCategoria) return nexaDaCategoria;
     const pagina = `${PREFIXO_PUBLICACAO}${slugDoTipo(nome)}`;
     return ctx.paginas.has(pagina) ? pagina : null;
   }
@@ -184,7 +243,14 @@ export async function integrarBotoes(raw: string, slugCliente: string): Promise<
       }
       const b = item as Botao;
       const destino = await destinoDoBotao(b, ctx).catch(() => null);
-      saida.push(destino ? { ...b, LinkOriginal: b.Link ?? "", Link: `${raiz}/portal-previdenciario/${ctx.slug}/${destino}` } : b);
+      if (destino) {
+        saida.push({ ...b, LinkOriginal: b.Link ?? "", Link: `${raiz}/portal-previdenciario/${ctx.slug}/${destino}` });
+        continue;
+      }
+      // sem página nossa: fica o link original, só consertado quando a API o devolve quebrado
+      const original = typeof b.Link === "string" ? b.Link : "";
+      const certo = limparLink(original, ctx.base);
+      saida.push(certo && certo !== original.trim() ? { ...b, LinkOriginal: original, Link: certo } : b);
     }
     return JSON.stringify(saida);
   } catch {

@@ -64,6 +64,9 @@ export const CATALOGO_PORTAL: PaginaPortal[] = [
   { codigo: "processos-seletivos", titulo: "Processos seletivos", endpoint: "portal-processos-seletivos" },
   { codigo: "servicos-online", titulo: "Serviços online", endpoint: "portal-servicos-online" },
   { codigo: "selos", titulo: "Selos e certificações", endpoint: "portal-selos" },
+  { codigo: "diarias", titulo: "Diárias", endpoint: "portal-diarias" },
+  { codigo: "quadro-de-pessoal", titulo: "Quadro de pessoal", endpoint: "portal-pessoal" },
+  { codigo: "obras", titulo: "Obras", endpoint: "portal-obras" },
   // exportações JSON das páginas do portal (ver EXPORTS_PORTAL em portal-dados-abertos.ts)
   { codigo: "decretos", titulo: "Decretos municipais", endpoint: "portal-decretos" },
   { codigo: "prestacao-de-contas", titulo: "Prestação de contas do governo", endpoint: "portal-prestacao-contas" },

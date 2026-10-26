@@ -28,6 +28,10 @@ export const DATASETS_PORTAL: DatasetPortal[] = [
   { endpoint: "portal-processos-seletivos", d: "processoseletivo" },
   { endpoint: "portal-servicos-online", d: "servicosonline" },
   { endpoint: "portal-selos", d: "selos" },
+  // conjuntos que alguns órgãos preenchem e outros deixam vazios (aí a página nem aparece e o botão fica com o link original)
+  { endpoint: "portal-diarias", d: "diarias" },
+  { endpoint: "portal-pessoal", d: "pessoal" },
+  { endpoint: "portal-obras", d: "obras" },
 ];
 
 const POR_CHAMADA = 200;
